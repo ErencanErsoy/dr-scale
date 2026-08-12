@@ -76,8 +76,7 @@ Passwort vollständig zugänglich.
 
 Fünf Abbildungen in wissenschaftlicher Darstellung lassen sich als Vektorgrafik speichern, bei
 Bedarf als PNG. Linienarten sind so gewählt, dass die Abbildungen auch im Schwarzweißdruck
-unterscheidbar bleiben. Jeder Reiter lässt sich zusätzlich als Markdown speichern oder über den
-Druckdialog als PDF ausgeben.
+unterscheidbar bleiben. Jeder Reiter lässt sich zusätzlich über den Druckdialog als PDF ausgeben.
 
 ## Technisches
 

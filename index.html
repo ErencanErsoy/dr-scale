@@ -249,7 +249,7 @@ svg{display:block;max-width:100%;height:auto}
   <main>
     <nav class="tabs" role="tablist" id="tabs"></nav>
     <div class="nurdruck"><b>Dr. Scale, <span id="druck-reiter">Modelllogik</span></b><span id="druck-quelle">Datengrundlage: Musterkrankenhaus</span></div>
-    <div class="werkzeug" style="display:flex;justify-content:flex-end;gap:8px;margin:-12px 0 16px;align-items:center;flex-wrap:wrap"><span id="druckhinweis" style="font-size:11.5px;color:var(--muted);margin-right:auto"></span><button class="dl" type="button" id="dl-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Diesen Reiter als PDF speichern</button><button class="dl" type="button" id="dl-reiter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Diesen Reiter als Markdown laden</button></div>
+    <div class="werkzeug" style="display:flex;justify-content:flex-end;gap:8px;margin:-12px 0 16px;align-items:center;flex-wrap:wrap"><span id="druckhinweis" style="font-size:11.5px;color:var(--muted);margin-right:auto"></span><button class="dl" type="button" id="dl-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Diesen Reiter als PDF speichern</button></div>
     <section role="tabpanel" id="p0"><h2>Modelllogik</h2>
       <p class="lead">Der Aufbau folgt Abbildung 1. Jeder Block nennt zuerst seine Gleichung, dann die Herkunft der Werte, dann die Rechnung mit den eingestellten Zahlen.</p>
       <div class="sprung"><a href="#m1">1 Überblick</a><a href="#m2">2 Szenarien</a><a href="#m3">3 Nutzenseite</a><a href="#m4">4 Kostenseite</a><a href="#m5">5 Zusammenführung und Ergebnis</a><a href="#m6">6 Zeichen und Grenzen</a></div>
@@ -296,7 +296,10 @@ document.getElementById("mark").innerHTML=wortmarke(5);
 /* ============ Allgemeines Modell ============ */
 var FTB2={2027:{v:0.0040,n:0.0009},2028:{v:0.0030,n:0.0018},2029:{v:0.0025,n:0.0023},
           2030:{v:0.0020,n:0.0027},2031:{v:0.0010,n:0.0036}};
-var N_VERF=19,N_NUTZ=3,GKV_MAX=0.071,GKV_BIS=2030,GKV_AB=2026,LIT_GRENZE=0.52;
+var N_VERF=19,N_NUTZ=3,LIT_GRENZE=0.52;
+/* Erloeseinbussen der Krankenhaeuser 2027 bis 2030 in Mrd. Euro, bezogen auf
+   102,2 Mrd. Euro GKV-Krankenhausausgaben 2024 (health care bavaria, 2026). */
+var GKV_VERLUST=[3.9,4.9,6.3,7.3], GKV_BASIS=102.2, GKV_START=2027;
 var TAGNAME={lit:"Literatur",recht:"Rechtsgrundlage",sek:"Sekundärdaten",ann:"Annahme",
  fest:"Festlegung",zu:"Zu erheben",calc:"Berechnet"};
 var TAGERKL={lit:"aus veröffentlichter Fachliteratur",recht:"aus Gesetz, Vereinbarung oder Verwaltungsvorschrift",
@@ -349,7 +352,7 @@ var ALLGEMEIN=[
  {blk:"kosten",g:"Geltungsdauer der Gewichte",w:"bis 2031",t:"recht",
   z:"Deutsche Krankenhausgesellschaft & GKV-Spitzenverband, 2026, § 3 Abs. 7",
   h:"Jahre nach 2031 tragen im Modell null."},
- {blk:"kosten",g:"Rückgang der stationären Erlösbasis",w:"7,1 Prozent bis 2030",t:"recht",z:"health care bavaria, 2026",
+ {blk:"kosten",g:"Rückgang der stationären Erlösbasis",w:"3,8 bis 7,1 Prozent, im Basisfall nicht angesetzt",t:"recht",z:"health care bavaria, 2026",
   h:"7,3 Mrd. Euro bezogen auf 102,2 Mrd. Euro Krankenhausausgaben der gesetzlichen Krankenversicherung 2024."},
  {blk:"szenarien",g:"Grenze des digitalen Buchungsanteils",w:"52 Prozent",t:"lit",z:"Fraccaro et al., 2017",
   h:"Gepoolter Punktschätzer aus 40 Studien. Unter kontrollierten Bedingungen 71 Prozent, im Alltag 23 Prozent."},
@@ -422,9 +425,9 @@ var FELDER=[
 ];
 
 var MUSTER={I0:2000000,ANB:30000,K:100000,KAB:2029,dIst:20,dZiel:30,rOff:15,rOn:10,
-            b:100,tmin:4,c:40,kvar:0,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:true,
+            b:100,tmin:4,c:40,kvar:0,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
             IMPL:1170000,NK:39,name:"Musterkrankenhaus"};
-var NUTZLAST="OrPHKa585H2glQvPdvbn32Wr3CGc1B7dArPZ0rlZH/13blwD8NAMFk1Nhjm4Z32LlvpPnqi6rb8cOTAUM3b5d2XmafYBBRFMf3N82xDYRh3X+WEoTv/c5j9FxLDKKrvHGNG7Th4KK7IDmJMkR0EOPq0TirpU5IwV5dSkmcuReMlT1yrKhK/w29eRO+Ju4Af3D4S9espRDu85QQFVxtp6zvuWu76MSfsEr7SRaBoWcuVCfkQFxsaYKRUfvLRJoRdNwbuwMNY8ttUyGerWFxUzyqFwl3yoHZA1ZY8xEXNxffguy9M7zg8IhUxLir0sZI/wjtToD+pxIROsMqtc4ZT8G95R52tKterUpf5m/IkOOiBOEyeo5QvOfAsfGL9Z71WDRDaUbHcnQ8uHG3GAXFlAWg5S2sh31lCT3uGcsl1a";
+var NUTZLAST="9x0gGGs/c2hnmpL6FviQIzhST3mmAaYWaPQU4cBZARjNp/l61OlI2zcDxCUm+pdZim6BZT8x2kS9aZWfGkwI+aka/2uxQbu1ZjVGCpD+VOdnNJP5P71Jy8p7o1lccVfhOYuMuZqe8sGXtx8g2f+XeaqAiI+CG7mv+JrxBrdyHC1hWUPBsy4TQnl8QVWEaEYeXAYSJv7VKrBKfveOwgyA5WT5sfO+U8mz58927LnkxCFN3BFIMJWhkeW0NtxOkcZGDCKoDaEuHkE3NNHrzC0u2ZekX1gzCH50Iw2cLGw/SEODnBLq7fWQ3G4EOak7O04wlqYwDxjnKGT0obqyOiT2dcXyplP9fd5JqIw7ejZsDSlsvX74F0QRmzeMzHqPs3VN7pzl3z6MuAjwjr1EPlmWkbK8h/osFKngxqDn58Doww==";
 var GELADEN=null, QUELLE="muster", M=Object.assign({},MUSTER);
 
 /* ============ Rechenkern ============ */
@@ -436,7 +439,8 @@ function calc(ov){
   var jahre=[],bwA=0,bwK=0,bwN1=0;
   for(var j=1;j<=H;j++){
     var jahr=st+j-1,disk=Math.pow(1+i,j);
-    var g=p.gkv? GKV_MAX*Math.min(Math.max((jahr-GKV_AB)/(GKV_BIS-GKV_AB),0),1):0;
+    var gi=Math.min(Math.max(jahr-GKV_START,0),GKV_VERLUST.length-1);
+    var g=p.gkv? GKV_VERLUST[gi]/GKV_BASIS:0;
     var wv=FTB2[jahr]?FTB2[jahr].v:0, wn=FTB2[jahr]?FTB2[jahr].n:0;
     var A=(wv/N_VERF)*p.E*(1-g), K=jahr>=p.KAB?p.K:0, N1=(wn/N_NUTZ)*p.E*(1-g);
     bwA+=A/disk; bwK+=K/disk; bwN1+=N1/disk;
@@ -529,8 +533,8 @@ var STEUER={};
     if(g==="Erlöse und Zeitraum"){
       html+='<div class="ctl"><div class="top"><label for="n-gkv">Erlösrückgang nach dem '+
         'Beitragssatzstabilisierungsgesetz</label><select id="n-gkv">'+
-        '<option value="1">einrechnen</option><option value="0">ausblenden</option></select></div>'+
-        '<div class="qz">'+tg("recht")+' Senkt die stationäre Erlösbasis bis 2030 um 7,1 Prozent (health care bavaria, 2026).</div></div>';
+        '<option value="0">nicht einrechnen</option><option value="1">einrechnen</option></select></div>'+
+        '<div class="qz">'+tg("recht")+' Mindert die stationäre Erlösbasis von 3,8 Prozent im Jahr 2027 auf 7,1 Prozent ab 2030 (health care bavaria, 2026). Im Basisfall nicht eingerechnet, weil die Übertragung eines für die gesamte gesetzliche Krankenversicherung ermittelten Durchschnitts auf ein einzelnes Haus eine zusätzliche Annahme wäre.</div></div>';
     }
     box.innerHTML=html;host.appendChild(box);
   });
@@ -1277,103 +1281,7 @@ function baueAbout(){
    '<div class="card"><h4 style="margin-top:0">Herkunft</h4><p>Dr. Scale ist im Rahmen einer Masterarbeit an der Freien Universität Berlin entstanden. Die Anwendung erfolgt exemplarisch auf das digitale Terminmanagement der Charité. Sämtliche Belegstellen stehen im Quellenverzeichnis.</p></div>';
 }
 
-/* ============ Reiter als Markdown ============ */
-function mdText(n){ return (n.textContent||"").replace(/\u00a0/g," ").replace(/\s+/g," ").trim(); }
-function mdZellen(tr){
-  var z=[], k;
-  for(k=0;k<tr.childNodes.length;k++){
-    var c=tr.childNodes[k];
-    if(c.tagName==="TD"||c.tagName==="TH") z.push(mdText(c).replace(/\|/g,"/"));
-  }
-  return z;
-}
-function mdTabelle(tbl){
-  var kopf=[], zeilen=[], i, j;
-  for(i=0;i<tbl.childNodes.length;i++){
-    var teil=tbl.childNodes[i];
-    if(teil.tagName!=="THEAD"&&teil.tagName!=="TBODY") continue;
-    for(j=0;j<teil.childNodes.length;j++){
-      var tr=teil.childNodes[j];
-      if(tr.tagName!=="TR") continue;
-      if(teil.tagName==="THEAD") kopf=mdZellen(tr); else zeilen.push(mdZellen(tr));
-    }
-  }
-  var breite=kopf.length||(zeilen[0]?zeilen[0].length:0);
-  if(!breite) return "";
-  var aus=[];
-  if(!kopf.length){ kopf=[]; for(i=0;i<breite;i++) kopf.push(" "); }
-  aus.push("| "+kopf.join(" | ")+" |");
-  var tr2=[]; for(i=0;i<breite;i++) tr2.push("---");
-  aus.push("| "+tr2.join(" | ")+" |");
-  zeilen.forEach(function(z){
-    while(z.length<breite) z.push("");
-    aus.push("| "+z.join(" | ")+" |");
-  });
-  return aus.join("\n");
-}
-function mdFinde(el,klasse){
-  for(var i=0;i<el.childNodes.length;i++){
-    var c=el.childNodes[i];
-    if(c.className&&(" "+c.className+" ").indexOf(" "+klasse+" ")>=0) return c;
-    if(c.childNodes&&c.childNodes.length){ var tief=mdFinde(c,klasse); if(tief) return tief; }
-  }
-  return null;
-}
-function mdFindeTag(el,tag){
-  for(var i=0;i<el.childNodes.length;i++){
-    var c=el.childNodes[i];
-    if(c.tagName===tag) return c;
-    if(c.childNodes&&c.childNodes.length){ var tief=mdFindeTag(c,tag); if(tief) return tief; }
-  }
-  return null;
-}
-function mdHat(el,klasse){ return el.className&&(" "+el.className+" ").indexOf(" "+klasse+" ")>=0; }
-function mdWalk(el,aus){
-  for(var i=0;i<el.childNodes.length;i++){
-    var c=el.childNodes[i];
-    if(!c.tagName) continue;
-    if(c.tagName==="BUTTON"||c.tagName==="SVG"||c.tagName==="svg") continue;
-    if(mdHat(c,"sprung")) continue;
-    if(c.tagName==="H2"){ aus.push("# "+mdText(c)); continue; }
-    if(c.tagName==="H3"){ aus.push("## "+mdText(c)); continue; }
-    if(c.tagName==="H4"){ aus.push("### "+mdText(c)); continue; }
-    if(mdHat(c,"gl")){
-      var sym=mdFinde(c,"sym"), wort=mdFinde(c,"wort"), nr=mdFinde(c,"nr");
-      if(sym) aus.push("```\n"+(sym.textContent||"").replace(/\u00a0/g," ")+"\n```");
-      if(wort) aus.push("*"+mdText(wort)+"*"+(nr?" "+mdText(nr):""));
-      continue;
-    }
-    if(mdHat(c,"tw")){ var tb=mdFindeTag(c,"TABLE"); if(tb) aus.push(mdTabelle(tb)); continue; }
-    if(mdHat(c,"note")){ aus.push("> "+mdText(c)); continue; }
-    if(mdHat(c,"deut")){ aus.push("- "+mdText(c)); continue; }
-    if(mdHat(c,"kpi")){ aus.push("- **"+mdText(mdFinde(c,"l")||c)+"**: "+
-      mdText(mdFinde(c,"v")||c)+" ("+mdText(mdFinde(c,"s")||c)+")"); continue; }
-    if(c.tagName==="FIGCAPTION"){ aus.push("*"+mdText(c)+"*"); continue; }
-    if(c.tagName==="P"){ var s=mdText(c); if(s) aus.push(mdHat(c,"src")?"*"+s+"*":s); continue; }
-    if(c.childNodes&&c.childNodes.length){ mdWalk(c,aus); continue; }
-    var s2=mdText(c); if(s2) aus.push(s2);
-  }
-  return aus;
-}
 var REITERDATEI=["modelllogik","ergebnisse","abbildungen","quellenverzeichnis","ueber-dr-scale"];
-function reiterAlsMarkdown(){
-  var sec=document.getElementById("p"+AKTIV);
-  var kopf=["# Dr. Scale, "+TABS[AKTIV],
-            "",
-            "Datengrundlage: "+((QUELLE==="charite"&&GELADEN)?GELADEN.name:"Musterkrankenhaus"),
-            "Stand der Eingaben: "+new Date().toLocaleDateString("de-DE"),
-            "",
-            "---",""];
-  var koerper=mdWalk(sec,[]);
-  if(koerper.length&&koerper[0].indexOf("# ")===0) koerper.shift();
-  var txt=kopf.concat(koerper).join("\n\n")+"\n";
-  var name="dr-scale-"+REITERDATEI[AKTIV]+".md";
-  anbieten(name,txt,"text/markdown",function(){
-    anbieten(name.replace(/\.md$/,".txt"),txt,"text/plain",null);
-  });
-}
-
-/* ============ Druckfertige Datei ============ */
 function druckseite(){
   var sec=document.getElementById("p"+AKTIV);
   var stil=document.getElementById("hauptstil");
@@ -1424,7 +1332,6 @@ document.addEventListener("click",function(e){
   var b=e.target.closest?e.target.closest("button.dl[data-abb]"):null;
   if(b) speichereAbb(+b.getAttribute("data-abb"));
 });
-document.getElementById("dl-reiter").addEventListener("click",reiterAlsMarkdown);
 document.getElementById("dl-pdf").addEventListener("click",function(){
   druckkopf(); druckseite();
 });

@@ -1227,13 +1227,15 @@ function baueErgebnis(r){
    '<p>Die Szenarien unterscheiden sich in einer einzigen Größe, dem Endwert d_H des digitalen Buchungsanteils im letzten Jahr.</p>'+
    '<div class="card"><div class="fig-h"><h4>Abbildung 4</h4>'+dlKnopf(4)+'</div><figure>'+abbPfad(r)+bu(4)+'</figure></div>'+
    '<div class="tw"><table><thead><tr><th>Szenario</th><th class="num">Endwert d_H</th><th>Herkunft</th>'+
-   '<th class="num">N</th><th class="num">m</th><th class="num">B</th><th>Begründung</th></tr></thead><tbody>';
+   '<th class="num">N</th><th class="num">m</th><th class="num">B</th>'+
+   '<th class="num">m ohne Zeitersparnis</th><th class="num">B ohne Zeitersparnis</th></tr></thead><tbody>';
+  var nMess=(r.p.rOff-r.p.rOn)/100*r.p.b, fk=r.n/nMess;
   r.sz.forEach(function(z){
     h+='<tr><td><b>'+esc(z.name)+'</b></td><td class="num">'+f1(z.D*100)+'</td><td>'+tg(z.hk)+'</td>'+
       '<td class="num">'+f2(z.N)+'</td><td class="num"><b>'+f0(z.m)+'</b></td><td class="num">'+f0(z.B)+
-      '</td><td>'+esc(z.was)+'</td></tr>';
+      '</td><td class="num">'+f0(z.m*fk)+'</td><td class="num">'+f0(z.B*fk)+'</td></tr>';
   });
-  h+='</tbody></table></div><div class="note">Die obere Grenze misst die Adoption von Patientenportalen insgesamt, nicht den Anteil online gebuchter Termine, und mischt kontrollierte Bedingungen (71 Prozent) mit Alltagsbedingungen (23 Prozent). Sie dient als explorative Szenariogrenze, nicht als erwartbarer Zielwert. Umgekehrt bestaetigt derselbe Befund die untere Grenze, weil der gemessene Ausgangswert bereits darüber liegt (Fraccaro et al., 2017).</div>';
+  h+='</tbody></table></div><div class="note"><b>Zur letzten Spaltengruppe.</b> Die Zeitersparnis je Vorgang ist die einzige Rechengroesse ohne Anker in einer Quelle. Die beiden rechten Spalten zeigen deshalb dauerhaft, wie die Schwellen ausfallen, wenn allein die gemessene Wirkung angesetzt wird, also der vermiedene Terminausfall. Die Entscheidung ueber eine Anbindung aendert sich dadurch nicht.</div><div class="note">Die obere Grenze misst die Adoption von Patientenportalen insgesamt, nicht den Anteil online gebuchter Termine, und mischt kontrollierte Bedingungen (71 Prozent) mit Alltagsbedingungen (23 Prozent). Sie dient als explorative Szenariogrenze, nicht als erwartbarer Zielwert. Umgekehrt bestaetigt derselbe Befund die untere Grenze, weil der gemessene Ausgangswert bereits darüber liegt (Fraccaro et al., 2017).</div>';
   h+='<h3 id="e6">6 Sensitivitätsanalyse</h3>'+
    '<p>Jede Rechengröße wird einzeln variiert, während die übrigen unverändert bleiben.</p>'+
    '<div class="card"><div class="fig-h"><h4>Abbildung 5</h4>'+dlKnopf(5)+'</div><figure>'+

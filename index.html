@@ -312,7 +312,7 @@ var SYMBOLE=[
  ["r_on","Terminausfallquote mit Onlinebuchung","Prozent","sek","Derselbe Anteil für online gebuchte Termine."],
  ["b","Deckungsbeitrag je Termin","Euro","ann","Betrag, der dem Krankenhaus entgeht, wenn ein Termin ausfällt."],
  ["t","Zeitersparnis je Termin","Minuten","ann","Verwaltungszeit, die eine Onlinebuchung gegenüber der telefonischen Vergabe einspart."],
- ["c","Personalkostensatz","Euro je Stunde","ann","Vollkosten einer Arbeitsstunde im Terminmanagement."],
+ ["c","Personalkostensatz","Euro je Stunde","recht","Personaleinzelkosten einer Arbeitsstunde im Terminmanagement, Entgeltgruppe E 6 im nachgeordneten Bereich. Sachkosten je Arbeitsplatz bleiben unberuecksichtigt, weil freigesetzte Zeit den Arbeitsplatz nicht einspart."],
  ["k","Variable Kosten je Onlinebuchung","Euro","ann","Entgelt, das mit jeder Onlinebuchung anfaellt. Mindert den Nutzen je Termin unmittelbar."],
  ["n","Direkter Nutzen eines umgestellten Termins","Euro","calc","Was ein einzelner Termin einbringt, der von telefonisch auf online wechselt. Faellt genau einmal an, bei genau diesem Termin."],
  ["d_0","Digitaler Buchungsanteil heute","Prozent","sek","Gemessener Ausgangswert. Er liegt VOR dem ersten Betrachtungsjahr."],
@@ -377,7 +377,7 @@ var QUELLEN=[
 ];
 
 var GRENZEN=[
- ["Drei Rechengrößen ohne Quelle","Deckungsbeitrag, Zeitersparnis und Personalkostensatz sind gesetzt. Zusammen bestimmen sie den Nutzen je Termin vollständig."],
+ ["Zwei Rechengrößen ohne Quelle","Deckungsbeitrag und Zeitersparnis sind gesetzt. Für den Deckungsbeitrag gibt es einen Anker, für die Zeitersparnis keinen. Entfiele sie ganz, stiege die Mindestgröße um rund ein Drittel."],
  ["Kausalität nicht belegt","Der Unterschied der Terminausfallquoten ist gemessen. Dass die Onlinebuchung die Ursache ist, folgt daraus nicht."],
  ["Laufende Kosten fortgeschrieben","Die Quelle endet 2028. Der Wert für die Folgejahre ist eine Fortschreibung."],
  ["Nutzungskategorie ausgeklammert","Sie setzt die Erfüllung aller zehn Anforderungen des Aufnahmemanagements voraus und bleibt deshalb außer Betracht."],
@@ -408,7 +408,7 @@ var FELDER=[
   q:"Gesetzt. Größenordnungsanker bei Kheirkhah et al. (2016) mit 196 US-Dollar."},
  {id:"tmin",g:"Wirkung je Termin",l:"Zeitersparnis je Termin",e:"Minuten",min:0,max:20,step:0.5,t:"ann",
   q:"Gesetzt. Prozesszeitdaten liegen nicht vor."},
- {id:"c",g:"Wirkung je Termin",l:"Personalkostensatz",e:"Euro je Stunde",min:0,max:120,step:1,t:"ann",
+ {id:"c",g:"Wirkung je Termin",l:"Personalkostensatz",e:"Euro je Stunde",min:0,max:120,step:0.1,t:"recht",
   q:"Gesetzt als Vollkostensatz. Tarifanker rund 25 Euro je Stunde zuzüglich Gemeinkosten."},
  {id:"E",g:"Erlöse und Zeitraum",l:"Stationäre Erlöse",e:"Euro je Jahr",min:0,max:6000000000,step:10000000,t:"sek",
   q:"Bemessungsgrundlage des Vergütungsabschlags."},
@@ -423,9 +423,9 @@ var FELDER=[
 ];
 
 var MUSTER={I0:2000000,ANB:30000,K:100000,KAB:2029,dIst:20,dZiel:30,rOff:15,rOn:10,
-            b:100,tmin:4,c:40,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
+            b:100,tmin:4,c:40.9,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
             IMPL:1170000,NK:39,name:"Musterkrankenhaus"};
-var NUTZLAST="9x0gGGs/c2hnmpL6FviQIzhST3mmAaYWaPQU4cBZARjNp/l61OlI2zcDxCUm+pdZim6BZT8x2kS9aZWfGkwI+aka/2uxQbu1ZjVGCpD+VOdnNJP5P71Jy8p7o1lccVfhOYuMuZqe8sGXtx8g2f+XeaqAiI+CG7mv+JrxBrdyHC1hWUPBsy4TQnl8QVWEaEYeXAYSJv7VKrBKfveOwgyA5WT5sfO+U8mz58927LnkxCFN3BFIMJWhkeW0NtxOkcZGDCKoDaEuHkE3NNHrzC0u2ZekX1gzCH50Iw2cLGw/SEODnBLq7fWQ3G4EOak7O04wlqYwDxjnKGT0obqyOiT2dcXyplP9fd5JqIw7ejZsDSlsvX74F0QRmzeMzHqPs3VN7pzl3z6MuAjwjr1EPlmWkbK8h/osFKngxqDn58Doww==";
+var NUTZLAST="asb4xyxpZttTPzGkD9vgVjZdYlT5JOpCf3BXUwbGTsBYoxADmX1JTnr6QShzYiB9BZCmROjTWP4v1HcfOWK2HQAwlaZNrSJwygMv9nRwJgYji+fFKEcaGWF3nJnZbUw5kHZo5VymqLLIsR6n98vfVbM+WLKkF0/W5ExfC0Wky1keCzOLidLV9zY2Jn9zUYNluC/u0aWptJdBqGFvjjGICaW1lumRTBoKix6y1GVRP/GP24bXd/q3uCV8V6nUwMinFqllzfst3rc6jlnCMxFttoPd+KgSaCjMv3xDPc50p+NKI46Rr1VCRTZ50iJe6yOyl6Qb+39VymnOnofucFICeiAJiHmmQufOKfLvg6gGRC4H09O8YCXnIb+NA6brdw73J5kzf2dejZgTDVFPSLIDjscgaL+MR9AI1gJfUTgPDQFI";
 var GELADEN=null, QUELLE="muster", M=Object.assign({},MUSTER);
 
 /* ============ Rechenkern ============ */
@@ -941,7 +941,7 @@ function tornadoZeilen(r){
    {n:"Deckungsbeitrag je Termin",a:{b:p.b*0.8},b:{b:p.b*1.5},v:"80 bis 150 Prozent des Werts"},
    {n:"Endwert des digitalen Buchungsanteils",a:{dZiel:p.dIst},b:{dZiel:LIT_GRENZE*100},v:"heutiger Wert bis Literaturwert"},
    {n:"Zeitersparnis je Termin",a:{tmin:p.tmin*0.5},b:{tmin:p.tmin*2},v:"halber bis doppelter Wert"},
-   {n:"Personalkostensatz",a:{c:p.c*0.625},b:{c:p.c*1.375},v:"25 bis 55 Euro je Stunde"},
+   {n:"Personalkostensatz",a:{c:33.20},b:{c:57.36},v:"Entgeltgruppe E 2 bis E 8"},
   ];
   return defs.map(function(d){return {n:d.n,v:d.v,a:calc(d.a).sz[1].m,b:calc(d.b).sz[1].m};})
    .filter(function(x){return isFinite(x.a)&&isFinite(x.b);})

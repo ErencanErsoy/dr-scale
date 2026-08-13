@@ -314,13 +314,13 @@ var SYMBOLE=[
  ["t","Zeitersparnis je Termin","Minuten","ann","Verwaltungszeit, die eine Onlinebuchung gegenüber der telefonischen Vergabe einspart."],
  ["c","Personalkostensatz","Euro je Stunde","ann","Vollkosten einer Arbeitsstunde im Terminmanagement."],
  ["k","Variable Kosten je Onlinebuchung","Euro","ann","Entgelt, das mit jeder Onlinebuchung anfaellt. Mindert den Nutzen je Termin unmittelbar."],
- ["n","Nutzen je umgestelltem Termin","Euro","calc","Was ein einzelner Termin einbringt, der von telefonisch auf online wechselt."],
+ ["n","Direkter Nutzen eines umgestellten Termins","Euro","calc","Was ein einzelner Termin einbringt, der von telefonisch auf online wechselt. Faellt genau einmal an, bei genau diesem Termin."],
  ["d_0","Digitaler Buchungsanteil heute","Prozent","sek","Gemessener Ausgangswert. Er liegt VOR dem ersten Betrachtungsjahr."],
  ["d_j","Digitaler Buchungsanteil im Jahr j","Prozent","calc","Anteil der online gebuchten Termine im Jahr j. Das Jahr j läuft von 1 bis H."],
  ["d_H","Digitaler Buchungsanteil im letzten Jahr","Prozent","lit","Endwert des Zeitraums. Er allein unterscheidet die Szenarien."],
  ["i","Kalkulationszinssatz","Prozent","recht","Satz, mit dem künftige Beträge auf den heutigen Wert umgerechnet werden."],
  ["H","Betrachtungszeitraum","Jahre","ann","Zahl der Jahre, über die gerechnet wird."],
- ["N","Barwert des Nutzens","Euro je Termin und Jahr","calc","Was ein Termin einbringt, der in JEDEM Jahr des Zeitraums anfällt, umgerechnet auf heute. Enthält keine Kosten."],
+ ["N","Barwert je Termin des Jahresvolumens","Euro","calc","Was ein Termin einbringt, der in JEDEM Jahr des Zeitraums anfällt, umgerechnet auf heute. Enthält keine Kosten."],
  ["V","Angebundenes Terminvolumen","Termine je Jahr","calc","Gesuchte Größe, kein Eingabewert. Das Modell fragt, wie groß V sein muss."],
  ["I₀","Investitionssumme","Euro","sek","Bereits getätigte Ausgaben für Einführung und Implementierung."],
  ["K","Laufende Kosten je Jahr","Euro","ann","Jährliche Ausgaben für Wartung und Lizenzen."],
@@ -788,7 +788,7 @@ function abbPfad(r){
   var W=760,T=18,B=52,L=88,R=26,ph=180,lb=r.sz.length*16+30;
   var Hh=T+ph+B+lb,iw=W-L-R;
   var ymax=Math.max(60,Math.ceil(Math.max(r.sz[2].D,r.sz[1].D)*100/10)*10+5);
-  var fx=function(nn){return L+(r.H>1?nn/(r.H-1)*iw:iw/2);};
+  var fx=function(nn){return L+nn/r.H*iw;};
   var fy=function(v){return T+ph-v/ymax*ph;};
   var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Digitaler Buchungsanteil im Zeitverlauf">',k;
   for(k=0;k<=4;k++){var yv=ymax*k/4,y=fy(yv);
@@ -796,18 +796,21 @@ function abbPfad(r){
        '<text x="'+(L-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10.5" fill="var(--muted)">'+f0(yv)+'</text>';}
   s+=achse(L,T,L,T+ph)+achse(L,T+ph,W-R,T+ph);
   var schritt=Math.max(1,Math.ceil(r.H/9));
+  s+='<line x1="'+fx(0)+'" y1="'+(T+ph)+'" x2="'+fx(0)+'" y2="'+(T+ph+4)+'" stroke="var(--ink)" stroke-width="0.9"/>'+
+     '<text x="'+fx(0)+'" y="'+(T+ph+17)+'" text-anchor="middle" font-size="10.5" fill="var(--muted)">Ist</text>';
   r.jahre.forEach(function(J,nn){
     if(nn%schritt===0||nn===r.H-1)
-      s+='<line x1="'+fx(nn)+'" y1="'+(T+ph)+'" x2="'+fx(nn)+'" y2="'+(T+ph+4)+'" stroke="var(--ink)" stroke-width="0.9"/>'+
-         '<text x="'+fx(nn)+'" y="'+(T+ph+17)+'" text-anchor="middle" font-size="10.5" fill="var(--muted)">'+J.jahr+'</text>';
+      s+='<line x1="'+fx(nn+1)+'" y1="'+(T+ph)+'" x2="'+fx(nn+1)+'" y2="'+(T+ph+4)+'" stroke="var(--ink)" stroke-width="0.9"/>'+
+         '<text x="'+fx(nn+1)+'" y="'+(T+ph+17)+'" text-anchor="middle" font-size="10.5" fill="var(--muted)">'+J.jahr+'</text>';
   });
   s+='<text x="'+(L+iw/2)+'" y="'+(T+ph+37)+'" text-anchor="middle" font-size="11" fill="var(--ink)">Betrachtungsjahr</text>';
   s+='<text x="14" y="'+(T+ph/2)+'" font-size="11" fill="var(--ink)" transform="rotate(-90 14 '+(T+ph/2)+')" text-anchor="middle">Digitaler Buchungsanteil in Prozent</text>';
   var ein=[];
   r.sz.forEach(function(z,nn){
-    var d=z.path.map(function(v,m){return (m?"L":"M")+fx(m)+" "+fy(v*100);}).join(" ");
+    var pfad=[r.p.dIst/100].concat(z.path);
+    var d=pfad.map(function(v,m){return (m?"L":"M")+fx(m)+" "+fy(v*100);}).join(" ");
     s+='<path d="'+d+'" fill="none" stroke="'+FARBE[nn]+'" stroke-width="2"'+linienart(z.stil)+'/>';
-    if(r.H<=12) z.path.forEach(function(v,m){s+='<circle cx="'+fx(m)+'" cy="'+fy(v*100)+'" r="2.6" fill="'+FARBE[nn]+'"/>';});
+    if(r.H<=12) pfad.forEach(function(v,m){s+='<circle cx="'+fx(m)+'" cy="'+fy(v*100)+'" r="2.6" fill="'+FARBE[nn]+'"/>';});
     ein.push({c:FARBE[nn],stil:z.stil,t:z.name,w:"Grenze "+pz(z.D*100)});
   });
   s+=legendeBand(ein,L,T+ph+B+2,iw);
@@ -1230,7 +1233,7 @@ function baueErgebnis(r){
       '<td class="num">'+f2(z.N)+'</td><td class="num"><b>'+f0(z.m)+'</b></td><td class="num">'+f0(z.B)+
       '</td><td>'+esc(z.was)+'</td></tr>';
   });
-  h+='</tbody></table></div><div class="note">Der unter kontrollierten Bedingungen erreichte Wert von 71 Prozent wurde als Grenze verworfen, ebenso der Alltagswert von 23 Prozent, weil der gemessene Ausgangswert bereits darüber liegt (Fraccaro et al., 2017).</div>';
+  h+='</tbody></table></div><div class="note">Die obere Grenze misst die Adoption von Patientenportalen insgesamt, nicht den Anteil online gebuchter Termine, und mischt kontrollierte Bedingungen (71 Prozent) mit Alltagsbedingungen (23 Prozent). Sie dient als explorative Szenariogrenze, nicht als erwartbarer Zielwert. Umgekehrt bestaetigt derselbe Befund die untere Grenze, weil der gemessene Ausgangswert bereits darüber liegt (Fraccaro et al., 2017).</div>';
   h+='<h3 id="e6">6 Sensitivitätsanalyse</h3>'+
    '<p>Jede Rechengröße wird einzeln variiert, während die übrigen unverändert bleiben.</p>'+
    '<div class="card"><div class="fig-h"><h4>Abbildung 5</h4>'+dlKnopf(5)+'</div><figure>'+

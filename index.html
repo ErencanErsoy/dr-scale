@@ -329,7 +329,7 @@ var SYMBOLE=[
  ["A","Vermiedener Vergütungsabschlag","Euro","recht","Betrag, den das Krankenhaus nicht als Abschlag zahlt, weil die Onlineterminvereinbarung besteht."],
  ["F","Fixblock","Euro","calc","Sammelbegriff für alle Beträge, die nicht am Terminvolumen hängen."],
  ["a","Anbindungskosten je Klinik","Euro","sek","Einmaliger Aufwand für eine weitere Einheit, die als Ganzes angeschlossen wird. Faellt unabhaengig von deren Terminzahl an."],
- ["m","Mindestgröße einer Klinik","Termine je Jahr","calc","Erstes Ergebnis. Ab dieser Größe trägt sich die Anbindung einer einzelnen Klinik."],
+ ["m","Mindestvolumen für eine weitere Anbindung","Termine je Jahr","calc","Erstes Ergebnis. Ab diesem Terminvolumen trägt eine Klinik den Aufwand ihrer eigenen Anbindung. Setzt ein laufendes Portal voraus, denn die bereits geleistete Investition bleibt außer Betracht."],
  ["B","Break-even des Portals","Termine je Jahr","calc","Zweites Ergebnis. Ab diesem angebundenen Volumen trägt sich die Gesamtinvestition."]
 ];
 
@@ -377,7 +377,7 @@ var QUELLEN=[
 ];
 
 var GRENZEN=[
- ["Zwei Rechengrößen ohne Quelle","Deckungsbeitrag und Zeitersparnis sind gesetzt. Für den Deckungsbeitrag gibt es einen Anker, für die Zeitersparnis keinen. Entfiele sie ganz, stiege die Mindestgröße um rund ein Drittel."],
+ ["Zwei Rechengrößen ohne Quelle","Deckungsbeitrag und Zeitersparnis sind gesetzt. Für den Deckungsbeitrag gibt es einen Anker, für die Zeitersparnis keinen. Entfiele sie ganz, stiege das Mindestvolumen um rund ein Drittel."],
  ["Kausalität nicht belegt","Der Unterschied der Terminausfallquoten ist gemessen. Dass die Onlinebuchung die Ursache ist, folgt daraus nicht."],
  ["Laufende Kosten fortgeschrieben","Die Quelle endet 2028. Der Wert für die Folgejahre ist eine Fortschreibung."],
  ["Nutzungskategorie ausgeklammert","Sie setzt die Erfüllung aller zehn Anforderungen des Aufnahmemanagements voraus und bleibt deshalb außer Betracht."],
@@ -778,7 +778,7 @@ function abbKlinik(r){
     s+='<line x1="'+fx(0)+'" y1="'+fy(0)+'" x2="'+fx(xe)+'" y2="'+fy(xe*z.N)+
        '" stroke="'+FARBE[nn]+'" stroke-width="2"'+linienart(z.stil)+'/>';
     if(z.m<=xmax) s+='<circle cx="'+fx(z.m)+'" cy="'+yk+'" r="3.6" fill="'+FARBE[nn]+'"/>';
-    ein.push({c:FARBE[nn],stil:z.stil,t:z.name,w:"Mindestgröße "+f0(z.m)+" Termine"});
+    ein.push({c:FARBE[nn],stil:z.stil,t:z.name,w:"Mindestvolumen "+f0(z.m)+" Termine"});
   });
   s+=legendeBand(ein,L,T+ph+B+2,iw);
   return s+'</svg>';
@@ -838,7 +838,7 @@ function abbTornado(rows,basis){
        '<text x="'+(x2+6)+'" y="'+(y+3.5)+'" font-size="10.5" fill="var(--muted)">'+f0(Math.max(x.a,x.b))+'</text>';
   });
   var yA=T+rows.length*rh+16;
-  s+='<text x="'+(X0+iw/2)+'" y="'+yA+'" text-anchor="middle" font-size="11" fill="var(--ink)">Mindestgröße einer Klinik in Terminen je Jahr</text>';
+  s+='<text x="'+(X0+iw/2)+'" y="'+yA+'" text-anchor="middle" font-size="11" fill="var(--ink)">Mindestvolumen für eine weitere Anbindung in Terminen je Jahr</text>';
   s+=legendeBand([{c:"var(--lit)",art:"flaeche",t:"Spanne bei Variation der Rechengröße"},
                   {c:"var(--ink)",stil:"dot",t:"Basisfall, alle Größen unverändert"}],L,yA+18,W-L-20);
   return s+'</svg>';
@@ -890,8 +890,8 @@ var ABB=[
   u:"Barwert des Nutzens einer Klinik nach ihrem Terminvolumen. Rechts des Schnittpunkts mit den Anbindungskosten trägt sich die Anbindung."},
  {nr:4,name:"abb4-buchungsanteil.svg",t:"Digitaler Buchungsanteil im Zeitverlauf",
   u:"Lineare Annäherung vom heutigen Wert an die Grenze des jeweiligen Szenarios."},
- {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität der Mindestgröße einer Klinik",
-  u:"Verschiebung der Mindestgröße bei Variation einzelner Rechengrößen, geordnet nach Wirkung."}
+ {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität des Mindestvolumens für eine weitere Anbindung",
+  u:"Verschiebung des Mindestvolumens bei Variation einzelner Rechengrößen, geordnet nach Wirkung."}
 ];
 function abbHolen(nr,r){
   if(nr===1) return abbKern(r);
@@ -915,7 +915,7 @@ function speichereWerte(){
   z.push("A Barwert vermiedener Abschlag;"+f2(r.bwA)+";Euro");
   z.push("Barwert laufende Kosten;"+f2(r.bwK)+";Euro");
   z.push("F Fixblock;"+f2(r.F)+";Euro");
-  z.push("");z.push("Szenario;Grenze in Prozent;N in Euro je Termin und Jahr;m Mindestgroesse;B Break-even");
+  z.push("");z.push("Szenario;Grenze in Prozent;N Barwert je Termin in Euro;m Mindestvolumen;B Break-even");
   r.sz.forEach(function(s){z.push(s.name+";"+f1(s.D*100)+";"+f2(s.N)+";"+f0(s.m)+";"+f0(s.B));});
   var txt=z.join("\r\n");
   anbieten("dr-scale-werte.csv",txt,"text/csv",function(){anbieten("dr-scale-werte.txt",txt,"text/plain",null);});
@@ -1023,7 +1023,7 @@ function baueModell(r){
    '<div class="tw"><table><thead><tr><th>Entscheidungsfrage</th><th>Ergebnisgröße</th>'+
    '<th>Ablesung</th></tr></thead><tbody>'+
    '<tr><td><b>Soll eine weitere Klinik angebunden werden?</b></td>'+
-   '<td>Mindestgröße m in Terminen je Jahr</td>'+
+   '<td>Mindestvolumen m in Terminen je Jahr</td>'+
    '<td>Kliniken oberhalb der Schwelle tragen ihre Anbindungskosten</td></tr>'+
    '<tr><td><b>Trägt sich die Gesamtinvestition?</b></td>'+
    '<td>Break-even B in Terminen je Jahr</td>'+
@@ -1162,7 +1162,7 @@ function baueModell(r){
    '<p>Das angebundene Terminvolumen V ist nicht bekannt. Das Modell kann deshalb keinen einzelnen '+
    'Eurobetrag nennen, sondern liefert zwei Schwellenwerte, an denen die Entscheidung kippt.</p>'+
    gl("m = a / N            B = F / N",
-      "Mindestgröße = Anbindungskosten je Klinik ÷ Barwert des Nutzens. Break-even = Fixblock ÷ Barwert des Nutzens. Beide in Terminen je Jahr.",1)+
+      "Mindestvolumen = Anbindungskosten je Klinik ÷ Barwert je Termin. Break-even = Fixblock ÷ Barwert je Termin. Beide in Terminen je Jahr.",1)+
    '<p>In m fehlt die Investitionssumme, weil sie unabhängig davon anfällt, ob eine weitere Klinik '+
    'angeschlossen wird. In B ist sie enthalten, weil dort die Gesamtinvestition beurteilt wird.</p>'+
    '<div class="tw"><table><thead><tr><th>Szenario</th><th class="num">N</th>'+
@@ -1198,14 +1198,14 @@ function baueModell(r){
 function baueErgebnis(r){
   var m=r.sz[1];
   var h='<h3 id="e1">1 Kernaussagen</h3><div class="grid3">'+
-   '<div class="kpi"><div class="l">Mindestgröße einer Klinik</div><div class="v">'+f0(m.m)+
-     '</div><div class="s">Termine je Jahr, etwa '+f0(m.m/250)+' je Werktag. Spanne '+f0(r.sz[2].m)+' bis '+f0(r.sz[0].m)+'</div></div>'+
+   '<div class="kpi"><div class="l">Mindestvolumen für eine weitere Anbindung</div><div class="v">'+f0(m.m)+
+     '</div><div class="s">Termine je Jahr, etwa '+f0(m.m/250)+' je Werktag. Ab hier trägt eine Klinik ihre eigene Anbindung. Spanne '+f0(r.sz[2].m)+' bis '+f0(r.sz[0].m)+'</div></div>'+
    '<div class="kpi"><div class="l">Break-even des Portals</div><div class="v">'+f0(m.B)+
      '</div><div class="s">angebundene Termine je Jahr'+(r.p.T>0?', also '+pz(m.B/r.p.T*100)+' des Volumens':'')+'</div></div>'+
-   '<div class="kpi"><div class="l">Barwert des Nutzens N</div><div class="v">'+f2(m.N)+'</div>'+
-     '<div class="s">Euro je Termin und Jahr über '+r.H+' Jahre. Ein einzelner Termin: '+f2(r.n)+' Euro</div></div>'+
+   '<div class="kpi"><div class="l">Barwert je Termin des Jahresvolumens</div><div class="v">'+f2(m.N)+'</div>'+
+     '<div class="s">Euro. So viel ist ein Termin heute wert, der in jedem der '+r.H+' Jahre anfällt. Ein einzelner umgestellter Termin bringt '+f2(r.n)+' Euro, davon wird nur der online gebuchte Anteil wirksam.</div></div>'+
    '<div class="kpi"><div class="l">Fixblock F</div><div class="v">'+mio(r.F)+'</div>'+
-     '<div class="s">Investition und Betrieb, vermindert um den vermiedenen Abschlag</div></div></div>';
+     '<div class="s">Alles, was nicht am Terminvolumen hängt: Investition und laufender Betrieb, vermindert um den Vergütungsabschlag, der durch die Bereitstellung vermieden wird.</div></div></div>';
   h+='<h3 id="e2">2 Deutung der eingestellten Werte</h3>';
   deutung(r).forEach(function(d){h+='<div class="deut"><b>'+esc(d[0])+'.</b> '+esc(d[1])+'</div>';});
   h+='<h3 id="e3">3 Kapitalwert</h3>'+
@@ -1246,7 +1246,7 @@ function baueErgebnis(r){
     h+='<tr><td><b>'+esc(x.n)+'</b></td><td>'+esc(x.v||'')+'</td><td class="num">'+f0(Math.min(x.a,x.b))+
       '</td><td class="num">'+f0(Math.max(x.a,x.b))+'</td><td class="num"><b>'+f0(Math.abs(x.a-x.b))+'</b></td></tr>';
   });
-  h+='</tbody></table></div><p class="src" style="margin-top:-4px">Angaben als Mindestgröße einer Klinik in Terminen je Jahr.</p>';
+  h+='</tbody></table></div><p class="src" style="margin-top:-4px">Angaben als Mindestvolumen für eine weitere Anbindung, in Terminen je Jahr.</p>';
   document.getElementById("ergebnis").innerHTML=h;
 }
 

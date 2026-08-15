@@ -388,6 +388,10 @@ var GRENZEN=[
 
 /* ============ Rechengrößen ============ */
 var FELDER=[
+ {id:"items",erw:true,g:"Optionale Positionen",l:"Zugerechnete Verfügbarkeitsanforderungen",e:"von 19",min:1,max:19,step:1,t:"recht",
+  q:"Wie viele der 19 Muss-Anforderungen des Fördertatbestands 2 das Portal erfüllt. Das Erhebungsinstrument bewertet sie zu gleichen Teilen, jede erfüllte vermeidet ein Neunzehntel des Gewichts. Eins entspricht der Online-Terminvereinbarung, dem Gegenstand des Modells."},
+ {id:"nutzenJ",erw:true,g:"Optionale Positionen",l:"Weiterer Nutzen je Jahr",e:"Euro je Jahr",min:0,max:5000000,step:1000,t:"ann",
+  q:"Jährlicher Nutzen weiterer Portalfunktionen, der nicht am Terminvolumen hängt, etwa aus dem Behandlungs- oder Entlassmanagement. Mindert den Fixblock."},
  {id:"entgelt",erw:true,g:"Optionale Positionen",l:"Entgelt je Onlinebuchung",e:"Euro",min:0,max:20,step:0.1,t:"ann",
   q:"Transaktionsabhängiges Entgelt, das mit jeder Onlinebuchung anfällt. Mindert den Nutzen je Termin. Im betrachteten Fall nicht dokumentiert, deshalb null."},
  {id:"anbStd",erw:true,g:"Optionale Positionen",l:"Interner Einrichtungsaufwand je Einheit",e:"Stunden",min:0,max:400,step:1,t:"ann",
@@ -435,7 +439,7 @@ var FELDER=[
 ];
 
 var MUSTER={I0:2000000,ANB:30000,K:100000,KAB:2029,dIst:20,dZiel:30,rOff:15,rOn:10,
-            b:100,tmin:4,c:40.9,foerder:0,entgelt:0,anbStd:0,schulStd:0,anbSonst:0,kZusatz:0,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
+            b:100,tmin:4,c:40.9,foerder:0,items:1,nutzenJ:0,entgelt:0,anbStd:0,schulStd:0,anbSonst:0,kZusatz:0,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
             IMPL:1170000,NK:39,name:"Musterkrankenhaus"};
 var NUTZLAST="ANCAMmKBKpuZZYzP4lOJPNHOtS/nKbON6jct5Q5VExmQRUI8qGcjtDqswIZom8HT+9QSYSzT5JfHwYIWy2nBXbfVPlUN86YQE9KNLPSsJKeeS3H+WY+MswIZptqJFR++U8Mcwoptphv6xajdi6BAOFqfDVk7XisR7EHhD0klt+5waRkrVMhBzvho7RXQCsWnWErbO0Oj2E4r1cl0GQWHw8Khl+Dt2sMqHeCx/VJ8jrz9OU4W68MXRaG+PztOK1fgeNcTTAGgd0cOFwqFA9KGK2rbGg96//PV2wRNzLtD+EXZZdNsoeW7cnu2IVhOUQgvzHTpiZN+87LYONL4zPfpLD3nFiWtCIYTJL30HB4K/RigHDbKGWngQrMFvqdo7/yX0UGYiDfcEbJoMmD2fUXpKy6ZhTWs102YoAJVl7lpbVpMWxc4G6o63QViQ/pG";
 var GELADEN=null, QUELLE="muster", M=Object.assign({},MUSTER);
@@ -448,18 +452,18 @@ function calc(ov){
   /* Anbindungskosten als Summe aller Positionen je Einheit, interner Aufwand ueber den Personalkostensatz */
   var ANB=p.ANB+((p.anbStd||0)+(p.schulStd||0))*p.c+(p.anbSonst||0);
   var dIst=p.dIst/100;
-  var jahre=[],bwA=0,bwK=0,bwN1=0;
+  var jahre=[],bwA=0,bwK=0,bwN1=0,bwNZ=0;
   for(var j=1;j<=H;j++){
     var jahr=st+j-1,disk=Math.pow(1+i,j);
     var gi=Math.min(Math.max(jahr-GKV_START,0),GKV_VERLUST.length-1);
     var g=p.gkv? GKV_VERLUST[gi]/GKV_BASIS:0;
     var wv=FTB2[jahr]?FTB2[jahr].v:0, wn=FTB2[jahr]?FTB2[jahr].n:0;
-    var A=(wv/N_VERF)*p.E*(1-g), K=(jahr>=p.KAB?p.K:0)+(p.kZusatz||0), N1=(wn/N_NUTZ)*p.E*(1-g);
-    bwA+=A/disk; bwK+=K/disk; bwN1+=N1/disk;
+    var A=(wv/N_VERF*(p.items||1))*p.E*(1-g), K=(jahr>=p.KAB?p.K:0)+(p.kZusatz||0), N1=(wn/N_NUTZ)*p.E*(1-g);
+    bwA+=A/disk; bwK+=K/disk; bwN1+=N1/disk; bwNZ+=(p.nutzenJ||0)/disk;
     jahre.push({j:j,jahr:jahr,disk:disk,gkv:g,gew:wv,A:A,ABW:A/disk,K:K,KBW:K/disk});
   }
   var I0Eigen=p.I0*(1-(p.foerder||0)/100);
-  var F=I0Eigen+bwK-bwA;
+  var F=I0Eigen+bwK-bwA-bwNZ;
   var defs=[
    {name:"Geringer digitaler Buchungsanteil",D:dIst,hk:"sek",stil:"solid",
     was:"Der digitale Buchungsanteil bleibt auf dem heute gemessenen Wert. Ohne Modellannahme."},
@@ -785,7 +789,7 @@ function abbKapital(r){
     s+='<line x1="'+fx(0)+'" y1="'+fy(-r.F)+'" x2="'+fx(xmax)+'" y2="'+fy(xmax*z.N-r.F)+
        '" stroke="'+FARBE[nn]+'" stroke-width="2"'+linienart(z.stil)+'/>';
     if(z.B<=xmax&&z.B>=0) s+='<circle cx="'+fx(z.B)+'" cy="'+fy(0)+'" r="3.6" fill="'+FARBE[nn]+'"/>';
-    ein.push({c:FARBE[nn],stil:z.stil,t:z.name,w:"Break-even "+f0(z.B)+" Termine"});
+    ein.push({c:FARBE[nn],stil:z.stil,t:z.name,w:r.F<=0?"Fixblock gedeckt":"Break-even "+f0(z.B)+" Termine"});
   });
   s+=legendeBand(ein,L,T+ph+B+2,iw);
   return s+'</svg>';
@@ -1000,7 +1004,8 @@ function deutung(r){
   d.push(["Entscheidungsregel","Die Anbindung einer Klinik trägt sich ab "+f0(m.m)+
    " Terminen je Jahr, also etwa "+f0(m.m/250)+" Terminen je Werktag. Über die drei Szenarien liegt die Schwelle zwischen "+
    f0(hoch.m)+" und "+f0(ver.m)+" Terminen."]);
-  if(r.p.T>0) d.push(["Größenordnung","Das Portal trägt sich ab "+f0(m.B)+
+  if(r.F<=0) d.push(["Fixblock bereits gedeckt","Der Barwert des vermiedenen Abschlags übersteigt Investition und laufende Kosten. Das Portal trägt sich unabhängig vom angebundenen Terminvolumen. Für die Frage, welche Einheit anzubinden ist, bleibt das Mindestvolumen maßgeblich."]);
+  if(r.F>0&&r.p.T>0) d.push(["Größenordnung","Das Portal trägt sich ab "+f0(m.B)+
    " angebundenen Terminen je Jahr. Das sind "+pz(m.B/r.p.T*100)+" des gesamten ambulanten Terminvolumens."]);
   d.push(["Regulatorischer Anteil","Der vermiedene Vergütungsabschlag deckt "+
    pz(r.bwA/(r.p.I0+r.bwK)*100)+" der Investition und der laufenden Kosten. Der Fixblock beträgt "+mio(r.F)+"."]);
@@ -1218,8 +1223,8 @@ function baueModell(r){
    '<th class="num">Anteil am Volumen</th></tr></thead><tbody>';
   r.sz.forEach(function(z){
     h+='<tr><td><b>'+esc(z.name)+'</b></td><td class="num">'+f2(z.N)+'</td><td class="num"><b>'+
-      f0(z.m)+'</b></td><td class="num">'+f0(z.B)+'</td><td class="num">'+
-      (r.p.T>0? f1(z.B/r.p.T*100) : "—")+'</td></tr>';
+      f0(z.m)+'</b></td><td class="num">'+(r.F<=0?"—":f0(z.B))+'</td><td class="num">'+
+      (r.F>0&&r.p.T>0? f1(z.B/r.p.T*100) : "—")+'</td></tr>';
   });
   h+='</tbody></table></div><p class="src" style="margin-top:-4px">N in Euro je Termin und Jahr, '+
    'Anteil in Prozent.</p>';
@@ -1248,8 +1253,9 @@ function baueErgebnis(r){
   var h='<h3 id="e1">1 Kernaussagen</h3><div class="grid3">'+
    '<div class="kpi"><div class="l">Mindestvolumen für eine weitere Anbindung</div><div class="v">'+f0(m.m)+
      '</div><div class="s">Termine je Jahr, etwa '+f0(m.m/250)+' je Werktag. Ab hier trägt eine Klinik ihre eigene Anbindung. Spanne '+f0(r.sz[2].m)+' bis '+f0(r.sz[0].m)+'</div></div>'+
-   '<div class="kpi"><div class="l">Break-even des Portals</div><div class="v">'+f0(m.B)+
-     '</div><div class="s">angebundene Termine je Jahr'+(r.p.T>0?', also '+pz(m.B/r.p.T*100)+' des Volumens':'')+'</div></div>'+
+   '<div class="kpi"><div class="l">Break-even des Portals</div><div class="v">'+(r.F<=0?"0":f0(m.B))+
+     '</div><div class="s">'+(r.F<=0? "Der vermiedene Abschlag deckt den Fixblock bereits vollständig. Das Portal trägt sich bei jedem Volumen."
+      : 'angebundene Termine je Jahr'+(r.p.T>0?', also '+pz(m.B/r.p.T*100)+' des Volumens':''))+'</div></div>'+
    '<div class="kpi"><div class="l">Barwert je Termin des Jahresvolumens</div><div class="v">'+f2(m.N)+'</div>'+
      '<div class="s">Euro. So viel ist ein Termin heute wert, der in jedem der '+r.H+' Jahre anfällt. Ein einzelner umgestellter Termin bringt '+f2(r.n)+' Euro, davon wird nur der online gebuchte Anteil wirksam.</div></div>'+
    '<div class="kpi"><div class="l">Amortisation des Gesamtvorhabens</div><div class="v">'+
@@ -1381,6 +1387,10 @@ function druckseite(){
               sagen("Datei bereitgestellt. Öffnen und als PDF speichern."); }
   },60);
 }
+
+/* ============ Anzeige des Break-even ============ */
+/* Nur ausweisen, wenn der Fixblock ueberhaupt zu decken ist */
+function beText(r,B){ return r.F<=0? "durch den vermiedenen Abschlag gedeckt" : f0(B)+" Termine je Jahr"; }
 
 /* ============ Amortisationsdauer ============ */
 /* Kumulierter Barwert des Nutzens je Termin bis zum Jahr tau */

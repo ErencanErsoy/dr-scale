@@ -5,90 +5,125 @@ Krankenhäuser.
 
 **→ [erencanersoy.github.io/dr-scale](https://erencanersoy.github.io/dr-scale/)**
 
-## Was das Werkzeug leistet
+## Forschungszweck
 
-Dr. Scale beantwortet zwei Entscheidungsfragen, beide mit einer Zahl in Terminen je Jahr.
+Das Werkzeug setzt ein Bewertungsmodell um, das im Rahmen einer Masterarbeit zur Wirtschaftlichkeit
+digitaler Terminmanagementportale entwickelt wurde. Es beantwortet, unter welchen wirtschaftlichen
+Bedingungen sich die Anbindung einzelner organisatorischer Einheiten und die Gesamtinvestition aus
+Sicht des Krankenhausträgers tragen.
 
-| Entscheidungsfrage | Ergebnisgröße |
+Nicht beantwortet wird, welcher Anbieter zu wählen ist, ob ein Produkt anderen überlegen ist oder ob
+die staatliche Förderung gesamtwirtschaftlich wirksam ist. Bewertet werden ausschließlich Zahlungen
+des Trägers. Das Überschreiten einer wirtschaftlichen Schwelle ist eine notwendige, keine
+hinreichende Bedingung für eine Anbindung: Organisatorische Umsetzbarkeit und strategische
+Priorisierung treten hinzu.
+
+## Ergebnisgrößen
+
+| Größe | Frage | Einheit |
+|---|---|---|
+| Mindestvolumen `m` | Ab welchem Terminvolumen trägt eine weitere Einheit ihre Anbindung? | Termine je Jahr |
+| Break-even `B` | Ab welchem insgesamt angebundenen Volumen trägt sich das Portal? | Termine je Jahr |
+| Amortisationsdauer `T` | Nach welcher Zeit ist die Zahlung gedeckt? | Jahre |
+
+Die ersten beiden kommen ohne Kenntnis des angebundenen Volumens aus. Die dritte setzt es voraus und
+ist deshalb immer zusammen mit dem unterstellten Volumen zu lesen.
+
+## Modelllogik
+
+Alle Zahlungen werden danach eingeordnet, **mit welcher Größe sie wachsen**. Diese Einteilung ist
+vollständig, weil jede Zahlung genau eine Bezugsgröße hat.
+
+| Bezugsgröße | Eingang | Positionen |
+|---|---|---|
+| je umgestelltem Termin | Nutzen `n` | vermiedener Terminausfall, eingesparte Verwaltungszeit, Entgelt je Onlinebuchung |
+| je angebundener Einheit | Anbindungskosten `a` | Einrichtung durch Anbieter oder in Eigenregie, Schulung, Anbindung an Vorsysteme, Test und Abnahme |
+| unabhängig von beidem | Fixblock `F` | Investition, Wartung und Lizenzen, Schnittstellenpflege, Betrieb, vermiedener Vergütungsabschlag |
+
+Positionen, die als Arbeitszeit anfallen, werden über Stunden und den Personalkostensatz bewertet,
+nicht über einen Kostenwert. Dieselbe Leistung kann je nach Zahlungsweise in verschiedenen Klassen
+liegen; maßgeblich ist die Zahlungsweise, nicht die Bezeichnung.
+
+## Formeln
+
+```
+n     = (r_off − r_on)/100 · b  +  t/60 · c  −  k     Nutzen je umgestelltem Termin
+d_j   = d_0 + (d_H − d_0) · j/H                       Zeitpfad, lineare Interpolation
+N(τ)  = Σ_{j≤τ} n · d_j / (1+i)^j                     kumulierter Barwert je Termin
+A_j   = g_j / 19 · E                                  vermiedener Vergütungsabschlag
+F     = I₀ · (1−f) + Σ K/(1+i)^j − Σ A_j/(1+i)^j      Fixblock
+KW(V) = V · N − F                                     Kapitalwert als Gerade
+m     = a / N        B = F / N        T = min{τ | V · N(τ) ≥ Zahlung}
+```
+
+Der lineare Zeitpfad ist eine Interpolation zwischen dem gemessenen Ausgangswert und der angenommenen
+Sättigungsgrenze, kein beobachteter Adoptionsverlauf.
+
+## Eingaben
+
+Die Seitenleiste zeigt voreingestellt **16 Felder**, die dem Modell der Arbeit entsprechen.
+
+| Gruppe | Felder |
 |---|---|
-| Soll eine weitere Klinik an das Portal angebunden werden? | Mindestgröße einer Klinik |
-| Trägt sich die Gesamtinvestition? | Break-even des Portals |
+| Wirkung je Termin | No-Show-Rate mit und ohne Onlinebuchung, Deckungsbeitrag, Zeitersparnis, Personalkostensatz |
+| Digitaler Buchungsanteil | heutiger Wert, Zielwert des Hauses |
+| Investition und Kosten | Investitionssumme, Anbindungskosten je Einheit, laufende Kosten, erstes Jahr mit laufenden Kosten |
+| Erlöse und Zeitraum | stationäre Erlöse, ambulante Termine, erstes Betrachtungsjahr, Zeitraum, Kalkulationszinssatz |
 
-Weil beide Antworten in Terminen je Jahr stehen, lassen sie sich unmittelbar an der eigenen
-Terminliste prüfen. Szenarien zeigen, wie stark die Antwort vom künftigen digitalen
-Buchungsanteil abhängt. Eine Sensitivitätsanalyse zeigt, welche Rechengröße die Schwelle am
-stärksten verschiebt und wo sich genauere Daten am ehesten lohnen.
+Über den Schalter **Erweiterte Eingaben** kommen sechs weitere hinzu: durch Fördermittel gedeckter
+Anteil, Entgelt je Onlinebuchung, interner Einrichtungsaufwand, Schulungsaufwand, weitere Kosten je
+Einheit, weitere laufende Kosten. Alle sind mit null vorbelegt und verändern das Ergebnis nicht,
+solange sie ausgeblendet bleiben. Wer nur die Basisansicht ausfüllt, rechnet genau das Modell der
+Arbeit.
 
-## Rechenkern
+Zusätzlich lässt sich eine **Liste organisatorischer Einheiten** erfassen, je Zeile Name,
+Terminvolumen und Anbindungsjahr. Sie zeigt je Einheit das für ihren Anbindungszeitpunkt geltende
+Mindestvolumen, den Beitrag zum Kapitalwert und die Amortisationsdauer. Der Anbindungszeitpunkt wirkt
+erheblich, weil eine später angebundene Einheit nur die verbleibenden Jahre des Betrachtungszeitraums
+nutzt.
 
-Bewertet wird nach der Kapitalwertmethode, die die Ausführungsvorschrift zu § 7 der
-Landeshaushaltsordnung vorschreibt. Alle Zahlungen werden in zwei Gruppen geteilt. Was mit dem
-angebundenen Terminvolumen wächst, steht in `N`. Was unabhängig davon anfällt, steht im
-Fixblock `F`.
+## Herkunft der Werte
 
-```
-KW(V) = V × N − F
-```
+Sechs Herkunftsarten werden durchgehend farblich unterschieden: Literatur, Rechtsgrundlage,
+Sekundärdaten, Annahme, Festlegung und im Modell Berechnetes. Jeder Wert nennt an Ort und Stelle
+seine Herkunft und seine Rechnung.
 
-Der Nutzen je umgestelltem Termin ergibt sich aus dem vermiedenen Terminausfall, der
-eingesparten Verwaltungszeit und den variablen Kosten je Onlinebuchung.
+Voreingestellt ist ein Musterkrankenhaus mit gerundeten Werten ohne empirischen Anspruch. Alle als
+einrichtungsspezifisch gekennzeichneten Größen muss jedes Haus selbst erheben.
 
-```
-n   = (r_off − r_on) / 100 × b  +  t / 60 × c  −  k
-d_j = d_0 + (d_H − d_0) × j / H
-N   = Σ n × d_j / (1 + i)^j
-F   = I₀ + Σ K / (1 + i)^j − Σ A_j / (1 + i)^j
-```
+## Annahmen
 
-Beide Ergebnisgrößen sind Ablesungen an derselben Geraden.
+Die drei Größen der Nutzenseite sind unterschiedlich gut belegt. Die No-Show-Raten sind gemessen, der
+Personalkostensatz folgt einer amtlichen Tabelle, der Deckungsbeitrag ist eine Annahme mit
+Größenordnungsanker. Die Zeitersparnis hat keinen Anker und gilt nur für Vorgänge, die durch die
+Onlinebuchung tatsächlich ersetzt werden. Die Ergebnisse werden deshalb durchgehend auch ohne sie
+ausgewiesen.
 
-```
-m = a / N        Mindestgröße einer Klinik in Terminen je Jahr
-B = F / N        Break-even des Portals in Terminen je Jahr
-```
-
-Der vermiedene Vergütungsabschlag `A_j` folgt aus der Digitalisierungsabschlagsvereinbarung
-nach § 5 Abs. 3h KHEntgG. Dem digitalen Terminmanagement ist genau eine von 19 gleich
-gewichteten Muss-Anforderungen des Fördertatbestands 2 zuzuordnen.
-
-## Aufbau
-
-Das Modell trennt streng zwischen dem allgemeinen Teil und den Werten des betrachteten Hauses.
-Der allgemeine Teil stammt aus Rechtsgrundlage und Literatur und gilt für jedes Krankenhaus in
-Deutschland. Sechs Herkunftsarten werden unterschieden und durchgehend farblich gekennzeichnet:
-Literatur, Rechtsgrundlage, Sekundärdaten, Annahme, Festlegung und im Modell Berechnetes.
-
-Voreingestellt ist ein Musterkrankenhaus mit frei gewählten, gerundeten Werten ohne empirischen
-Anspruch. Alle als *Zu erheben* gekennzeichneten Größen muss jedes Haus selbst ermitteln.
-
-Jede Gleichung wird zusätzlich beschreibend erläutert, jeder Wert nennt Herkunft und Beleg.
-Zitiert wird nach APA 7.
-
-## Anwendungsbeispiel
-
-Die Werte eines Anwendungsbeispiels sind mit AES-256-GCM verschlüsselt hinterlegt. Der Schlüssel
-wird über PBKDF2-HMAC-SHA256 mit 250.000 Runden aus einem Passwort abgeleitet, die
-Entschlüsselung erfolgt ausschließlich im Browser über die Web-Crypto-Schnittstelle. Ohne
-Passwort sind diese Werte auch im Quelltext nicht lesbar. Das allgemeine Modell ist ohne
-Passwort vollständig zugänglich.
+Der Zusammenhang zwischen Onlinebuchung und geringerem Terminausfall ist gemessen, ein ursächlicher
+Zusammenhang ist nicht belegt.
 
 ## Ausgabe
 
-Fünf Abbildungen in wissenschaftlicher Darstellung lassen sich als Vektorgrafik speichern, bei
-Bedarf als PNG. Linienarten sind so gewählt, dass die Abbildungen auch im Schwarzweißdruck
-unterscheidbar bleiben. Jeder Reiter lässt sich zusätzlich über den Druckdialog als PDF ausgeben.
+Fünf Abbildungen in wissenschaftlicher Darstellung lassen sich als Vektorgrafik speichern, bei Bedarf
+als PNG. Linienarten sind so gewählt, dass die Abbildungen auch im Schwarzweißdruck unterscheidbar
+bleiben. Jeder Reiter lässt sich zusätzlich über den Druckdialog als PDF ausgeben.
+
+## Anwendungsbeispiel
+
+Die Werte eines Anwendungsbeispiels sind mit AES-256-GCM verschlüsselt hinterlegt. Der Schlüssel wird
+über PBKDF2-HMAC-SHA256 mit 250.000 Runden aus einem Passwort abgeleitet, die Entschlüsselung erfolgt
+ausschließlich im Browser über die Web-Crypto-Schnittstelle. Ohne Passwort sind diese Werte auch im
+Quelltext nicht lesbar. Das allgemeine Modell ist ohne Passwort vollständig zugänglich.
 
 ## Technisches
 
-Eine einzelne, in sich geschlossene HTML-Datei ohne externe Abhängigkeiten. Keine Bibliothek,
-keine Schriftart und kein Bild wird nachgeladen. Diagramme werden als SVG erzeugt.
+Eine einzelne, in sich geschlossene HTML-Datei ohne externe Abhängigkeiten. Keine Bibliothek, keine
+Schriftart und kein Bild wird nachgeladen. Diagramme werden als SVG erzeugt.
 
 ## Hinweis
 
 Modellhafte Beispielrechnung unter offengelegten Annahmen. Sie dient der Vorbereitung einer
 Entscheidung und ersetzt keine Wirtschaftlichkeitsberechnung nach haushaltsrechtlichen Vorgaben.
-Drei Rechengrößen sind Annahmen ohne Quelle. Der Zusammenhang zwischen Onlinebuchung und
-geringerem Terminausfall ist gemessen, ein ursächlicher Zusammenhang ist nicht belegt.
 
 ---
 

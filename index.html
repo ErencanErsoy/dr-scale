@@ -1261,6 +1261,13 @@ function baueErgebnis(r){
       '</td><td class="num">'+f0(Math.max(x.a,x.b))+'</td><td class="num"><b>'+f0(Math.abs(x.a-x.b))+'</b></td></tr>';
   });
   h+='</tbody></table></div><p class="src" style="margin-top:-4px">Angaben als Mindestvolumen für eine weitere Anbindung, in Terminen je Jahr.</p>';
+  h+='<h3 id="e7">7 Einheiten des eigenen Hauses</h3>'+
+   '<p>Diese Auswertung gehört nicht zum Kern des Modells, sondern wendet ihn auf die eigene Struktur an. '+
+   'Sie verlangt Angaben, die nur das jeweilige Haus besitzt, und ist deshalb optional.</p>'+
+   '<textarea id="einheiten" rows="6" spellcheck="false" style="width:100%;font-family:inherit;font-size:13px;'+
+   'padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--feld);color:var(--ink)" '+
+   'placeholder="Hochschulambulanz Kardiologie; 4200; 2027&#10;Tinnituszentrum; 1100; 2028">'+esc(EINHEITEN)+'</textarea>'+
+   einheitenTabelle(r);
   document.getElementById("ergebnis").innerHTML=h;
 }
 
@@ -1333,6 +1340,53 @@ function druckseite(){
   },60);
 }
 
+/* ============ Einheitenliste ============ */
+var EINHEITEN="";
+function einheitenLesen(txt){
+  var aus=[],zeilen=txt.split(/\r?\n/),i;
+  for(i=0;i<zeilen.length;i++){
+    var z=zeilen[i].trim();
+    if(!z) continue;
+    var f=z.split(/[;\t]/);
+    var name=(f[0]||"").trim();
+    var vol=parseFloat((f[1]||"").replace(/\./g,"").replace(",","."));
+    var jahr=parseInt((f[2]||"").trim(),10);
+    if(!name||!isFinite(vol)) continue;
+    aus.push({name:name,V:vol,jahr:isFinite(jahr)?jahr:null});
+  }
+  return aus;
+}
+/* Barwert je Termin fuer eine Einheit, die erst ab Jahr start angebunden ist */
+function barwertAb(r,z,start){
+  var s=0,j;
+  for(j=start;j<=r.H;j++) s+=r.n*z.path[j-1]/r.jahre[j-1].disk;
+  return s;
+}
+function einheitenTabelle(r){
+  var liste=einheitenLesen(EINHEITEN);
+  var kopf='<div class="tw"><table><thead><tr><th>Einheit</th><th class="num">Termine je Jahr</th>'+
+    '<th class="num">Anbindung ab</th><th class="num">Mindestvolumen</th><th class="num">Beitrag zum Kapitalwert</th>'+
+    '<th>Trägt sich</th></tr></thead><tbody>';
+  if(!liste.length)
+    return '<p class="src">Noch keine Einheiten erfasst. Eine Zeile je Einheit, Felder durch Semikolon getrennt: '+
+           'Name; Termine je Jahr; Jahr der Anbindung. Das Jahr darf fehlen, dann wird '+r.p.start+' angenommen.</p>';
+  var z=r.sz[1],ges=0,zeilen="";
+  liste.forEach(function(e){
+    var start=e.jahr? Math.min(Math.max(e.jahr-r.p.start+1,1),r.H):1;
+    var N=barwertAb(r,z,start), m=N>0? r.ANB/N : Infinity, beitrag=e.V*N-r.ANB;
+    ges+=beitrag;
+    zeilen+='<tr><td>'+esc(e.name)+'</td><td class="num">'+f0(e.V)+'</td><td class="num">'+
+      (r.p.start+start-1)+'</td><td class="num">'+(isFinite(m)?f0(m):"–")+'</td><td class="num">'+
+      eur0(beitrag)+'</td><td>'+(beitrag>=0?"ja":"nein")+'</td></tr>';
+  });
+  var deckung=ges-r.F;
+  return kopf+zeilen+'</tbody></table></div>'+
+    '<div class="note"><b>Summe.</b> Die erfassten Einheiten tragen zusammen '+eur0(ges)+
+    ' zum Kapitalwert bei. Dem steht der Fixblock von '+eur0(r.F)+' gegenüber, sodass der Kapitalwert '+
+    eur0(deckung)+' beträgt. '+(deckung>=0?'Das Portal trägt sich mit diesen Einheiten.':
+    'Es fehlen noch '+eur0(-deckung)+', also weiteres angebundenes Terminvolumen.')+'</div>';
+}
+
 /* ============ Rendern ============ */
 function baueWarnung(r){
   var el=document.getElementById("warnung"),w=[];
@@ -1344,6 +1398,15 @@ function render(){
   var r=calc();
   baueModell(r);baueErgebnis(r);baueAbb(r);baueWarnung(r);
 }
+document.addEventListener("input",function(e){
+  if(e.target&&e.target.id==="einheiten"){
+    EINHEITEN=e.target.value;
+    var stelle=e.target.selectionStart;
+    baueErgebnis(calc());
+    var neu=document.getElementById("einheiten");
+    if(neu){ neu.value=EINHEITEN; neu.focus(); try{neu.setSelectionRange(stelle,stelle);}catch(x){} }
+  }
+});
 document.addEventListener("click",function(e){
   var b=e.target.closest?e.target.closest("button.dl[data-abb]"):null;
   if(b) speichereAbb(+b.getAttribute("data-abb"));

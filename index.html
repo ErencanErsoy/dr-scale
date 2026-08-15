@@ -388,19 +388,19 @@ var GRENZEN=[
 
 /* ============ Rechengrößen ============ */
 var FELDER=[
- {id:"entgelt",g:"Optionale Positionen",l:"Entgelt je Onlinebuchung",e:"Euro",min:0,max:20,step:0.1,t:"ann",
+ {id:"entgelt",erw:true,g:"Optionale Positionen",l:"Entgelt je Onlinebuchung",e:"Euro",min:0,max:20,step:0.1,t:"ann",
   q:"Transaktionsabhängiges Entgelt, das mit jeder Onlinebuchung anfällt. Mindert den Nutzen je Termin. Im betrachteten Fall nicht dokumentiert, deshalb null."},
- {id:"anbStd",g:"Optionale Positionen",l:"Interner Einrichtungsaufwand je Einheit",e:"Stunden",min:0,max:400,step:1,t:"ann",
+ {id:"anbStd",erw:true,g:"Optionale Positionen",l:"Interner Einrichtungsaufwand je Einheit",e:"Stunden",min:0,max:400,step:1,t:"ann",
   q:"Eigene Arbeitszeit für die Einrichtung einer Einheit, falls diese nicht vom Anbieter übernommen wird. Wird mit dem Personalkostensatz bewertet."},
- {id:"schulStd",g:"Optionale Positionen",l:"Schulungsaufwand je Einheit",e:"Stunden",min:0,max:400,step:1,t:"ann",
+ {id:"schulStd",erw:true,g:"Optionale Positionen",l:"Schulungsaufwand je Einheit",e:"Stunden",min:0,max:400,step:1,t:"ann",
   q:"Summe der Schulungszeit aller Anwender einer Einheit. Wird mit dem Personalkostensatz bewertet."},
- {id:"anbSonst",g:"Optionale Positionen",l:"Weitere Kosten je Einheit",e:"Euro",min:0,max:200000,step:100,t:"ann",
+ {id:"anbSonst",erw:true,g:"Optionale Positionen",l:"Weitere Kosten je Einheit",e:"Euro",min:0,max:200000,step:100,t:"ann",
   q:"Anbindung an Vorsysteme, Test und Abnahme sowie sonstige Positionen, die je angebundener Einheit anfallen."},
- {id:"kZusatz",g:"Optionale Positionen",l:"Weitere laufende Kosten",e:"Euro je Jahr",min:0,max:2000000,step:1000,t:"ann",
+ {id:"kZusatz",erw:true,g:"Optionale Positionen",l:"Weitere laufende Kosten",e:"Euro je Jahr",min:0,max:2000000,step:1000,t:"ann",
   q:"Pflege der Schnittstellen, Betrieb und Unterstützung sowie sonstige jährliche Positionen, die unabhängig vom Terminvolumen anfallen."},
  {id:"I0",g:"Investition und Kosten",l:"Investitionssumme",e:"Euro",min:0,max:12000000,step:1000,t:"sek",
   q:"Bereits getätigt, daher versunken. Bruttogröße, der geförderte Anteil wird gesondert erfasst."},
- {id:"foerder",g:"Investition und Kosten",l:"Davon durch Fördermittel gedeckt",e:"Prozent",min:0,max:100,step:1,t:"ann",
+ {id:"foerder",erw:true,g:"Investition und Kosten",l:"Davon durch Fördermittel gedeckt",e:"Prozent",min:0,max:100,step:1,t:"ann",
   q:"Anteil der Investitionssumme, der nicht vom Träger selbst getragen wird. Auf die Investitionssumme bezogen, nicht auf die förderfähigen Kosten. Ohne Förderbescheid null setzen, dann rechnet das Modell mit Bruttokosten."},
  {id:"ANB",g:"Investition und Kosten",l:"Anbindungskosten je organisatorischer Einheit",e:"Euro",min:0,max:120000,step:250,t:"sek",
   q:"Implementierungssumme geteilt durch die Zahl angebundener Kliniken. Obergrenze, da einmaliger Plattformaufwand enthalten."},
@@ -528,15 +528,30 @@ function zeige(k){
 }
 
 /* ============ Seitenleiste ============ */
+var ERWEITERT=false;
+function modusSetzen(an){
+  ERWEITERT=!!an;
+  var k=document.querySelectorAll?document.querySelectorAll(".erw"):[];
+  for(var i=0;i<k.length;i++) k[i].style.display=ERWEITERT?"":"none";
+}
 var STEUER={};
 (function(){
   var host=document.getElementById("sidebar"),grp=[];
+  var schalter=document.createElement("div");
+  schalter.className="grp";
+  schalter.innerHTML='<h4>Umfang der Eingaben</h4><div class="ctl"><div class="top">'+
+    '<label for="n-modus">Erweiterte Eingaben</label><select id="n-modus">'+
+    '<option value="0">ausblenden</option><option value="1">anzeigen</option></select></div>'+
+    '<div class="qz">Die Basisansicht zeigt die Größen des in der Arbeit entwickelten Modells. '+
+    'Die erweiterten Eingaben verfeinern es um Positionen, die je nach Haus anfallen, und sind mit null vorbelegt.</div></div>';
+  host.appendChild(schalter);
   FELDER.forEach(function(f){if(grp.indexOf(f.g)<0)grp.push(f.g);});
+  grp.sort(function(x,y){return (x==="Optionale Positionen"?1:0)-(y==="Optionale Positionen"?1:0);});
   grp.forEach(function(g){
     var box=document.createElement("div");box.className="grp";
     var html='<h4>'+esc(g)+'</h4>';
     FELDER.filter(function(f){return f.g===g;}).forEach(function(f){
-      html+='<div class="ctl" style="--bal:var(--'+f.t+')"><div class="top"><label for="n-'+f.id+'">'+
+      html+='<div class="ctl'+(f.erw?" erw":"")+'" style="--bal:var(--'+f.t+')"><div class="top"><label for="n-'+f.id+'">'+
         esc(f.l)+(f.e?' <span class="unit">('+esc(f.e)+')</span>':'')+'</label>'+
         '<input id="n-'+f.id+'" type="number" step="any" inputmode="decimal"></div>'+
         '<input id="s-'+f.id+'" type="range" min="'+f.min+'" max="'+f.max+'" step="'+f.step+
@@ -544,12 +559,14 @@ var STEUER={};
         '<div class="qz">'+tg(f.t)+' '+esc(f.q)+'</div></div>';
     });
     if(g==="Erlöse und Zeitraum"){
-      html+='<div class="ctl"><div class="top"><label for="n-gkv">Erlösrückgang nach dem '+
+      html+='<div class="ctl erw"><div class="top"><label for="n-gkv">Erlösrückgang nach dem '+
         'Beitragssatzstabilisierungsgesetz</label><select id="n-gkv">'+
         '<option value="0">nicht einrechnen</option><option value="1">einrechnen</option></select></div>'+
         '<div class="qz">'+tg("recht")+' Mindert die stationäre Erlösbasis von 3,8 Prozent im Jahr 2027 auf 7,1 Prozent ab 2030 (health care bavaria, 2026). Im Basisfall nicht eingerechnet, weil die Übertragung eines für die gesamte gesetzliche Krankenversicherung ermittelten Durchschnitts auf ein einzelnes Haus eine zusätzliche Annahme wäre.</div></div>';
     }
-    box.innerHTML=html;host.appendChild(box);
+    box.innerHTML=html;
+    if(FELDER.filter(function(f){return f.g===g;}).every(function(f){return f.erw;})) box.className="grp erw";
+    host.appendChild(box);
   });
   FELDER.forEach(function(f){
     var num=document.getElementById("n-"+f.id),sld=document.getElementById("s-"+f.id);
@@ -562,6 +579,10 @@ var STEUER={};
       var v=parseFloat(sld.value);M[f.id]=v;num.value=gerundet(v,f.step);fuellung(f.id,v);render();
     });
   });
+  document.getElementById("n-modus").addEventListener("change",function(){
+    modusSetzen(this.value==="1");
+  });
+  modusSetzen(false);
   document.getElementById("n-gkv").addEventListener("change",function(){
     M.gkv=this.value==="1";render();
   });

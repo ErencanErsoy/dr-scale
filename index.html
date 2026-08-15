@@ -388,6 +388,16 @@ var GRENZEN=[
 
 /* ============ Rechengrößen ============ */
 var FELDER=[
+ {id:"entgelt",g:"Optionale Positionen",l:"Entgelt je Onlinebuchung",e:"Euro",min:0,max:20,step:0.1,t:"ann",
+  q:"Transaktionsabhängiges Entgelt, das mit jeder Onlinebuchung anfällt. Mindert den Nutzen je Termin. Im betrachteten Fall nicht dokumentiert, deshalb null."},
+ {id:"anbStd",g:"Optionale Positionen",l:"Interner Einrichtungsaufwand je Einheit",e:"Stunden",min:0,max:400,step:1,t:"ann",
+  q:"Eigene Arbeitszeit für die Einrichtung einer Einheit, falls diese nicht vom Anbieter übernommen wird. Wird mit dem Personalkostensatz bewertet."},
+ {id:"schulStd",g:"Optionale Positionen",l:"Schulungsaufwand je Einheit",e:"Stunden",min:0,max:400,step:1,t:"ann",
+  q:"Summe der Schulungszeit aller Anwender einer Einheit. Wird mit dem Personalkostensatz bewertet."},
+ {id:"anbSonst",g:"Optionale Positionen",l:"Weitere Kosten je Einheit",e:"Euro",min:0,max:200000,step:100,t:"ann",
+  q:"Anbindung an Vorsysteme, Test und Abnahme sowie sonstige Positionen, die je angebundener Einheit anfallen."},
+ {id:"kZusatz",g:"Optionale Positionen",l:"Weitere laufende Kosten",e:"Euro je Jahr",min:0,max:2000000,step:1000,t:"ann",
+  q:"Pflege der Schnittstellen, Betrieb und Unterstützung sowie sonstige jährliche Positionen, die unabhängig vom Terminvolumen anfallen."},
  {id:"I0",g:"Investition und Kosten",l:"Investitionssumme",e:"Euro",min:0,max:12000000,step:1000,t:"sek",
   q:"Bereits getätigt, daher versunken. Bruttogröße, der geförderte Anteil wird gesondert erfasst."},
  {id:"foerder",g:"Investition und Kosten",l:"Davon durch Fördermittel gedeckt",e:"Prozent",min:0,max:100,step:1,t:"ann",
@@ -425,7 +435,7 @@ var FELDER=[
 ];
 
 var MUSTER={I0:2000000,ANB:30000,K:100000,KAB:2029,dIst:20,dZiel:30,rOff:15,rOn:10,
-            b:100,tmin:4,c:40.9,foerder:0,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
+            b:100,tmin:4,c:40.9,foerder:0,entgelt:0,anbStd:0,schulStd:0,anbSonst:0,kZusatz:0,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
             IMPL:1170000,NK:39,name:"Musterkrankenhaus"};
 var NUTZLAST="ANCAMmKBKpuZZYzP4lOJPNHOtS/nKbON6jct5Q5VExmQRUI8qGcjtDqswIZom8HT+9QSYSzT5JfHwYIWy2nBXbfVPlUN86YQE9KNLPSsJKeeS3H+WY+MswIZptqJFR++U8Mcwoptphv6xajdi6BAOFqfDVk7XisR7EHhD0klt+5waRkrVMhBzvho7RXQCsWnWErbO0Oj2E4r1cl0GQWHw8Khl+Dt2sMqHeCx/VJ8jrz9OU4W68MXRaG+PztOK1fgeNcTTAGgd0cOFwqFA9KGK2rbGg96//PV2wRNzLtD+EXZZdNsoeW7cnu2IVhOUQgvzHTpiZN+87LYONL4zPfpLD3nFiWtCIYTJL30HB4K/RigHDbKGWngQrMFvqdo7/yX0UGYiDfcEbJoMmD2fUXpKy6ZhTWs102YoAJVl7lpbVpMWxc4G6o63QViQ/pG";
 var GELADEN=null, QUELLE="muster", M=Object.assign({},MUSTER);
@@ -434,15 +444,17 @@ var GELADEN=null, QUELLE="muster", M=Object.assign({},MUSTER);
 function calc(ov){
   var p=Object.assign({},M,ov||{});
   var i=p.zins/100,H=Math.max(1,Math.round(p.H)),st=Math.round(p.start);
-  var n=(p.rOff-p.rOn)/100*p.b+(p.tmin/60)*p.c;
-  var ANB=p.ANB,dIst=p.dIst/100;
+  var n=(p.rOff-p.rOn)/100*p.b+(p.tmin/60)*p.c-(p.entgelt||0);
+  /* Anbindungskosten als Summe aller Positionen je Einheit, interner Aufwand ueber den Personalkostensatz */
+  var ANB=p.ANB+((p.anbStd||0)+(p.schulStd||0))*p.c+(p.anbSonst||0);
+  var dIst=p.dIst/100;
   var jahre=[],bwA=0,bwK=0,bwN1=0;
   for(var j=1;j<=H;j++){
     var jahr=st+j-1,disk=Math.pow(1+i,j);
     var gi=Math.min(Math.max(jahr-GKV_START,0),GKV_VERLUST.length-1);
     var g=p.gkv? GKV_VERLUST[gi]/GKV_BASIS:0;
     var wv=FTB2[jahr]?FTB2[jahr].v:0, wn=FTB2[jahr]?FTB2[jahr].n:0;
-    var A=(wv/N_VERF)*p.E*(1-g), K=jahr>=p.KAB?p.K:0, N1=(wn/N_NUTZ)*p.E*(1-g);
+    var A=(wv/N_VERF)*p.E*(1-g), K=(jahr>=p.KAB?p.K:0)+(p.kZusatz||0), N1=(wn/N_NUTZ)*p.E*(1-g);
     bwA+=A/disk; bwK+=K/disk; bwN1+=N1/disk;
     jahre.push({j:j,jahr:jahr,disk:disk,gkv:g,gew:wv,A:A,ABW:A/disk,K:K,KBW:K/disk});
   }
@@ -714,7 +726,7 @@ function abbKern(r){
    ["K","laufende Kosten je Jahr"],["E","station\u00e4re Erl\u00f6se"],
    ["g_j","Verf\u00fcgbarkeitsgewicht im Jahr j"],["q","erwarteter R\u00fcckgang der station\u00e4ren Erl\u00f6se"],
    ["A","vermiedener Verg\u00fctungsabschlag"],["F","Fixblock, Kosten ohne Volumenbezug"],
-   ["a","Anbindungskosten je Einheit"],["V","angebundenes Terminvolumen je Jahr"],
+   ["a","Anbindungskosten je Einheit, Summe aller Positionen dieser Klasse"],["V","angebundenes Terminvolumen je Jahr"],
    ["KW","Kapitalwert"],["m","Mindestgr\u00f6\u00dfe einer Klinik in Terminen je Jahr"],
    ["B","Break-even des Portals in Terminen je Jahr"]
   ];

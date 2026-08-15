@@ -328,7 +328,7 @@ var SYMBOLE=[
  ["q","Erlösrückgang nach dem Beitragssatzstabilisierungsgesetz","Prozent","recht","Mindert die stationaere Erlösbasis und damit den vermiedenen Abschlag."],
  ["A","Vermiedener Vergütungsabschlag","Euro","recht","Betrag, den das Krankenhaus nicht als Abschlag zahlt, weil die Onlineterminvereinbarung besteht."],
  ["F","Fixblock","Euro","calc","Sammelbegriff für alle Beträge, die nicht am Terminvolumen hängen."],
- ["a","Anbindungskosten je Klinik","Euro","sek","Einmaliger Aufwand für eine weitere Einheit, die als Ganzes angeschlossen wird. Faellt unabhaengig von deren Terminzahl an."],
+ ["a","Anbindungskosten je organisatorischer Einheit","Euro","sek","Einmaliger Aufwand für eine weitere Einheit, die als Ganzes angeschlossen wird. Faellt unabhaengig von deren Terminzahl an."],
  ["m","Mindestvolumen für eine weitere Anbindung","Termine je Jahr","calc","Erstes Ergebnis. Ab diesem Terminvolumen trägt eine Klinik den Aufwand ihrer eigenen Anbindung. Setzt ein laufendes Portal voraus, denn die bereits geleistete Investition bleibt außer Betracht."],
  ["B","Break-even des Portals","Termine je Jahr","calc","Zweites Ergebnis. Ab diesem angebundenen Volumen trägt sich die Gesamtinvestition."]
 ];
@@ -390,7 +390,7 @@ var GRENZEN=[
 var FELDER=[
  {id:"I0",g:"Investition und Kosten",l:"Investitionssumme",e:"Euro",min:0,max:12000000,step:1000,t:"sek",
   q:"Bereits getätigt, daher versunken."},
- {id:"ANB",g:"Investition und Kosten",l:"Anbindungskosten je Klinik",e:"Euro",min:0,max:120000,step:250,t:"sek",
+ {id:"ANB",g:"Investition und Kosten",l:"Anbindungskosten je organisatorischer Einheit",e:"Euro",min:0,max:120000,step:250,t:"sek",
   q:"Implementierungssumme geteilt durch die Zahl angebundener Kliniken. Obergrenze, da einmaliger Plattformaufwand enthalten."},
  {id:"K",g:"Investition und Kosten",l:"Laufende Kosten",e:"Euro je Jahr",min:0,max:600000,step:1000,t:"ann",
   q:"Fortschreibung. Die zugrundeliegende Quelle endet 2028."},
@@ -669,7 +669,7 @@ function abbKern(r){
        ["Laufende Kosten je Jahr","K"],
        ["Vermiedener Abschlag","A = g_j/19 \u00d7 E \u00d7 (1\u2212q)"],
        ["Fixblock","F = I\u2080 + \u03a3K \u2212 \u03a3A"],
-       ["Anbindung je Klinik","a"]],"");
+       ["Anbindung je Einheit","a"]],"");
 
   s+=runter(215,142,164);
 
@@ -711,7 +711,7 @@ function abbKern(r){
    ["K","laufende Kosten je Jahr"],["E","station\u00e4re Erl\u00f6se"],
    ["g_j","Verf\u00fcgbarkeitsgewicht im Jahr j"],["q","erwarteter R\u00fcckgang der station\u00e4ren Erl\u00f6se"],
    ["A","vermiedener Verg\u00fctungsabschlag"],["F","Fixblock, Kosten ohne Volumenbezug"],
-   ["a","Anbindungskosten je Klinik"],["V","angebundenes Terminvolumen je Jahr"],
+   ["a","Anbindungskosten je Einheit"],["V","angebundenes Terminvolumen je Jahr"],
    ["KW","Kapitalwert"],["m","Mindestgr\u00f6\u00dfe einer Klinik in Terminen je Jahr"],
    ["B","Break-even des Portals in Terminen je Jahr"]
   ];
@@ -760,7 +760,7 @@ function abbKlinik(r){
   var Hh=T+ph+B+lb,iw=W-L-R;
   var xmax=Math.max(r.sz[0].m*1.8,1200),ymax=Math.max(r.ANB*1.8,12000);
   var fx=function(v){return L+Math.min(v,xmax)/xmax*iw;},fy=function(v){return T+ph-Math.min(v,ymax)/ymax*ph;};
-  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Nutzen einer Klinik gegen Anbindungskosten">',k;
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Nutzen einer Einheit gegen Anbindungskosten">',k;
   for(k=0;k<=4;k++){var yv=ymax*k/4,y=fy(yv);
     s+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="var(--line2)" stroke-width="0.8"/>'+
        '<text x="'+(L-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10.5" fill="var(--muted)">'+f0(yv/1000)+'</text>';}
@@ -772,7 +772,7 @@ function abbKlinik(r){
   s+='<text x="14" y="'+(T+ph/2)+'" font-size="11" fill="var(--ink)" transform="rotate(-90 14 '+(T+ph/2)+')" text-anchor="middle">Barwert in Tausend Euro</text>';
   var yk=fy(r.ANB);
   s+='<line x1="'+L+'" y1="'+yk+'" x2="'+(W-R)+'" y2="'+yk+'" stroke="var(--warn)" stroke-width="1.6" stroke-dasharray="5 4"/>';
-  var ein=[{c:"var(--warn)",stil:"dash",t:"Anbindungskosten je Klinik",w:eur0(r.ANB)}];
+  var ein=[{c:"var(--warn)",stil:"dash",t:"Anbindungskosten je Einheit",w:eur0(r.ANB)}];
   r.sz.forEach(function(z,nn){
     var xe=Math.min(xmax,ymax/z.N);
     s+='<line x1="'+fx(0)+'" y1="'+fy(0)+'" x2="'+fx(xe)+'" y2="'+fy(xe*z.N)+
@@ -897,8 +897,8 @@ var ABB=[
   u:"Die vier Blöcke der Abbildung entsprechen den Abschnitten 2 bis 5 des Textes. Die Szenarien wirken ausschließlich über den Zeitpfad d_j auf die Nutzenseite, die Kostenseite bleibt von ihnen unberührt. Die Darstellung ist vollständig symbolisch."},
  {nr:2,name:"abb2-kapitalwert.svg",t:"Kapitalwert nach angebundenem Terminvolumen",
   u:"Der Kapitalwert wächst linear mit dem angebundenen Terminvolumen. Der Schnittpunkt mit der Nulllinie ist der Break-even des Portals."},
- {nr:3,name:"abb3-entscheidungsregel.svg",t:"Entscheidungsregel für eine einzelne Klinik",
-  u:"Barwert des Nutzens einer Klinik nach ihrem Terminvolumen. Rechts des Schnittpunkts mit den Anbindungskosten trägt sich die Anbindung."},
+ {nr:3,name:"abb3-entscheidungsregel.svg",t:"Entscheidungsregel für eine einzelne Einheit",
+  u:"Barwert des Nutzens einer organisatorischen Einheit nach ihrem Terminvolumen. Rechts des Schnittpunkts mit den Anbindungskosten trägt sich die Anbindung."},
  {nr:4,name:"abb4-buchungsanteil.svg",t:"Digitaler Buchungsanteil im Zeitverlauf",
   u:"Die beiden Balken zeigen, was das Modell tatsächlich behauptet: den gemessenen Ausgangswert und die angenommene Sättigungsgrenze des Basisfalls. Der Verlauf dazwischen ist eine Interpolation und kein beobachteter Adoptionsverlauf. In der Praxis ist mit Sprüngen durch die Freischaltung weiterer Angebote und mit Sättigungsphasen einzelner Einheiten zu rechnen."},
  {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität des Mindestvolumens für eine weitere Anbindung",
@@ -947,7 +947,7 @@ function bu(nr){
 function tornadoZeilen(r){
   var p=r.p,diff=p.rOff-p.rOn;
   var defs=[
-   {n:"Anbindungskosten je Klinik",a:{ANB:p.ANB*0.5},b:{ANB:p.ANB*2},v:"halber bis doppelter Wert"},
+   {n:"Anbindungskosten je Einheit",a:{ANB:10000},b:{ANB:60000},v:"10.000 bis 60.000 Euro"},
    {n:"Differenz der Terminausfallquoten",a:{rOn:p.rOff-diff/2},b:{rOn:p.rOff-diff*1.5},v:"halbe bis anderthalbfache Differenz"},
    {n:"Deckungsbeitrag je Termin",a:{b:p.b*0.8},b:{b:p.b*1.5},v:"80 bis 150 Prozent des Werts"},
    {n:"Endwert des digitalen Buchungsanteils",a:{dZiel:p.dIst},b:{dZiel:LIT_GRENZE*100},v:"heutiger Wert bis Literaturwert"},
@@ -1158,7 +1158,7 @@ function baueModell(r){
   h+= abgeleitet
    ? gl("a = "+f2(M.IMPL)+" / "+f0(M.NK)+" = "+f2(r.ANB)+" Euro",
         "Implementierungssumme ÷ Zahl bereits angebundener Kliniken. Weil darin einmaliger Plattformaufwand steckt, ist der Wert eine Obergrenze.")
-   : '<p>Für die Anbindung sind '+f2(r.ANB)+' Euro je Klinik eingestellt.</p>';
+   : '<p>Für die Anbindung sind '+f2(r.ANB)+' Euro je organisatorischer Einheit eingestellt.</p>';
 
   /* ---------------- 5 Zusammenführung ---------------- */
   h+='<h3 id="m5">5 Zusammenführung und Ergebnis</h3>'+
@@ -1173,7 +1173,7 @@ function baueModell(r){
    '<p>Das angebundene Terminvolumen V ist nicht bekannt. Das Modell kann deshalb keinen einzelnen '+
    'Eurobetrag nennen, sondern liefert zwei Schwellenwerte, an denen die Entscheidung kippt.</p>'+
    gl("m = a / N            B = F / N",
-      "Mindestvolumen = Anbindungskosten je Klinik ÷ Barwert je Termin. Break-even = Fixblock ÷ Barwert je Termin. Beide in Terminen je Jahr.",1)+
+      "Mindestvolumen = Anbindungskosten je Einheit ÷ Barwert je Termin. Break-even = Fixblock ÷ Barwert je Termin. Beide in Terminen je Jahr.",1)+
    '<p>In m fehlt die Investitionssumme, weil sie unabhängig davon anfällt, ob eine weitere Klinik '+
    'angeschlossen wird. In B ist sie enthalten, weil dort die Gesamtinvestition beurteilt wird.</p>'+
    '<div class="tw"><table><thead><tr><th>Szenario</th><th class="num">N</th>'+

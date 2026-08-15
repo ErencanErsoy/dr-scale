@@ -627,7 +627,7 @@ function legendeBand(ein,X,y0,breite){
   ein.forEach(function(e,n){
     var y=y0+13+n*16;
     if(e.art==="flaeche")
-      s+='<rect x="'+X+'" y="'+(y-8)+'" width="26" height="10" fill="'+e.c+'" opacity="0.55" stroke="'+e.c+'" stroke-width="0.9"/>';
+      s+='<rect x="'+X+'" y="'+(y-8)+'" width="26" height="10" fill="'+e.c+'" opacity="'+(e.deck||0.55)+'" stroke="'+e.c+'" stroke-width="0.9"/>';
     else
       s+='<line x1="'+X+'" y1="'+(y-4)+'" x2="'+(X+26)+'" y2="'+(y-4)+'" stroke="'+e.c+'" stroke-width="2.2"'+linienart(e.stil)+'/>';
     s+='<text x="'+(X+33)+'" y="'+y+'" font-size="11" fill="var(--ink)">'+esc(e.t)+'</text>';
@@ -785,7 +785,7 @@ function abbKlinik(r){
 }
 
 function abbPfad(r){
-  var W=760,T=18,B=52,L=88,R=26,ph=180,lb=r.sz.length*16+30;
+  var W=760,T=18,B=52,L=88,R=26,ph=180,lb=(r.sz.length+1)*16+30;
   var Hh=T+ph+B+lb,iw=W-L-R;
   var ymax=Math.max(60,Math.ceil(Math.max(r.sz[2].D,r.sz[1].D)*100/10)*10+5);
   var fx=function(nn){return L+nn/r.H*iw;};
@@ -794,6 +794,15 @@ function abbPfad(r){
   for(k=0;k<=4;k++){var yv=ymax*k/4,y=fy(yv);
     s+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="var(--line2)" stroke-width="0.8"/>'+
        '<text x="'+(L-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10.5" fill="var(--muted)">'+f0(yv)+'</text>';}
+  /* Zwei Balken fuer die beiden Werte, die das Modell tatsaechlich behauptet:
+     den gemessenen Ausgangswert und die angenommene Saettigungsgrenze.
+     Der Verlauf dazwischen ist Interpolation und wird nur als Linie gezeigt. */
+  var bw=Math.min(46,iw/(r.H+1)*0.62);
+  var bal=[{x:fx(0),v:r.p.dIst},{x:fx(r.H),v:r.sz[1].D*100}];
+  bal.forEach(function(bb){
+    s+='<rect x="'+(bb.x-bw/2)+'" y="'+fy(bb.v)+'" width="'+bw+'" height="'+(T+ph-fy(bb.v))+'"'+
+       ' fill="var(--ink)" opacity="0.10"/>';
+  });
   s+=achse(L,T,L,T+ph)+achse(L,T+ph,W-R,T+ph);
   var schritt=Math.max(1,Math.ceil(r.H/9));
   s+='<line x1="'+fx(0)+'" y1="'+(T+ph)+'" x2="'+fx(0)+'" y2="'+(T+ph+4)+'" stroke="var(--ink)" stroke-width="0.9"/>'+
@@ -813,6 +822,8 @@ function abbPfad(r){
     if(r.H<=12) pfad.forEach(function(v,m){s+='<circle cx="'+fx(m)+'" cy="'+fy(v*100)+'" r="2.6" fill="'+FARBE[nn]+'"/>';});
     ein.push({c:FARBE[nn],stil:z.stil,t:z.name,w:"Grenze "+pz(z.D*100)});
   });
+  ein.push({c:"var(--ink)",art:"flaeche",deck:0.10,t:"Balken: Einführung und Fortschreibung, die beiden belegten Ankerpunkte",
+            w:pz(r.p.dIst)+" und "+pz(r.sz[1].D*100)});
   s+=legendeBand(ein,L,T+ph+B+2,iw);
   return s+'</svg>';
 }
@@ -889,7 +900,7 @@ var ABB=[
  {nr:3,name:"abb3-entscheidungsregel.svg",t:"Entscheidungsregel für eine einzelne Klinik",
   u:"Barwert des Nutzens einer Klinik nach ihrem Terminvolumen. Rechts des Schnittpunkts mit den Anbindungskosten trägt sich die Anbindung."},
  {nr:4,name:"abb4-buchungsanteil.svg",t:"Digitaler Buchungsanteil im Zeitverlauf",
-  u:"Lineare Annäherung vom heutigen Wert an die Grenze des jeweiligen Szenarios."},
+  u:"Die beiden Balken zeigen, was das Modell tatsächlich behauptet: den gemessenen Ausgangswert und die angenommene Sättigungsgrenze des Basisfalls. Der Verlauf dazwischen ist eine Interpolation und kein beobachteter Adoptionsverlauf. In der Praxis ist mit Sprüngen durch die Freischaltung weiterer Angebote und mit Sättigungsphasen einzelner Einheiten zu rechnen."},
  {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität des Mindestvolumens für eine weitere Anbindung",
   u:"Verschiebung des Mindestvolumens bei Variation einzelner Rechengrößen, geordnet nach Wirkung."}
 ];

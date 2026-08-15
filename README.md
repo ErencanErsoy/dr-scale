@@ -8,7 +8,7 @@ Krankenhäuser.
 ## Forschungszweck
 
 Das Werkzeug setzt ein Bewertungsmodell um, das im Rahmen einer Masterarbeit zur Wirtschaftlichkeit
-digitaler Terminmanagementportale entwickelt wurde. Es beantwortet, unter welchen wirtschaftlichen
+des digitalen Terminmanagements entwickelt wurde. Es beantwortet, unter welchen wirtschaftlichen
 Bedingungen sich die Anbindung einzelner organisatorischer Einheiten und die Gesamtinvestition aus
 Sicht des Krankenhausträgers tragen.
 

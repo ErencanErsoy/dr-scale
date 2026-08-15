@@ -446,7 +446,8 @@ function calc(ov){
     bwA+=A/disk; bwK+=K/disk; bwN1+=N1/disk;
     jahre.push({j:j,jahr:jahr,disk:disk,gkv:g,gew:wv,A:A,ABW:A/disk,K:K,KBW:K/disk});
   }
-  var F=p.I0*(1-(p.foerder||0)/100)+bwK-bwA;
+  var I0Eigen=p.I0*(1-(p.foerder||0)/100);
+  var F=I0Eigen+bwK-bwA;
   var defs=[
    {name:"Geringer digitaler Buchungsanteil",D:dIst,hk:"sek",stil:"solid",
     was:"Der digitale Buchungsanteil bleibt auf dem heute gemessenen Wert. Ohne Modellannahme."},
@@ -463,7 +464,7 @@ function calc(ov){
             stg:d.D>dIst?(d.D-dIst)/H:0,path:pf,N:N,
             m:N>0?ANB/N:Infinity,B:N>0?F/N:Infinity};
   });
-  return {p:p,i:i,H:H,st:st,n:n,ANB:ANB,jahre:jahre,bwA:bwA,bwK:bwK,bwN1:bwN1,F:F,sz:sz};
+  return {p:p,i:i,H:H,st:st,n:n,ANB:ANB,jahre:jahre,bwA:bwA,bwK:bwK,bwN1:bwN1,F:F,I0Eigen:I0Eigen,sz:sz};
 }
 
 /* ============ Formatierung ============ */
@@ -1218,6 +1219,9 @@ function baueErgebnis(r){
      '</div><div class="s">angebundene Termine je Jahr'+(r.p.T>0?', also '+pz(m.B/r.p.T*100)+' des Volumens':'')+'</div></div>'+
    '<div class="kpi"><div class="l">Barwert je Termin des Jahresvolumens</div><div class="v">'+f2(m.N)+'</div>'+
      '<div class="s">Euro. So viel ist ein Termin heute wert, der in jedem der '+r.H+' Jahre anfällt. Ein einzelner umgestellter Termin bringt '+f2(r.n)+' Euro, davon wird nur der online gebuchte Anteil wirksam.</div></div>'+
+   '<div class="kpi"><div class="l">Amortisation des Gesamtvorhabens</div><div class="v">'+
+     amortText(amortisation(r,m,r.p.T,function(j){return fKumuliert(r,j);}))+'</div>'+
+     '<div class="s">bei '+f0(r.p.T)+' angebundenen Terminen je Jahr. Setzt anders als die beiden Schwellen ein Volumen voraus.</div></div>'+
    '<div class="kpi"><div class="l">Fixblock F</div><div class="v">'+mio(r.F)+'</div>'+
      '<div class="s">Alles, was nicht am Terminvolumen hängt: Investition und laufender Betrieb, vermindert um den Vergütungsabschlag, der durch die Bereitstellung vermieden wird.</div></div></div>';
   h+='<h3 id="e2">2 Deutung der eingestellten Werte</h3>';
@@ -1340,6 +1344,35 @@ function druckseite(){
   },60);
 }
 
+/* ============ Amortisationsdauer ============ */
+/* Kumulierter Barwert des Nutzens je Termin bis zum Jahr tau */
+function nKumuliert(r,z,tau){
+  var s=0,j;
+  for(j=1;j<=tau;j++) s+=r.n*z.path[j-1]/r.jahre[j-1].disk;
+  return s;
+}
+/* Bis zum Jahr tau aufgelaufener Fixblock */
+function fKumuliert(r,tau){
+  var s=r.I0Eigen,j;
+  for(j=1;j<=tau;j++) s+=r.jahre[j-1].KBW-r.jahre[j-1].ABW;
+  return s;
+}
+/* Erstes Jahr, in dem der aufgelaufene Nutzen die Zahlung deckt, sonst null.
+   Innerhalb des Jahres wird linear zwischengerechnet. */
+function amortisation(r,z,V,ziel){
+  var vorN=0,vorZ=(typeof ziel==="function")? ziel(0):ziel,j;
+  for(j=1;j<=r.H;j++){
+    var wert=V*nKumuliert(r,z,j), zj=(typeof ziel==="function")? ziel(j):ziel;
+    if(wert>=zj){
+      var d=(wert-vorN)-(zj-vorZ);
+      return d>0? (j-1)+(zj-vorN)/(wert-vorN) : j;
+    }
+    vorN=wert; vorZ=zj;
+  }
+  return null;
+}
+function amortText(v){ return v===null? "nicht im Zeitraum" : f1(v)+" Jahre"; }
+
 /* ============ Einheitenliste ============ */
 var EINHEITEN="";
 function einheitenLesen(txt){
@@ -1366,7 +1399,7 @@ function einheitenTabelle(r){
   var liste=einheitenLesen(EINHEITEN);
   var kopf='<div class="tw"><table><thead><tr><th>Einheit</th><th class="num">Termine je Jahr</th>'+
     '<th class="num">Anbindung ab</th><th class="num">Mindestvolumen</th><th class="num">Beitrag zum Kapitalwert</th>'+
-    '<th>Trägt sich</th></tr></thead><tbody>';
+    '<th class="num">Amortisation</th><th>Trägt sich</th></tr></thead><tbody>';
   if(!liste.length)
     return '<p class="src">Noch keine Einheiten erfasst. Eine Zeile je Einheit, Felder durch Semikolon getrennt: '+
            'Name; Termine je Jahr; Jahr der Anbindung. Das Jahr darf fehlen, dann wird '+r.p.start+' angenommen.</p>';
@@ -1377,7 +1410,8 @@ function einheitenTabelle(r){
     ges+=beitrag;
     zeilen+='<tr><td>'+esc(e.name)+'</td><td class="num">'+f0(e.V)+'</td><td class="num">'+
       (r.p.start+start-1)+'</td><td class="num">'+(isFinite(m)?f0(m):"–")+'</td><td class="num">'+
-      eur0(beitrag)+'</td><td>'+(beitrag>=0?"ja":"nein")+'</td></tr>';
+      eur0(beitrag)+'</td><td class="num">'+
+      amortText(amortisation(r,z,e.V,r.ANB))+'</td><td>'+(beitrag>=0?"ja":"nein")+'</td></tr>';
   });
   var deckung=ges-r.F;
   return kopf+zeilen+'</tbody></table></div>'+

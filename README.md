@@ -108,10 +108,15 @@ Fünf Abbildungen in wissenschaftlicher Darstellung lassen sich als Vektorgrafik
 als PNG. Linienarten sind so gewählt, dass die Abbildungen auch im Schwarzweißdruck unterscheidbar
 bleiben. Jeder Reiter lässt sich zusätzlich über den Druckdialog als PDF ausgeben.
 
-Die Rechnung selbst lässt sich auf zwei Wegen mitnehmen. „Als CSV laden“ liefert alle Größen in
-einem Block mit Semikolon als Trenner und deutschem Zahlenformat. „Als Excel laden“ liefert
-dieselben Angaben als Arbeitsmappe mit vier Blättern, Eingaben, Modell, Ergebnisse und
-Sensitivität, wobei Zahlen als Zahlen und nicht als Text ankommen.
+Die Rechnung selbst lässt sich im Reiter Ergebnisse über die Karte „Rechnung exportieren“
+mitnehmen. „Als CSV exportieren“ liefert alle Größen in einem Block mit Semikolon als Trenner
+und deutschem Zahlenformat. „Als Excel exportieren“ liefert dieselben Angaben als Arbeitsmappe
+mit vier Blättern, Eingaben, Modell, Ergebnisse und Sensitivität, wobei Zahlen als Zahlen und
+nicht als Text ankommen.
+
+Beide Dateien enthalten die **berechneten Werte, nicht die Rechenwege**. Wer eine Zahl in der
+Arbeitsmappe ändert, rechnet die übrigen Zellen nicht neu. Die Formeln stehen im Werkzeug
+selbst, im Abschnitt Modelllogik dieser Datei und im Reiter Modelllogik der Seite.
 
 ## Anwendungsbeispiel
 

@@ -114,9 +114,12 @@ und deutschem Zahlenformat. „Als Excel exportieren“ liefert dieselben Angabe
 mit vier Blättern, Eingaben, Modell, Ergebnisse und Sensitivität, wobei Zahlen als Zahlen und
 nicht als Text ankommen.
 
-Beide Dateien enthalten die **berechneten Werte, nicht die Rechenwege**. Wer eine Zahl in der
-Arbeitsmappe ändert, rechnet die übrigen Zellen nicht neu. Die Formeln stehen im Werkzeug
-selbst, im Abschnitt Modelllogik dieser Datei und im Reiter Modelllogik der Seite.
+Die Arbeitsmappe enthält **echte Formeln**, keine ausgerechneten Zahlen. Wer im Blatt Eingaben
+einen Wert ändert, bekommt in Excel unmittelbar neue Ergebnisse. Der Aufbau ist fünfteilig:
+Eingaben, Jahre mit der Diskontierung und den Zeitpfaden, Modell mit den Größen der Gleichungen,
+Ergebnisse mit beiden Schwellen je Szenario und Sensitivität. Nur die Sensitivität steht als
+Wert, weil jede ihrer Zeilen ein vollständiger zweiter Modelldurchlauf ist. Die CSV-Datei
+enthält demgegenüber nur die berechneten Werte.
 
 ## Anwendungsbeispiel
 

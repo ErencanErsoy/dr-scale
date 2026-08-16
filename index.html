@@ -958,38 +958,118 @@ function speichereAbb(nr){
   anbieten(spec.name,d.text,"image/svg+xml",function(){alsPng(d,spec.name);});
 }
 /* ============ Export als Excel-Arbeitsmappe ============ */
-/* Vier Blaetter, die dem Aufbau des Excel-Prototyps der Arbeit folgen.
-   Zahlen werden als Zahlen uebergeben, nicht als formatierte Zeichenketten. */
+/* Die Mappe enthaelt echte Formeln, keine ausgerechneten Zahlen. Wer eine
+   Eingabe aendert, bekommt in Excel ein neues Ergebnis. Der Aufbau folgt dem
+   Excel-Prototyp der Arbeit: Eingaben, Jahre, Modell, Ergebnisse.
+   Nur die Sensitivitaet steht als Wert, weil jede ihrer Zeilen einen
+   vollstaendigen zweiten Modelldurchlauf ist. */
+
+/* Zelle mit Formel und zwischengespeichertem Wert, damit Excel sofort etwas zeigt */
+function zf(formel,wert){ return {t:"n",f:formel,v:wert}; }
+
+/* Zeilennummern der Eingaben, damit die Formeln darauf zeigen koennen */
+var EZ={};
 function blattEingaben(){
   var z=[["Rechengröße","Wert","Einheit","Herkunft"]];
-  FELDER.forEach(function(f){ z.push([f.l, M[f.id], f.e||"", TAGNAME[f.t]||""]); });
+  FELDER.forEach(function(f){
+    z.push([f.l, M[f.id], f.e||"", TAGNAME[f.t]||""]);
+    EZ[f.id]="Eingaben!$B$"+z.length;
+  });
   return z;
 }
-function blattModell(r){
-  return [["Zwischengröße","Zeichen","Wert","Einheit"],
-    ["Nutzen je umgestelltem Termin","n",r.n,"Euro"],
-    ["Anbindungskosten je Einheit","a",r.ANB,"Euro"],
-    ["Barwert des vermiedenen Abschlags","",r.bwA,"Euro"],
-    ["Barwert der laufenden Kosten","",r.bwK,"Euro"],
-    ["Eigenanteil der Investition","",r.I0Eigen,"Euro"],
-    ["Fixblock","F",r.F,"Euro"],
-    ["Betrachtungshorizont","H",r.H,"Jahre"],
-    ["Kalkulationszinssatz","i",r.i*100,"Prozent"]];
+function e(id){ return EZ[id]||"0"; }
+
+/* Jahrestabelle: Diskontierung, vermiedener Abschlag, laufende Kosten, Zeitpfade */
+function blattJahre(r){
+  var z=[["j","Jahr","Diskontfaktor","Gewicht Verfügbarkeit in Prozent","GKV-Minderung",
+          "Vermiedener Abschlag","Barwert Abschlag","Laufende Kosten","Barwert laufende Kosten",
+          "Barwert weiterer Nutzen",
+          "Anteil gering","Anteil mittel","Anteil hoch",
+          "Barwert je Termin gering","Barwert je Termin mittel","Barwert je Termin hoch"]];
+  var dIst=r.p.dIst/100;
+  r.sz.forEach(function(){});
+  r.jahre.forEach(function(y,k){
+    var zl=k+2, A="A"+zl, C="C"+zl;
+    var ziel=["$B$3","$B$4","$B$5"];   // Saettigungsgrenzen auf dem Blatt Modell
+    var pf=r.sz.map(function(s){ return s.path[k]; });
+    z.push([
+      y.j,
+      zf(e("start")+"+"+A+"-1", y.jahr),
+      zf("(1+"+e("zins")+"/100)^"+A, y.disk),
+      y.gew*100,
+      y.gkv,
+      zf("D"+zl+"/100/"+N_VERF+"*"+e("items")+"*"+e("E")+"*(1-E"+zl+")", y.A),
+      zf("F"+zl+"/"+C, y.ABW),
+      zf("IF(B"+zl+">="+e("KAB")+","+e("K")+",0)+"+e("kZusatz"), y.K),
+      zf("H"+zl+"/"+C, y.KBW),
+      zf(e("nutzenJ")+"/"+C, (r.p.nutzenJ||0)/y.disk),
+      zf("IF(Modell!"+ziel[0]+">"+e("dIst")+"/100,"+e("dIst")+"/100+(Modell!"+ziel[0]+"-"+e("dIst")+"/100)*"+A+"/"+e("H")+","+e("dIst")+"/100)", pf[0]),
+      zf("IF(Modell!"+ziel[1]+">"+e("dIst")+"/100,"+e("dIst")+"/100+(Modell!"+ziel[1]+"-"+e("dIst")+"/100)*"+A+"/"+e("H")+","+e("dIst")+"/100)", pf[1]),
+      zf("IF(Modell!"+ziel[2]+">"+e("dIst")+"/100,"+e("dIst")+"/100+(Modell!"+ziel[2]+"-"+e("dIst")+"/100)*"+A+"/"+e("H")+","+e("dIst")+"/100)", pf[2]),
+      zf("Modell!$B$2*K"+zl+"/"+C, r.n*pf[0]/y.disk),
+      zf("Modell!$B$2*L"+zl+"/"+C, r.n*pf[1]/y.disk),
+      zf("Modell!$B$2*M"+zl+"/"+C, r.n*pf[2]/y.disk)
+    ]);
+  });
+  var l=z.length;
+  z.push(["Summe","","","","",
+    "", zf("SUM(G2:G"+l+")", r.bwA),
+    "", zf("SUM(I2:I"+l+")", r.bwK),
+    zf("SUM(J2:J"+l+")", r.jahre.reduce(function(a,y){return a+(r.p.nutzenJ||0)/y.disk;},0)),
+    "","","",
+    zf("SUM(N2:N"+l+")", r.sz[0].N), zf("SUM(O2:O"+l+")", r.sz[1].N), zf("SUM(P2:P"+l+")", r.sz[2].N)]);
+  return z;
 }
+
+/* Modellblatt: die Groessen, die im Text als Gleichungen stehen */
+function blattModell(r){
+  var s=r.jahre.length+2;   // Summenzeile der Jahrestabelle
+  return [
+   ["Größe","Wert","Einheit","Rechnung"],
+   ["Nutzen je umgestelltem Termin n",
+    zf("("+e("rOff")+"-"+e("rOn")+")/100*"+e("b")+"+("+e("tmin")+"/60)*"+e("c")+"-"+e("entgelt"), r.n),
+    "Euro","(r_off − r_on)/100 · b + t/60 · c − k"],
+   ["Sättigungsgrenze gering", zf(e("dIst")+"/100", r.sz[0].D), "Anteil","gemessener Ausgangswert"],
+   ["Sättigungsgrenze mittel",  zf(e("dZiel")+"/100", r.sz[1].D), "Anteil","Zielwert des Hauses"],
+   ["Sättigungsgrenze hoch",    LIT_GRENZE, "Anteil","Literaturwert"],
+   ["Anbindungskosten je Einheit a",
+    zf(e("ANB")+"+("+e("anbStd")+"+"+e("schulStd")+")*"+e("c")+"+"+e("anbSonst"), r.ANB),
+    "Euro","Summe aller Positionen je Einheit"],
+   ["Barwert des vermiedenen Abschlags", zf("Jahre!G"+s, r.bwA), "Euro","Summe über die Jahre"],
+   ["Barwert der laufenden Kosten",      zf("Jahre!I"+s, r.bwK), "Euro","Summe über die Jahre"],
+   ["Barwert des weiteren Nutzens",      zf("Jahre!J"+s, r.jahre.reduce(function(a,y){return a+(r.p.nutzenJ||0)/y.disk;},0)), "Euro","Summe über die Jahre"],
+   ["Eigenanteil der Investition",       zf(e("I0")+"*(1-"+e("foerder")+"/100)", r.I0Eigen), "Euro","I₀ · (1 − f)"],
+   ["Fixblock F",                        zf("B10+B8-B7-B9", r.F), "Euro","I₀(1−f) + ΣK − ΣA − ΣN_weit"]
+  ];
+}
+
+/* Ergebnisblatt: die beiden Schwellen je Szenario */
 function blattErgebnisse(r){
+  var s=r.jahre.length+2, sp=["N","O","P"];
   var z=[["Szenario","Sättigungsgrenze in Prozent","Barwert je Termin N in Euro",
           "Mindestvolumen m in Terminen je Jahr","Break-even B in Terminen je Jahr"]];
-  r.sz.forEach(function(s){ if(isFinite(s.N)&&s.N>0) z.push([s.name, s.D*100, s.N, s.m, s.B]); });
+  r.sz.forEach(function(x,k){
+    var zl=k+2;
+    z.push([x.name,
+      zf("Modell!$B$"+(k+3)+"*100", x.D*100),
+      zf("Jahre!"+sp[k]+s, x.N),
+      zf("Modell!$B$6/C"+zl, x.m),
+      zf("Modell!$B$11/C"+zl, x.B)]);
+  });
   return z;
 }
+
 function blattSensitivitaet(r){
-  var z=[["Rechengröße","Geprüfte Spanne","Mindestvolumen unten","Mindestvolumen oben"]];
+  var z=[["Rechengröße","Geprüfte Spanne","Mindestvolumen unten","Mindestvolumen oben"],
+         ["Diese Werte sind berechnet und nicht als Formel hinterlegt, weil jede Zeile einen vollständigen zweiten Modelldurchlauf darstellt.","","",""]];
   tornadoZeilen(r).forEach(function(x){ z.push([x.n, x.v, x.a, x.b]); });
   return z;
 }
+
 function mappeBauen(r){
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(blattEingaben()),      "Eingaben");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(blattJahre(r)),        "Jahre");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(blattModell(r)),       "Modell");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(blattErgebnisse(r)),   "Ergebnisse");
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(blattSensitivitaet(r)),"Sensitivitaet");
@@ -1004,7 +1084,7 @@ function speichereExcel(){
     var daten=XLSX.write(mappeBauen(calc()),{bookType:"xlsx",type:"array"});
     browserSave("dr-scale-werte.xlsx", daten,
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  }catch(e){ meldung("Die Excel-Datei konnte nicht erzeugt werden."); }
+  }catch(err){ meldung("Die Excel-Datei konnte nicht erzeugt werden."); }
 }
 
 function speichereWerte(){
@@ -1377,7 +1457,7 @@ function baueErgebnis(r){
    'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
    '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>'+
    '<line x1="9" y1="3" x2="9" y2="21"/></svg>Als Excel exportieren</button></div>'+
-   '<p style="margin:0;color:var(--muted);font-size:13px">Alle Rechengrößen samt Herkunft, die Zwischengrößen, die Szenarienergebnisse und die Sensitivitätsanalyse. Die CSV-Datei enthält alles in einem Block, die Excel-Datei verteilt es auf vier Blätter und behält Zahlen als Zahlen. Beide Dateien geben die berechneten Werte wieder, nicht die Rechenwege; die Formeln stehen in diesem Werkzeug und im Abschnitt Modelllogik.</p></div>';
+   '<p style="margin:0;color:var(--muted);font-size:13px">Alle Rechengrößen samt Herkunft, die Zwischengrößen, die Szenarienergebnisse und die Sensitivitätsanalyse. Die CSV-Datei enthält alles in einem Block, die Excel-Datei verteilt es auf vier Blätter und behält Zahlen als Zahlen. Die Excel-Datei enthält die Rechenwege als echte Formeln, sodass ein geänderter Eingabewert dort unmittelbar ein neues Ergebnis liefert. Die CSV-Datei enthält nur die berechneten Werte.</p></div>';
   document.getElementById("ergebnis").innerHTML=h;
   document.getElementById("dl-werte").addEventListener("click",speichereWerte);
   document.getElementById("dl-excel").addEventListener("click",speichereExcel);

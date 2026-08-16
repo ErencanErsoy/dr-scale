@@ -108,6 +108,11 @@ Fünf Abbildungen in wissenschaftlicher Darstellung lassen sich als Vektorgrafik
 als PNG. Linienarten sind so gewählt, dass die Abbildungen auch im Schwarzweißdruck unterscheidbar
 bleiben. Jeder Reiter lässt sich zusätzlich über den Druckdialog als PDF ausgeben.
 
+Die Rechnung selbst lässt sich auf zwei Wegen mitnehmen. „Als CSV laden“ liefert alle Größen in
+einem Block mit Semikolon als Trenner und deutschem Zahlenformat. „Als Excel laden“ liefert
+dieselben Angaben als Arbeitsmappe mit vier Blättern, Eingaben, Modell, Ergebnisse und
+Sensitivität, wobei Zahlen als Zahlen und nicht als Text ankommen.
+
 ## Anwendungsbeispiel
 
 Die Werte eines Anwendungsbeispiels sind mit AES-256-GCM verschlüsselt hinterlegt. Der Schlüssel wird
@@ -117,8 +122,18 @@ Quelltext nicht lesbar. Das allgemeine Modell ist ohne Passwort vollständig zug
 
 ## Technisches
 
-Eine einzelne, in sich geschlossene HTML-Datei ohne externe Abhängigkeiten. Keine Bibliothek, keine
-Schriftart und kein Bild wird nachgeladen. Diagramme werden als SVG erzeugt.
+Die Seite besteht aus `index.html` und der daneben liegenden Tabellenbibliothek
+`xlsx.full.min.js`. Beide werden vom selben Server geladen, nichts wird von einem fremden Server
+nachgeholt, weder Schriftart noch Bild noch Skript. Diagramme werden als SVG im Browser erzeugt.
+Ohne die Bibliothek bleibt die Seite voll benutzbar, nur der Excel-Export meldet dann, dass er
+nicht zur Verfügung steht.
+
+### Verwendete Fremdsoftware
+
+`xlsx.full.min.js` ist die SheetJS Community Edition in der Version 0.20.3, unverändert
+übernommen von `https://cdn.sheetjs.com`. Sie steht unter der Apache License 2.0, deren
+vollständiger Text als `LICENSE-xlsx.txt` beiliegt. Copyright (C) 2012-present SheetJS LLC.
+Der übrige Quelltext der Seite stammt vom Verfasser.
 
 ## Hinweis
 

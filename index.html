@@ -212,6 +212,15 @@ svg{display:block;max-width:100%;height:auto}
   svg{max-width:100%;height:auto}
   a{color:#000;text-decoration:none}
 }
+
+details.muss{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+details.muss summary{cursor:pointer;font-size:12px;color:var(--muted);user-select:none}
+details.muss summary:hover{color:var(--fg)}
+.mussgrp{margin:8px 0}
+.mussgrp h5{margin:0 0 4px;font-size:11.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+label.mussz{display:flex;gap:6px;align-items:flex-start;font-size:12px;line-height:1.35;padding:2px 0;cursor:pointer}
+label.mussz input{margin-top:2px;flex:none}
+.mussid{font-variant-numeric:tabular-nums;color:var(--muted);flex:none;min-width:38px}
 </style>
 
 <header>
@@ -388,6 +397,30 @@ var GRENZEN=[
  ["Lineare Wirkung","Nutzen und Terminvolumen wachsen proportional. Größenvorteile bei der Anbindung bleiben unberücksichtigt."]
 ];
 
+/* Die 19 Muss-Anforderungen der Kategorie Verfuegbarkeit, Wortlaut aus Anhang 1
+   der Abschlagsvereinbarung. Sie werden zu gleichen Teilen bewertet, jede
+   erfuellte vermeidet ein Neunzehntel des Gewichts. */
+var MUSS=[
+  {id:"2.V1",ab:"Aufnahmemanagement",kurz:"Terminvereinbarung ambulant",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten oder deren vorgelagerten Leistungserbringer Termine für ambulante Versorgungsleistungen (u. a. Untersuchungen im Rahmen der Vor- und Nachsorge) online vereinbaren. Termine für die teil- und vollstationäre Behandlung können online angefragt und abgestimmt werden."},
+  {id:"2.V2",ab:"Aufnahmemanagement",kurz:"Terminvereinbarung ASV",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten oder deren vorgelagerten Leistungserbringer Termine für Leistungen der spezialfachärztlichen Versorgung (ASV) am Standort nach § 116b SGB V online vereinbaren."},
+  {id:"2.V3",ab:"Aufnahmemanagement",kurz:"Anamnese von zu Hause",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten, eine Anamnese digital von zu Hause aus durchführen, ( z.B. Ausfüllen von Fragebögen von zu Hause und Übernahme der Informationen in das KIS/KAS)."},
+  {id:"2.V4",ab:"Aufnahmemanagement",kurz:"Unterlagen hochladen",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten ihre Behandlungsunterlagen sowie weitere zur Aufnahme und Behandlung relevante Daten und Unterlagen, insbesondere den bundeseinheitlichen Medikationsplan (Barcode-Scan zur strukturierten Weiterverarbeitung), vorab online hochladen."},
+  {id:"2.V5",ab:"Aufnahmemanagement",kurz:"Zugriff per Consent",txt:"Im Rahmen des digitalen Aufnahmemanagements können dem Leistungserbringer im Rahmen einer vom Patienten oder der Patientin digital erteilten temporären Berechtigung (Consent) der Zugriff auf die Daten (z. B. in einer existierenden elektronischen Akte) ermöglicht werden."},
+  {id:"2.V6",ab:"Aufnahmemanagement",kurz:"Antworten auf häufige Fragen",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten, online Antworten zu den häufigsten Fragen eines Krankenhaus-Aufenthalts finden."},
+  {id:"2.V7",ab:"Aufnahmemanagement",kurz:"Überweisungsschein vorab",txt:"Im Rahmen des digitalen Aufnahmemanagements können vorgelagerte Leistungserbringer Überweisungsscheine bereits vorab online der Klinik zukommen lassen."},
+  {id:"2.V8",ab:"Aufnahmemanagement",kurz:"Nachrichten an Patienten",txt:"Im Rahmen des digitalen Aufnahmemanagements können Mitarbeiterinnen und Mitarbeiter des Aufnahmemanagements den Patientinnen und Patienten Nachrichten schicken."},
+  {id:"2.V9",ab:"Aufnahmemanagement",kurz:"Anamnese in der Klinik",txt:"Im Rahmen des digitalen Aufnahmemanagements wird Mitarbeiterinnen und Mitarbeitern des Aufnahmemanagements ermöglicht, eine Anamnese auch digital in der Klinik vorzunehmen (z.B. Ortsunabhängiges Ausfüllen von Fragebögen und Übertragung der Infos an KIS/KAS)."},
+  {id:"2.V10",ab:"Aufnahmemanagement",kurz:"Schnittstellen zu KIS und ERP",txt:"Das digitale Aufnahmemanagement weist Schnittstellen zu bestehenden KIS und/oder ERP-Systemen vor, sodass die digital erfassten Daten der Patientin/des Patienten auch für nachgelagerte organisatorische Prozesse sowie Prozesse der Ressourcenplanung (z. B. Personalplanung oder Bettenmanagement) automatisch und interoperabel zur Verfügung stehen."},
+  {id:"2.V11",ab:"Behandlungsmanagement",kurz:"Orientierung im Haus",txt:"Das digitale Behandlungsmanagements ermöglicht es Patientinnen und Patienten auf ihrem eigenen Endgerät, sich während ihres Aufenthaltes im Krankenhaus zurecht zu finden (mindestens zu örtlichen Gegebenheiten, Ansprechpersonen)."},
+  {id:"2.V12",ab:"Behandlungsmanagement",kurz:"Information zur Behandlung",txt:"Das digitale Behandlungsmanagement ermöglicht den Patientinnen und Patienten auf ihrem eigenen Endgerät, sich über ihre Behandlung, beispielsweise in Form von Aufklärungsvideos, zu informieren und vorab Fragen zur späteren Klärung zu notieren."},
+  {id:"2.V13",ab:"Behandlungsmanagement",kurz:"Behandlungstagebuch",txt:"Das digitale Behandlungsmanagement ermöglicht es Patientinnen und Patienten, digitale Behandlungstagebücher auf ihrem eigenen Endgerät zu führen."},
+  {id:"2.V14",ab:"Behandlungsmanagement",kurz:"Erinnerung an Untersuchungen",txt:"Das digitale Behandlungsmanagement ermöglicht den Patientinnen und Patienten auf ihrem eigenen Endgerät, Erinnerungen an Untersuchungstermine im Laufe ihres Aufenthaltes zu erhalten."},
+  {id:"2.V15",ab:"Behandlungsmanagement",kurz:"Mobile digitale Visite",txt:"Das digitale Behandlungsmanagement ermöglicht es Mitarbeiterinnen und Mitarbeitern durch eine mobile und digitale Visite, schneller auf relevante Informationen, insbesondere im KIS/KAS und Patientendatenmanagementsystem, zugreifen zu können."},
+  {id:"2.V16",ab:"Behandlungsmanagement",kurz:"Speicherung in der ePA",txt:"Das digitale Behandlungsmanagement ermöglicht die Speicherung von Daten der Patientinnen und Patienten in deren elektronischer Patientenakte nach § 341 SGB V (insbesondere klinische Daten zu Befunden, Diagnosen, Therapiemaßnahmen, Früherkennungsuntersuchungen, Behandlungsberichten und sonstigen Untersuchungen)."},
+  {id:"2.V17",ab:"Entlassmanagement",kurz:"Strukturierter Datenaustausch",txt:"Das digitale Entlassmanagement ermöglicht einen strukturierten Datenaustausch zwischen Leistungserbringern und die Bereitstellung von Dokumenten auf Basis anerkannter Standards an nachgelagerte Leistungserbringer (z. B. bzgl. der Medikamenteneinnahmen, Hinweisen zur Ernährung, Einschränkungen der körperlichen Belastbarkeit, notwendigen Kontrolluntersuchungen, Ansprechpartner bei Komplikationen oder pflegerischen Fragen etc.)."},
+  {id:"2.V18",ab:"Entlassmanagement",kurz:"Versorgungsplattform im Netzwerk",txt:"Das digitale Entlassmanagement ermöglicht auf Basis einer digitalen Plattform innerhalb eines Netzwerkes von ambulanten und stationären Pflege- oder Rehabilitationsanbietern den Versorgungsbedarf ihrer Patientinnen und Patienten melden zu können und mit Hilfe der digitalen Plattform innerhalb eines Netzwerkes zeitnah Rückmeldung hinsichtlich passender freier Kapazitäten zu erhalten."},
+  {id:"2.V19",ab:"Entlassmanagement",kurz:"Speicherung in der ePA",txt:"Das digitale Entlassmanagement ermöglicht die Speicherung von Daten der Patientinnen und Patienten in deren elektronischer Patientenakte nach § 341 SGB V."},
+];
 /* ============ Rechengrößen ============ */
 var FELDER=[
  {id:"items",erw:true,g:"Optionale Positionen",l:"Zugerechnete Verfügbarkeitsanforderungen",e:"von 19",min:1,max:19,step:1,t:"recht",
@@ -562,7 +595,8 @@ var STEUER={};
         '<input id="n-'+f.id+'" type="number" step="any" inputmode="decimal"></div>'+
         '<input id="s-'+f.id+'" type="range" min="'+f.min+'" max="'+f.max+'" step="'+f.step+
         '" aria-label="'+esc(f.l)+'">'+
-        '<div class="qz">'+tg(f.t)+' '+esc(f.q)+'</div></div>';
+        '<div class="qz">'+tg(f.t)+' '+esc(f.q)+'</div>'+
+        (f.id==="items"? mussListe() : '')+'</div>';
     });
     if(g==="Erlöse und Zeitraum"){
       html+='<div class="ctl erw"><div class="top"><label for="n-gkv">Erlösrückgang nach dem '+
@@ -957,6 +991,47 @@ function speichereAbb(nr){
   var r=calc(),spec=ABB[nr-1],d=svgDatei(abbHolen(nr,r));
   anbieten(spec.name,d.text,"image/svg+xml",function(){alsPng(d,spec.name);});
 }
+/* ============ Auswahl der Muss-Anforderungen ============ */
+/* Die Liste ist ein Eingabehelfer: Sie schreibt ihre Zahl in das Feld items.
+   Wer die Zahl unmittelbar eintraegt, kommt zum selben Ergebnis. */
+function mussListe(){
+  var abschnitte=[],h='';
+  MUSS.forEach(function(m){ if(abschnitte.indexOf(m.ab)<0) abschnitte.push(m.ab); });
+  h+='<details class="muss"><summary>Anforderungen einzeln auswählen</summary>';
+  h+='<p class="qz" style="margin:6px 0 8px">Angehakt wird, was das Portal erfüllt. '+
+     'Die Zahl oben folgt der Auswahl. Voreingestellt ist allein '+
+     '<strong>2.V1</strong>, die Online-Terminvereinbarung, der Gegenstand des Modells.</p>';
+  abschnitte.forEach(function(ab){
+    h+='<div class="mussgrp"><h5>'+esc(ab)+'</h5>';
+    MUSS.filter(function(m){return m.ab===ab;}).forEach(function(m){
+      h+='<label class="mussz" title="'+esc(m.txt)+'">'+
+         '<input type="checkbox" data-muss="'+m.id+'"> '+
+         '<span class="mussid">'+m.id+'</span> '+esc(m.kurz)+'</label>';
+    });
+    h+='</div>';
+  });
+  h+='</details>';
+  return h;
+}
+function mussSetzen(){
+  if(!document.querySelectorAll) return;
+  var kaesten=document.querySelectorAll('[data-muss]');
+  if(!kaesten.length) return;
+  var n=0; Array.prototype.forEach.call(kaesten,function(k){ if(k.checked) n++; });
+  if(n<1) n=1;
+  M.items=n;
+  STEUER.items.num.value=n; setzeSchieber("items",n);
+  render();
+}
+function mussAnbinden(){
+  if(!document.querySelectorAll) return;   /* Liste nicht im Dokument */
+  var kaesten=document.querySelectorAll('[data-muss]');
+  Array.prototype.forEach.call(kaesten,function(k){
+    if(k.getAttribute("data-muss")==="2.V1") k.checked=true;
+    k.addEventListener("change",mussSetzen);
+  });
+}
+
 /* ============ Export als Excel-Arbeitsmappe ============ */
 /* Die Mappe enthaelt echte Formeln, keine ausgerechneten Zahlen. Wer eine
    Eingabe aendert, bekommt in Excel ein neues Ergebnis. Der Aufbau folgt dem
@@ -1635,7 +1710,7 @@ document.addEventListener("click",function(e){
 document.getElementById("dl-pdf").addEventListener("click",function(){
   druckkopf(); druckseite();
 });
-baueQuellen();baueAbout();ausfuellen();render();zeige(0);
+baueQuellen();baueAbout();ausfuellen();mussAnbinden();render();zeige(0);
 document.getElementById("theme").addEventListener("click",function(){
   var el=document.documentElement,jetzt=el.getAttribute("data-theme");
   if(!jetzt) jetzt=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";

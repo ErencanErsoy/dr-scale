@@ -77,7 +77,13 @@ Die Seitenleiste zeigt voreingestellt **16 Felder**, die dem Modell der Arbeit e
 
 Über den Schalter **Erweiterte Eingaben** kommen sechs weitere hinzu: durch Fördermittel gedeckter
 Anteil, Entgelt je Onlinebuchung, interner Einrichtungsaufwand, Schulungsaufwand, weitere Kosten je
-Einheit, weitere laufende Kosten. Alle sind mit null vorbelegt und verändern das Ergebnis nicht,
+Einheit, weitere laufende Kosten.
+
+Bei den zugerechneten Verfügbarkeitsanforderungen lassen sich die **19 Muss-Anforderungen einzeln
+auswählen**, im Wortlaut des Erhebungsinstruments und gruppiert nach Aufnahme-, Behandlungs- und
+Entlassmanagement. Die Auswahl schreibt ihre Zahl in das Feld. Voreingestellt ist allein 2.V1, die
+Online-Terminvereinbarung, der Gegenstand des Modells. Zehn der 19 entfallen auf das
+Aufnahmemanagement, sechs auf das Behandlungs- und drei auf das Entlassmanagement. Alle sind mit null vorbelegt und verändern das Ergebnis nicht,
 solange sie ausgeblendet bleiben. Wer nur die Basisansicht ausfüllt, rechnet genau das Modell der
 Arbeit.
 

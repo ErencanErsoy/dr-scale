@@ -1,7 +1,7 @@
 # Dr. Scale
 
-Skalierungsrechner von Patientenportalen. Szenarienbasierte Entscheidungsunterstützung für
-Krankenhäuser.
+Skalierungsrechner für Patientenportale im Aufnahmemanagement. Szenarienbasierte
+Entscheidungsunterstützung für Krankenhäuser.
 
 **→ [erencanersoy.github.io/dr-scale](https://erencanersoy.github.io/dr-scale/)**
 
@@ -11,6 +11,11 @@ Das Werkzeug setzt ein Bewertungsmodell um, das im Rahmen einer Masterarbeit zur
 des digitalen Terminmanagements entwickelt wurde. Es beantwortet, unter welchen wirtschaftlichen
 Bedingungen sich die Anbindung einzelner organisatorischer Einheiten und die Gesamtinvestition aus
 Sicht des Krankenhausträgers tragen.
+
+Bewertet wird dabei der Prozessabschnitt des digitalen Aufnahmemanagements nach Fördertatbestand 2,
+innerhalb dessen die Online-Terminvereinbarung. Für das Behandlungs- und das Entlassmanagement gilt
+eine andere Mengen- und Preisbasis, weil dort der stationäre Fall die Bezugsgröße bildet und die
+Fallpauschale zwischen Wirkung und Zahlungsstrom tritt.
 
 Nicht beantwortet wird, welcher Anbieter zu wählen ist, ob ein Produkt anderen überlegen ist oder ob
 die staatliche Förderung gesamtwirtschaftlich wirksam ist. Bewertet werden ausschließlich Zahlungen

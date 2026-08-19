@@ -1,6 +1,6 @@
 # Dr. Scale
 
-Skalierungsrechner für Patientenportale im Aufnahmemanagement. Szenarienbasierte
+Skalierungsrechner für das digitale Terminmanagement im Patientenportal. Szenarienbasierte
 Entscheidungsunterstützung für Krankenhäuser.
 
 **→ [erencanersoy.github.io/dr-scale](https://erencanersoy.github.io/dr-scale/)**

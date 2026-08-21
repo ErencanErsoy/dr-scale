@@ -394,7 +394,8 @@ var GRENZEN=[
  ["Nutzungskategorie ausgeklammert","Sie setzt die Erfüllung aller zehn Anforderungen des Aufnahmemanagements voraus und bleibt deshalb außer Betracht."],
  ["Regulatorik nur bis 2031","Nach 2031 werden Gewichtung und Abschlagshöhe neu verhandelt. Spätere Jahre tragen im Modell keinen vermiedenen Abschlag."],
  ["Nur Trägerperspektive","Patienten- und gesellschaftsseitige Wirkungen sowie klinische Endpunkte bleiben außerhalb der Betrachtung."],
- ["Lineare Wirkung","Nutzen und Terminvolumen wachsen proportional. Größenvorteile bei der Anbindung bleiben unberücksichtigt."]
+ ["Lineare Wirkung","Nutzen und Terminvolumen wachsen proportional. Größenvorteile bei der Anbindung bleiben unberücksichtigt."],
+ ["Mengen und Kosten können verschiedener Herkunft sein","Die Einheitenliste liefert allein die Mengen. Die Schwelle, an der sie gemessen werden, folgt aus den geladenen Kostenparametern. Stammen beide aus verschiedenen Häusern, ist das Ergebnis eine Einordnung der Größenordnung und keine Aussage über die Wirtschaftlichkeit des Hauses, aus dem die Mengen kommen. Übertragbar ist die Mengenschwelle, nicht das Kostengerüst."]
 ];
 
 /* Die 19 Muss-Anforderungen der Kategorie Verfuegbarkeit, Wortlaut aus Anhang 1
@@ -1790,6 +1791,9 @@ function baueWarnung(r){
   var el=document.getElementById("warnung"),w=[];
   if(!(r.p.dZiel>r.p.dIst)) w.push("Der Zielwert liegt nicht über dem heutigen digitalen Buchungsanteil.");
   if(r.p.rOff<=r.p.rOn) w.push("Der Terminausfall mit Onlinebuchung liegt nicht unter dem ohne.");
+  /* Die Kombination ist erlaubt, sie soll aber benannt sein. */
+  if(EINHEITEN===BEISPIEL_LMU && QUELLE!=="muster")
+    w.push("Die Einheitenliste stammt aus dem geladenen Beispiel eines anderen Hauses, die Schwelle aus den hier geladenen Kostenparametern. Das Ergebnis ordnet die Größenordnung ein und beurteilt nicht die Wirtschaftlichkeit jenes Hauses.");
   el.innerHTML=w.length?'<div class="note warn" style="margin:12px 0 0"><b>Prüfhinweis.</b> '+esc(w.join(" "))+'</div>':"";
 }
 function render(){
@@ -1806,7 +1810,8 @@ document.addEventListener("input",function(e){
   }
 });
 document.addEventListener("click",function(e){
-  if(e.target&&e.target.id==="lmu-laden"){ EINHEITEN=BEISPIEL_LMU; baueErgebnis(calc()); return; }
+  if(e.target&&e.target.id==="lmu-laden"){
+    EINHEITEN=BEISPIEL_LMU; var rr=calc(); baueErgebnis(rr); baueWarnung(rr); return; }
   var b=e.target.closest?e.target.closest("button.dl[data-abb]"):null;
   if(b) speichereAbb(+b.getAttribute("data-abb"));
 });

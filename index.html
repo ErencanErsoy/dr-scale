@@ -968,6 +968,74 @@ function alsPng(datei,name){
     img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(datei.text);
   }catch(e){meldung("Umwandlung nach PNG fehlgeschlagen.",false);}
 }
+/* ---- Abbildung 6: Reihenfolge der Anbindung und Deckung des Fixblocks ---- */
+/* Zeigt beide Entscheidungen in einem Bild. Die Balken stehen fuer das
+   Terminvolumen je erfasster Einheit, die senkrechten Linien fuer das
+   Mindestvolumen der drei Szenarien. Rechts davon traegt sich eine Anbindung.
+   Die waagerechte Marke bezeichnet die Einheit, ab der die aufsummierten
+   Kapitalwertbeitraege den Fixblock decken, also den Break-even des Portals. */
+function abbEinheiten(r){
+  var liste=einheitenLesen(EINHEITEN);
+  var W=760;
+  if(!liste.length)
+    return '<svg viewBox="0 0 '+W+' 90" role="img" aria-label="Noch keine Einheiten erfasst">'+
+      '<text x="'+(W/2)+'" y="46" text-anchor="middle" font-size="12.5" fill="var(--muted)">'+
+      'Noch keine Einheiten erfasst. Eine Zeile je Einheit im Feld darueber.</text></svg>';
+
+  /* Reihenfolge der Pruefung: das groesste Volumen zuerst, weil der Nutzen mit
+     dem Volumen waechst, der Anbindungsaufwand aber nicht. */
+  var z=r.sz[1];
+  var reihen=liste.map(function(e){
+    var start=e.jahr? Math.min(Math.max(e.jahr-r.p.start+1,1),r.H):1;
+    var N=barwertAb(r,z,start);
+    return {name:e.name, V:e.V, N:N, beitrag:e.V*N-r.ANB};
+  }).sort(function(a,b){return b.V-a.V;});
+
+  /* Aufsummierung in dieser Reihenfolge, um den Break-even zu finden. */
+  var lauf=0, deckAb=-1, i;
+  for(i=0;i<reihen.length;i++){
+    lauf+=reihen[i].beitrag;
+    reihen[i].kum=lauf;
+    if(deckAb<0 && lauf>=r.F) deckAb=i;
+  }
+
+  var T=16,B=92,L=196,R=104,zh=Math.max(15,Math.min(22,340/reihen.length));
+  var ph=reihen.length*zh, Hh=T+ph+B, iw=W-L-R;
+  var schwellen=r.sz.map(function(s){return s.m;});
+  var xmax=Math.max.apply(null,reihen.map(function(x){return x.V;}).concat(schwellen))*1.12;
+  var fx=function(v){return L+Math.max(0,Math.min(v,xmax))/xmax*iw;};
+  var fs=Math.max(8.5,Math.min(11,zh-6));
+
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Terminvolumen der Einheiten gegen das Mindestvolumen">';
+
+  /* Balken je Einheit */
+  reihen.forEach(function(e,k){
+    var y=T+k*zh, bh=Math.max(7,zh-7);
+    var farbe = e.V>=schwellen[0] ? "var(--calc)" : (e.V>=schwellen[2] ? "var(--sek)" : "var(--line2)");
+    s+='<rect x="'+L+'" y="'+(y+(zh-bh)/2)+'" width="'+(fx(e.V)-L)+'" height="'+bh+'" fill="'+farbe+'"/>'+
+       '<text x="'+(L-8)+'" y="'+(y+zh/2+fs*0.36)+'" text-anchor="end" font-size="'+fs+'" fill="var(--ink)">'+
+       esc(e.name.length>30?e.name.slice(0,29)+"…":e.name)+'</text>'+
+       '<text x="'+(fx(e.V)+6)+'" y="'+(y+zh/2+fs*0.36)+'" font-size="'+fs+'" fill="var(--muted)">'+f0(e.V)+'</text>';
+    if(k===deckAb)
+      s+='<text x="'+(W-R+62)+'" y="'+(y+zh/2+fs*0.36)+'" font-size="'+fs+'" fill="var(--warn)">Fixblock gedeckt</text>';
+  });
+
+  /* Senkrechte je Szenario, das Mindestvolumen */
+  r.sz.forEach(function(sz,nn){
+    var x=fx(sz.m);
+    if(sz.m>xmax) return;
+    s+='<line x1="'+x+'" y1="'+(T-4)+'" x2="'+x+'" y2="'+(T+ph+4)+'" stroke="'+FARBE[nn]+
+       '" stroke-width="1.5"'+linienart(sz.stil)+'/>';
+  });
+  s+=achse(L,T+ph+4,W-R,T+ph+4);
+  s+='<text x="'+(L+iw/2)+'" y="'+(T+ph+22)+'" text-anchor="middle" font-size="11" fill="var(--ink)">Termine je Jahr</text>';
+
+  var ein=r.sz.map(function(sz,nn){
+    return {c:FARBE[nn],stil:sz.stil,t:sz.name,w:"Mindestvolumen "+f0(sz.m)};
+  });
+  s+=legendeBand(ein,10,T+ph+32,W-20);
+  return s+'</svg>';
+}
 var ABB=[
  {nr:1,name:"abb1-aufbau-modell.svg",t:"Aufbau des Kosten-Nutzen-Modells",
   u:"Die vier Blöcke der Abbildung entsprechen den Abschnitten 2 bis 5 des Textes. Die Szenarien wirken ausschließlich über den Zeitpfad d_j auf die Nutzenseite, die Kostenseite bleibt von ihnen unberührt. Die Darstellung ist vollständig symbolisch."},
@@ -978,13 +1046,16 @@ var ABB=[
  {nr:4,name:"abb4-buchungsanteil.svg",t:"Digitaler Buchungsanteil im Zeitverlauf",
   u:"Die beiden Balken zeigen, was das Modell tatsächlich behauptet: den gemessenen Ausgangswert und die angenommene Sättigungsgrenze des Basisfalls. Der Verlauf dazwischen ist eine Interpolation und kein beobachteter Adoptionsverlauf. In der Praxis ist mit Sprüngen durch die Freischaltung weiterer Angebote und mit Sättigungsphasen einzelner Einheiten zu rechnen."},
  {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität des Mindestvolumens für eine weitere Anbindung",
-  u:"Verschiebung des Mindestvolumens bei Variation einzelner Rechengrößen, geordnet nach Wirkung."}
+  u:"Verschiebung des Mindestvolumens bei Variation einzelner Rechengrößen, geordnet nach Wirkung."},
+ {nr:6,name:"abb6-anbindungsreihenfolge.svg",t:"Reihenfolge der Anbindung und Deckung des Fixblocks",
+  u:"Terminvolumen der erfassten Einheiten, absteigend geordnet, gegen das Mindestvolumen der drei Szenarien. Rechts einer Linie trägt sich die Anbindung im jeweiligen Szenario. Die Marke bezeichnet die Einheit, ab der die aufsummierten Kapitalwertbeiträge den Fixblock decken."}
 ];
 function abbHolen(nr,r){
   if(nr===1) return abbKern(r);
   if(nr===2) return abbKapital(r);
   if(nr===3) return abbKlinik(r);
   if(nr===4) return abbPfad(r);
+  if(nr===6) return abbEinheiten(r);
   return abbTornado(tornadoZeilen(r),r.sz[1].m);
 }
 function speichereAbb(nr){
@@ -1523,6 +1594,9 @@ function baueErgebnis(r){
    'padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--feld);color:var(--ink)" '+
    'placeholder="Hochschulambulanz Kardiologie; 4200; 2027&#10;Tinnituszentrum; 1100; 2028">'+esc(EINHEITEN)+'</textarea>'+
    einheitenTabelle(r)+
+   '<div class="card" style="margin-top:14px"><div class="fig-h">'+
+   '<h4>Abbildung 6</h4>'+dlKnopf(6)+'</div><figure>'+
+   abbEinheiten(r)+bu(6)+'</figure></div>'+
    '<div class="card"><div class="fig-h"><h4>Rechnung exportieren</h4>'+
    '<button class="dl" type="button" id="dl-werte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
    'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+

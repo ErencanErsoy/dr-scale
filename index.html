@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -442,7 +442,7 @@ var FELDER=[
  {id:"foerder",erw:true,g:"Investition und Kosten",l:"Davon durch Fördermittel gedeckt",e:"Prozent",min:0,max:100,step:1,t:"ann",
   q:"Anteil der Investitionssumme, der nicht vom Träger selbst getragen wird. Auf die Investitionssumme bezogen, nicht auf die förderfähigen Kosten. Ohne Förderbescheid null setzen, dann rechnet das Modell mit Bruttokosten."},
  {id:"ANB",g:"Investition und Kosten",l:"Anbindungskosten je organisatorischer Einheit",e:"Euro",min:0,max:120000,step:250,t:"sek",
-  q:"Implementierungssumme geteilt durch die Zahl angebundener Kliniken. Obergrenze, da einmaliger Plattformaufwand enthalten."},
+  q:"Implementierungssumme geteilt durch die Zahl angebundener Kliniken. Naeherungswert, keine gesicherte Obergrenze, da fehlende Positionen und einmaliger Plattformaufwand gegenlaeufig wirken."},
  {id:"K",g:"Investition und Kosten",l:"Laufende Kosten",e:"Euro je Jahr",min:0,max:600000,step:1000,t:"ann",
   q:"Fortschreibung. Die zugrundeliegende Quelle endet 2028."},
  {id:"KAB",g:"Investition und Kosten",l:"Laufende Kosten ab Jahr",e:"Jahreszahl",min:2025,max:2040,step:1,t:"sek",
@@ -474,9 +474,9 @@ var FELDER=[
 ];
 
 var MUSTER={I0:2000000,ANB:30000,K:100000,KAB:2029,dIst:20,dZiel:30,rOff:15,rOn:10,
-            b:100,tmin:4,c:40.9,foerder:0,items:1,nutzenJ:0,entgelt:0,anbStd:0,schulStd:0,anbSonst:0,kZusatz:0,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
+            b:100,tmin:4,c:38.43,foerder:0,items:1,nutzenJ:0,entgelt:0,anbStd:0,schulStd:0,anbSonst:0,kZusatz:0,E:500000000,T:400000,start:2027,H:5,zins:1.3,gkv:false,
             IMPL:1170000,NK:39,name:"Musterkrankenhaus"};
-var NUTZLAST="ANCAMmKBKpuZZYzP4lOJPNHOtS/nKbON6jct5Q5VExmQRUI8qGcjtDqswIZom8HT+9QSYSzT5JfHwYIWy2nBXbfVPlUN86YQE9KNLPSsJKeeS3H+WY+MswIZptqJFR++U8Mcwoptphv6xajdi6BAOFqfDVk7XisR7EHhD0klt+5waRkrVMhBzvho7RXQCsWnWErbO0Oj2E4r1cl0GQWHw8Khl+Dt2sMqHeCx/VJ8jrz9OU4W68MXRaG+PztOK1fgeNcTTAGgd0cOFwqFA9KGK2rbGg96//PV2wRNzLtD+EXZZdNsoeW7cnu2IVhOUQgvzHTpiZN+87LYONL4zPfpLD3nFiWtCIYTJL30HB4K/RigHDbKGWngQrMFvqdo7/yX0UGYiDfcEbJoMmD2fUXpKy6ZhTWs102YoAJVl7lpbVpMWxc4G6o63QViQ/pG";
+var NUTZLAST="NcmBpJG2IDUMD7+QXoGdtqlJTAETotMF/3wMr/371+rvtSS6tU26VwujAbzAs8imbjQyW14GcVZekVIYpUeWt8GD4MbZMP3Ae+aE2/l2Fl+2/9bmi7FsqNuDvkqptRJYUPIKloqwUU8mJuTNaaGo+XtFt6bOnLZCmowuxmMAe+L/d3En6YEA3UnIQ9d/EYd0iCOD3EUjZFR00K327Xb8nIYkWXDgmNEaXHei6iOnQwJuiAeFSqrZ+Kzf477vml8XLeYPsWpytMFtizo9tF7EtJhVmkU63tDzlIyK4PTkHOM9uFFgtWAS9jslDr8k3DYEhJkVHtZztDztNh9Nz0NfD1/ut0lt18qOpUMbFXlp2vXatMt83d0E40jToUGkhneWxNLtM/Y7wgZVfYElmReEnnvenrNiIjWKPLPEW6qWPD4W/5OxjtTsNfY=";
 var GELADEN=null, QUELLE="muster", M=Object.assign({},MUSTER);
 
 /* ============ Rechenkern ============ */

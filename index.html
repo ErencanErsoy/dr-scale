@@ -1048,7 +1048,7 @@ var ABB=[
   u:"Die beiden Balken zeigen, was das Modell tatsächlich behauptet: den gemessenen Ausgangswert und die angenommene Sättigungsgrenze des Basisfalls. Der Verlauf dazwischen ist eine Interpolation und kein beobachteter Adoptionsverlauf. In der Praxis ist mit Sprüngen durch die Freischaltung weiterer Angebote und mit Sättigungsphasen einzelner Einheiten zu rechnen."},
  {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität des Mindestvolumens für eine weitere Anbindung",
   u:"Verschiebung des Mindestvolumens bei Variation einzelner Rechengrößen, geordnet nach Wirkung."},
- {nr:6,lokal:true,name:"abb6-anbindungsreihenfolge.svg",t:"Reihenfolge der Anbindung und Deckung des Fixblocks",
+ {nr:6,name:"abb6-anbindungsreihenfolge.svg",t:"Reihenfolge der Anbindung und Deckung des Fixblocks",
   u:"Terminvolumen der erfassten Einheiten, absteigend geordnet, gegen das Mindestvolumen der drei Szenarien. Rechts einer Linie trägt sich die Anbindung im jeweiligen Szenario. Die Marke bezeichnet die Einheit, ab der die aufsummierten Kapitalwertbeiträge den Fixblock decken."}
 ];
 function abbHolen(nr,r){
@@ -1595,7 +1595,7 @@ function baueErgebnis(r){
    'padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--feld);color:var(--ink)" '+
    'placeholder="Hochschulambulanz Kardiologie; 4200; 2027&#10;Tinnituszentrum; 1100; 2028">'+esc(EINHEITEN)+'</textarea>'+
    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 4px">'+
-   '<button class="ghost" type="button" id="lmu-laden">Beispiel laden</button>'+
+   '<button class="ghost" type="button" id="lmu-laden">Beispiel wiederherstellen</button>'+
    '<span class="src" style="margin:0">31 Fachgebiete des LMU Klinikums, '+
    'Jahresbericht 2024. Es sind ambulante Fälle, keine Termine, und sie dienen '+
    'allein dem Ausprobieren.</span></div>'+
@@ -1621,9 +1621,6 @@ function baueErgebnis(r){
 function baueAbb(r){
   var h='';
   ABB.forEach(function(a){
-    /* Abbildung 6 haengt an der Einheitenliste und steht deshalb in
-       Abschnitt 7, unmittelbar unter dem Eingabefeld. */
-    if(a.lokal) return;
     h+='<div class="card"><div class="fig-h"><h4>Abbildung '+a.nr+'</h4>'+dlKnopf(a.nr)+'</div><figure>'+
       abbHolen(a.nr,r)+bu(a.nr)+'</figure></div>';
   });
@@ -1719,13 +1716,15 @@ function amortisation(r,z,V,ziel){
 function amortText(v){ return v===null? "nicht im Zeitraum" : f1(v)+" Jahre"; }
 
 /* ============ Einheitenliste ============ */
-var EINHEITEN="";
 /* Oeffentlich berichtetes Mengengeruest eines universitaeren
    Maximalversorgers, als Beispiel zum Ausprobieren des Abschnitts.
    Quelle: LMU Klinikum, Jahresbericht 2024, Kennzahlen, S. 60 f.
    Es sind ambulante Faelle, keine Termine. Die Summe der 31
    Fachgebiete entspricht den dort ausgewiesenen 443.047 Faellen. */
 var BEISPIEL_LMU='Innere Medizin; 63805\nDermatologie; 48728\nAugenheilkunde; 46492\nInterdisziplinäre Notaufnahmen und Nothilfen; 37235\nOrthopädie und Unfallchirurgie; 26802\nFrauenheilkunde und Geburtshilfe; 24353\nZahnheilkunde; 22419\nKinderheilkunde; 21355\nHNO-Heilkunde; 17280\nIntegriertes Sozialpädiatrisches Zentrum; 13414\nRadiologie; 12752\nNeurologie; 12270\nChirurgie; 11168\nUrologie; 11026\nMund-, Kiefer- und Gesichtschirurgie; 9913\nKinderchirurgie; 9774\nPsychiatrie; 9677\nAnästhesiologie; 8920\nNuklearmedizin; 7056\nNeurochirurgie; 6650\nLaboratoriumsmedizin; 4888\nStrahlenheilkunde; 4529\nTransplantationszentrum München der LMU; 4294\nHerzchirurgie; 2129\nNeuroimmunologie; 1813\nSchlaganfall- und Demenzforschung; 1221\nHumangenetik; 1022\nDeutsches Schwindelzentrum; 931\nPalliativmedizin; 642\nArbeitsmedizin; 312\nSonstige; 177';
+/* Vorgabe der Einheitenliste. Sie ist ueberschreibbar, der Knopf stellt
+   sie wieder her. Die Herkunftsfrage steht in der Limitationsliste. */
+var EINHEITEN=BEISPIEL_LMU;
 
 function einheitenLesen(txt){
   var aus=[],zeilen=String(txt||"").split(/\r?\n/),i;

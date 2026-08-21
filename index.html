@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Skalierungsrechner für das digitale Terminmanagement im Patientenportal. Szenarienbasierte Entscheidungsunterstützung für Krankenhäuser.">
+<meta name="description" content="Skalierungsrechner für das digitale Terminmanagement im Patientenportal. Entscheidungsunterstützung mit offengelegten Rechenfällen für Krankenhäuser.">
 <title>Dr. Scale — Bewertungsmodell für das digitale Terminmanagement</title>
 </head>
 <body>
@@ -226,8 +226,8 @@ label.mussz input{margin-top:2px;flex:none}
 <header>
   <div class="hd">
     <div id="mark"></div>
-    <div class="claim"><b>Skalierungsrechner für das digitale Terminmanagement im Patientenportal</b>Szenarienbasierte Entscheidungsunterstützung</div>
-    <span id="fassung" title="Fassung dieser Seite" style="font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap">Fassung 2026-08-21 &middot; b6a529a</span>
+    <div class="claim"><b>Skalierungsrechner für das digitale Terminmanagement im Patientenportal</b>Entscheidungsunterstützung mit offengelegten Rechenfällen</div>
+    <span id="fassung" title="Fassung dieser Seite" style="font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap">Fassung 2026-08-21 &middot; 6b02040</span>
     <button class="ghost" id="theme" type="button">Dark Mode</button>
   </div>
 </header>
@@ -262,11 +262,11 @@ label.mussz input{margin-top:2px;flex:none}
     <div class="werkzeug" style="display:flex;justify-content:flex-end;gap:8px;margin:-12px 0 16px;align-items:center;flex-wrap:wrap"><span id="druckhinweis" style="font-size:11.5px;color:var(--muted);margin-right:auto"></span><button class="dl" type="button" id="dl-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Diesen Reiter als PDF speichern</button></div>
     <section role="tabpanel" id="p0"><h2>Modelllogik</h2>
       <p class="lead">Der Aufbau folgt Abbildung 1. Jeder Block nennt zuerst seine Gleichung, dann die Herkunft der Werte, dann die Rechnung mit den eingestellten Zahlen.</p>
-      <div class="sprung"><a href="#m1">1 Überblick</a><a href="#m2">2 Szenarien</a><a href="#m3">3 Nutzenseite</a><a href="#m4">4 Kostenseite</a><a href="#m5">5 Zusammenführung und Ergebnis</a><a href="#m6">6 Zeichen und Grenzen</a></div>
+      <div class="sprung"><a href="#m1">1 Überblick</a><a href="#m2">2 Rechenfälle</a><a href="#m3">3 Nutzenseite</a><a href="#m4">4 Kostenseite</a><a href="#m5">5 Zusammenführung und Ergebnis</a><a href="#m6">6 Zeichen und Grenzen</a></div>
       <div id="modell"></div></section>
     <section role="tabpanel" id="p1" hidden><h2>Ergebnisse</h2>
-      <p class="lead">Kernaussagen, Deutung der eingestellten Werte, Szenarienvergleich und Sensitivitätsanalyse.</p>
-      <div class="sprung"><a href="#e1">1 Kernaussagen</a><a href="#e2">2 Deutung</a><a href="#e3">3 Kapitalwert</a><a href="#e4">4 Entscheidungsregel</a><a href="#e5">5 Szenarien</a><a href="#e6">6 Sensitivität</a></div>
+      <p class="lead">Kernaussagen, Deutung der eingestellten Werte, Vergleich der Rechenfälle und Sensitivitätsanalyse.</p>
+      <div class="sprung"><a href="#e1">1 Kernaussagen</a><a href="#e2">2 Deutung</a><a href="#e3">3 Kapitalwert</a><a href="#e4">4 Entscheidungsregel</a><a href="#e5">5 Rechenfälle</a><a href="#e6">6 Sensitivität</a></div>
       <div id="ergebnis"></div></section>
     <section role="tabpanel" id="p2" hidden><h2>Abbildungen</h2>
       <p class="lead">Vektorgrafiken zur unmittelbaren Übernahme in eine wissenschaftliche Arbeit. Jede Abbildung trägt eine Legende, die Linienarten bleiben im Schwarzweißdruck unterscheidbar.</p>
@@ -329,7 +329,7 @@ var SYMBOLE=[
  ["n","Direkter Nutzen eines umgestellten Termins","Euro","calc","Was ein einzelner Termin einbringt, der von telefonisch auf online wechselt. Faellt genau einmal an, bei genau diesem Termin."],
  ["d_0","Digitaler Buchungsanteil heute","Prozent","sek","Gemessener Ausgangswert. Er liegt VOR dem ersten Betrachtungsjahr."],
  ["d_j","Digitaler Buchungsanteil im Jahr j","Prozent","calc","Anteil der online gebuchten Termine im Jahr j. Das Jahr j läuft von 1 bis H."],
- ["d_H","Digitaler Buchungsanteil im letzten Jahr","Prozent","lit","Endwert des Zeitraums. Er allein unterscheidet die Szenarien."],
+ ["d_H","Digitaler Buchungsanteil im letzten Jahr","Prozent","lit","Endwert des Zeitraums. Er allein unterscheidet die Rechenfälle."],
  ["i","Kalkulationszinssatz","Prozent","recht","Satz, mit dem künftige Beträge auf den heutigen Wert umgerechnet werden."],
  ["H","Betrachtungszeitraum","Jahre","ann","Zahl der Jahre, über die gerechnet wird."],
  ["N","Barwert je Termin des Jahresvolumens","Euro","calc","Was ein Termin einbringt, der in JEDEM Jahr des Zeitraums anfällt, umgerechnet auf heute. Enthält keine Kosten."],
@@ -373,7 +373,7 @@ var ALLGEMEIN=[
  {blk:"ueberblick",g:"Bewertungsverfahren",w:"Kapitalwertmethode",t:"recht",z:"Senatsverwaltung für Finanzen Berlin, 2024",
   h:"Für Maßnahmen ohne nennenswerte gesamtwirtschaftliche Wirkungen vorgeschrieben. § 105 Abs. 1 Nr. 2 erstreckt dies auf landesunmittelbare juristische Personen des öffentlichen Rechts."},
  {blk:"szenarien",g:"Zeitpfad des digitalen Buchungsanteils",w:"lineare Annäherung",t:"ann",z:"eigene Festlegung",
-  h:"Gleichmäßiger Zuwachs vom gemessenen Ausgangswert auf den Endwert des Szenarios. Gewählt, weil nur ein Messwert vorliegt und jede gekrümmte Kurve einen zweiten, nicht belegbaren Parameter erfordern würde. Die lineare Form ist zudem die vorsichtigere."}
+  h:"Gleichmäßiger Zuwachs vom gemessenen Ausgangswert auf den Endwert des Rechenfalls. Gewählt, weil nur ein Messwert vorliegt und jede gekrümmte Kurve einen zweiten, nicht belegbaren Parameter erfordern würde. Die lineare Form ist zudem die vorsichtigere."}
 ];
 
 var QUELLEN=[
@@ -452,7 +452,7 @@ var FELDER=[
  {id:"dIst",g:"Digitaler Buchungsanteil",l:"Digitaler Buchungsanteil heute",e:"Prozent",min:0,max:70,step:0.5,t:"sek",
   q:"Gemessener Anteil online gebuchter Termine. Die Bezugsmenge geht aus der Quelle nicht hervor, also ob alle ambulanten Termine gemeint sind, die der angebundenen Einheiten oder die grundsaetzlich online buchbaren."},
  {id:"dZiel",g:"Digitaler Buchungsanteil",l:"Zielwert des Krankenhauses",e:"Prozent",min:0,max:80,step:0.5,t:"sek",
-  q:"Bestimmt das mittlere Szenario und muss über dem heutigen Wert liegen."},
+  q:"Bestimmt den mittleren Rechenfall und muss über dem heutigen Wert liegen."},
  {id:"rOff",g:"Wirkung je Termin",l:"Terminausfall ohne Onlinebuchung",e:"Prozent",min:0,max:35,step:0.1,t:"sek",
   q:"Gemessener Anteil nicht wahrgenommener Termine."},
  {id:"rOn",g:"Wirkung je Termin",l:"Terminausfall mit Onlinebuchung",e:"Prozent",min:0,max:35,step:0.1,t:"sek",
@@ -735,7 +735,7 @@ function abbKern(r){
   }
   var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Aufbau des Kosten-Nutzen-Modells">';
 
-  s+=kasten(30,22,370,120,"SZENARIEN",
+  s+=kasten(30,22,370,120,"RECHENFÄLLE",
       [["S0 Referenz ohne Portal","Bezugspunkt"],
        ["S1 Geringer Buchungsanteil","kein Zuwachs"],
        ["S2 Mittlerer Buchungsanteil","Zielwert des Hauses"],
@@ -973,7 +973,7 @@ function alsPng(datei,name){
 /* ---- Abbildung 6: Reihenfolge der Anbindung und Deckung des Fixblocks ---- */
 /* Zeigt beide Entscheidungen in einem Bild. Die Balken stehen fuer das
    Terminvolumen je erfasster Einheit, die senkrechten Linien fuer das
-   Mindestvolumen der drei Szenarien. Rechts davon traegt sich eine Anbindung.
+   Mindestvolumen der drei Rechenfaelle. Rechts davon traegt sich eine Anbindung.
    Die waagerechte Marke bezeichnet die Einheit, ab der die aufsummierten
    Kapitalwertbeitraege den Fixblock decken, also den Break-even des Portals. */
 function abbEinheiten(r){
@@ -1038,11 +1038,11 @@ function abbEinheiten(r){
   /* Die Legende benennt die Farben, nicht mehr Linien. */
   var ein=[
     {art:"flaeche",c:"var(--calc)",deck:1,
-     t:"trägt sich in allen drei Szenarien", w:"ab "+f0(schwellen[0])+" Terminen"},
+     t:"trägt sich in allen drei Rechenfällen", w:"ab "+f0(schwellen[0])+" Terminen"},
     {art:"flaeche",c:"var(--sek)",deck:1,
-     t:"hängt vom Szenario ab", w:f0(schwellen[2])+" bis "+f0(schwellen[0])},
+     t:"hängt vom Rechenfall ab", w:f0(schwellen[2])+" bis "+f0(schwellen[0])},
     {art:"flaeche",c:"var(--line2)",deck:1,
-     t:"trägt sich in keinem Szenario", w:"unter "+f0(schwellen[2])}
+     t:"trägt sich in keinem Rechenfall", w:"unter "+f0(schwellen[2])}
   ];
   if(deckAb>=0)
     ein.push({art:"flaeche",c:"var(--warn)",deck:0.10,
@@ -1053,7 +1053,7 @@ function abbEinheiten(r){
 }
 var ABB=[
  {nr:1,name:"abb1-aufbau-modell.svg",t:"Aufbau des Kosten-Nutzen-Modells",
-  u:"Die vier Blöcke der Abbildung entsprechen den Abschnitten 2 bis 5 des Textes. Die Szenarien wirken ausschließlich über den Zeitpfad d_j auf die Nutzenseite, die Kostenseite bleibt von ihnen unberührt. Die Darstellung ist vollständig symbolisch."},
+  u:"Die vier Blöcke der Abbildung entsprechen den Abschnitten 2 bis 5 des Textes. Die Rechenfälle wirken ausschließlich über den Zeitpfad d_j auf die Nutzenseite, die Kostenseite bleibt von ihnen unberührt. Die Darstellung ist vollständig symbolisch."},
  {nr:2,name:"abb2-kapitalwert.svg",t:"Kapitalwert nach angebundenem Terminvolumen",
   u:"Der Kapitalwert wächst linear mit dem angebundenen Terminvolumen. Der Schnittpunkt mit der Nulllinie ist der Break-even des Portals."},
  {nr:3,name:"abb3-entscheidungsregel.svg",t:"Entscheidungsregel für eine einzelne Einheit",
@@ -1063,7 +1063,7 @@ var ABB=[
  {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität des Mindestvolumens für eine weitere Anbindung",
   u:"Verschiebung des Mindestvolumens bei Variation einzelner Rechengrößen, geordnet nach Wirkung."},
  {nr:6,name:"abb6-anbindungsreihenfolge.svg",t:"Reihenfolge der Anbindung und Deckung des Fixblocks",
-  u:"Terminvolumen der erfassten Einheiten, absteigend geordnet, gegen das Mindestvolumen der drei Szenarien. Rechts einer Linie trägt sich die Anbindung im jeweiligen Szenario. Die Marke bezeichnet die Einheit, ab der die aufsummierten Kapitalwertbeiträge den Fixblock decken."}
+  u:"Terminvolumen der erfassten Einheiten, absteigend geordnet, gegen das Mindestvolumen der drei Rechenfälle. Rechts einer Linie trägt sich die Anbindung im jeweiligen Rechenfall. Die Marke bezeichnet die Einheit, ab der die aufsummierten Kapitalwertbeiträge den Fixblock decken."}
 ];
 function abbHolen(nr,r){
   if(nr===1) return abbKern(r);
@@ -1204,10 +1204,10 @@ function blattModell(r){
   ];
 }
 
-/* Ergebnisblatt: die beiden Schwellen je Szenario */
+/* Ergebnisblatt: die beiden Schwellen je Rechenfall */
 function blattErgebnisse(r){
   var s=r.jahre.length+2, sp=["N","O","P"];
-  var z=[["Szenario","Sättigungsgrenze in Prozent","Barwert je Termin N in Euro",
+  var z=[["Rechenfall","Sättigungsgrenze in Prozent","Barwert je Termin N in Euro",
           "Mindestvolumen m in Terminen je Jahr","Break-even B in Terminen je Jahr"]];
   r.sz.forEach(function(x,k){
     var zl=k+2;
@@ -1259,7 +1259,7 @@ function speichereWerte(){
   z.push("A Barwert vermiedener Abschlag;"+f2(r.bwA)+";Euro");
   z.push("Barwert laufende Kosten;"+f2(r.bwK)+";Euro");
   z.push("F Fixblock;"+f2(r.F)+";Euro");
-  z.push("");z.push("Szenario;Grenze in Prozent;N Barwert je Termin in Euro;m Mindestvolumen;B Break-even");
+  z.push("");z.push("Rechenfall;Grenze in Prozent;N Barwert je Termin in Euro;m Mindestvolumen;B Break-even");
   r.sz.forEach(function(s){z.push(s.name+";"+f1(s.D*100)+";"+f2(s.N)+";"+f0(s.m)+";"+f0(s.B));});
   var txt=z.join("\r\n");
   anbieten("dr-scale-werte.csv",txt,"text/csv",function(){anbieten("dr-scale-werte.txt",txt,"text/plain",null);});
@@ -1295,7 +1295,7 @@ function tornadoZeilen(r){
 function deutung(r){
   var d=[],m=r.sz[1],hoch=r.sz[2],ver=r.sz[0];
   d.push(["Entscheidungsregel","Die Anbindung einer Klinik trägt sich ab "+f0(m.m)+
-   " Terminen je Jahr, also etwa "+f0(m.m/250)+" Terminen je Werktag. Über die drei Szenarien liegt die Schwelle zwischen "+
+   " Terminen je Jahr, also etwa "+f0(m.m/250)+" Terminen je Werktag. Über die drei Rechenfälle liegt die Schwelle zwischen "+
    f0(hoch.m)+" und "+f0(ver.m)+" Terminen."]);
   if(r.F<=0) d.push(["Fixblock bereits gedeckt","Der Barwert des vermiedenen Abschlags übersteigt Investition und laufende Kosten. Das Portal trägt sich unabhängig vom angebundenen Terminvolumen. Für die Frage, welche Einheit anzubinden ist, bleibt das Mindestvolumen maßgeblich."]);
   if(r.F>0&&r.p.T>0) d.push(["Größenordnung","Das Portal trägt sich ab "+f0(m.B)+
@@ -1313,14 +1313,14 @@ function deutung(r){
     t.forEach(function(x,k){ if(x.n==="Endwert des digitalen Buchungsanteils") pos=k+1; });
     d.push(["Stärkster Hebel","Den größten Einfluss hat die Rechengröße "+t[0].n+
      ". Sie verschiebt die Schwelle um "+f0(Math.abs(t[0].a-t[0].b))+" Termine."]);
-    if(pos>0) d.push(["Gewicht der Szenarien","Die Szenarienachse steht in der Sensitivität an "+
-     pos+". Stelle. Die Wahl des Szenarios wiegt damit weniger als "+(pos-1)+" der gesetzten Rechengrößen."]);
+    if(pos>0) d.push(["Gewicht der Rechenfälle","Die Sättigungsgrenze steht in der Sensitivität an "+
+     pos+". Stelle. Die Wahl des Rechenfalls wiegt damit weniger als "+(pos-1)+" der gesetzten Rechengrößen."]);
   }
   var ausser=r.jahre.filter(function(J){return !FTB2[J.jahr];}).length;
   if(ausser>0) d.push(["Hinweis zum Zeitraum","Von "+r.H+" Betrachtungsjahren liegen "+ausser+
    " außerhalb der Geltungsdauer der Abschlagsvereinbarung und tragen keinen vermiedenen Abschlag."]);
-  if(!(r.p.dZiel>r.p.dIst)) d.push(["Hinweis zu den Szenarien",
-   "Der Zielwert liegt nicht über dem heutigen digitalen Buchungsanteil. Das mittlere Szenario fällt mit dem unteren zusammen."]);
+  if(!(r.p.dZiel>r.p.dIst)) d.push(["Hinweis zu den Rechenfällen",
+   "Der Zielwert liegt nicht über dem heutigen digitalen Buchungsanteil. Der mittlere Rechenfall fällt mit dem unteren zusammen."]);
   if(r.p.rOff<=r.p.rOn) d.push(["Hinweis zur Wirkung",
    "Der Terminausfall mit Onlinebuchung liegt nicht unter dem ohne. Der Nutzen aus vermiedenen Ausfällen entfällt."]);
   return d;
@@ -1375,7 +1375,7 @@ function baueModell(r){
    '<td>Break-even B in Terminen je Jahr</td>'+
    '<td>Ab diesem angebundenen Volumen ist der Kapitalwert positiv</td></tr>'+
    '</tbody></table></div>'+
-   '<p>Die Szenarien zeigen zusätzlich, wie stark beide Antworten vom künftigen digitalen '+
+   '<p>Die Rechenfälle zeigen zusätzlich, wie stark beide Antworten vom künftigen digitalen '+
    'Buchungsanteil abhängen. Die Sensitivitätsanalyse zeigt, welche Rechengröße die Schwelle am '+
    'stärksten verschiebt und wo sich genauere Daten am ehesten lohnen. Beides steht im Reiter '+
    'Ergebnisse.</p>'+
@@ -1395,17 +1395,17 @@ function baueModell(r){
    '<h4>1.3 Festlegungen, die für alle Blöcke gelten</h4>'+
    werteTab("ueberblick")+feldTab(["start","H","zins"]);
 
-  /* ---------------- 2 Szenarien ---------------- */
-  h+='<h3 id="m2">2 Szenarien</h3>'+
-   '<p>Die Szenarien unterscheiden sich in einer einzigen Größe, dem digitalen Buchungsanteil im '+
-   'letzten Jahr des Zeitraums. S0 ist dabei kein eigenes Szenario, sondern der Zustand ohne Portal. '+
+  /* ---------------- 2 Rechenfälle ---------------- */
+  h+='<h3 id="m2">2 Rechenfälle</h3>'+
+   '<p>Die Rechenfälle unterscheiden sich in einer einzigen Größe, dem digitalen Buchungsanteil im '+
+   'letzten Jahr des Zeitraums. S0 ist dabei kein eigener Rechenfall, sondern der Zustand ohne Portal. '+
    'Der Kapitalwert misst bereits gegen ihn, weshalb S0 in Abbildung 2 als Nulllinie erscheint.</p>'+
    '<h4>2.1 Gleichung</h4>'+
    gl("d_j = d_0 + (d_H − d_0) × j / H",
       "Buchungsanteil heute + (Endwert − Buchungsanteil heute) × laufendes Jahr ÷ Betrachtungszeitraum. Bereits das erste Betrachtungsjahr liegt einen Schritt über dem heutigen Wert.")+
    '<h4>2.2 Herkunft der Werte</h4>'+feldTab(["dIst","dZiel"])+werteTab("szenarien")+
    '<h4>2.3 Rechnung mit den eingestellten Werten</h4>'+
-   '<div class="tw"><table><thead><tr><th>Szenario</th><th class="num">Endwert d_H</th>'+
+   '<div class="tw"><table><thead><tr><th>Rechenfall</th><th class="num">Endwert d_H</th>'+
    '<th class="num">Anstieg je Jahr</th>';
   r.jahre.forEach(function(J){ h+='<th class="num">'+J.jahr+'</th>'; });
   h+='</tr></thead><tbody>';
@@ -1438,7 +1438,7 @@ function baueModell(r){
       "\n  = "+f2((r.p.rOff-r.p.rOn)/100*r.p.b)+"   +   "+f2(r.p.tmin/60*r.p.c)+
       "\n  = "+f4(r.n)+" Euro",
       "Vermiedener Terminausfall + Eingesparte Verwaltungszeit − Variable Kosten, mit eingesetzten Werten")+
-   '<div class="tw"><table><thead><tr><th>Szenario</th><th class="num">N in Euro je Termin und Jahr</th>'+
+   '<div class="tw"><table><thead><tr><th>Rechenfall</th><th class="num">N in Euro je Termin und Jahr</th>'+
    '</tr></thead><tbody>';
   r.sz.forEach(function(z){
     h+='<tr><td><b>'+esc(z.name)+'</b></td><td class="num"><b>'+f2(z.N)+'</b></td></tr>';
@@ -1511,7 +1511,7 @@ function baueModell(r){
       "Mindestvolumen = Anbindungskosten je Einheit ÷ Barwert je Termin. Break-even = Fixblock ÷ Barwert je Termin. Beide in Terminen je Jahr.",1)+
    '<p>In m fehlt die Investitionssumme, weil sie unabhängig davon anfällt, ob eine weitere Klinik '+
    'angeschlossen wird. In B ist sie enthalten, weil dort die Gesamtinvestition beurteilt wird.</p>'+
-   '<div class="tw"><table><thead><tr><th>Szenario</th><th class="num">N</th>'+
+   '<div class="tw"><table><thead><tr><th>Rechenfall</th><th class="num">N</th>'+
    '<th class="num">m, Termine je Jahr</th><th class="num">B, Termine je Jahr</th>'+
    '<th class="num">Anteil am Volumen</th></tr></thead><tbody>';
   r.sz.forEach(function(z){
@@ -1573,10 +1573,10 @@ function baueErgebnis(r){
       '<span class="tag t-calc">trägt sich</span>':'<span class="tag t-ann">zu klein</span>')+'</td></tr>';
   });
   h+='</tbody></table></div>';
-  h+='<h3 id="e5">5 Szenarien</h3>'+
-   '<p>Die Szenarien unterscheiden sich in einer einzigen Größe, dem Endwert d_H des digitalen Buchungsanteils im letzten Jahr.</p>'+
+  h+='<h3 id="e5">5 Rechenfälle</h3>'+
+   '<p>Die Rechenfälle unterscheiden sich in einer einzigen Größe, dem Endwert d_H des digitalen Buchungsanteils im letzten Jahr.</p>'+
    '<div class="card"><div class="fig-h"><h4>Abbildung 4</h4>'+dlKnopf(4)+'</div><figure>'+abbPfad(r)+bu(4)+'</figure></div>'+
-   '<div class="tw"><table><thead><tr><th>Szenario</th><th class="num">Endwert d_H</th><th>Herkunft</th>'+
+   '<div class="tw"><table><thead><tr><th>Rechenfall</th><th class="num">Endwert d_H</th><th>Herkunft</th>'+
    '<th class="num">N</th><th class="num">m</th><th class="num">B</th>'+
    '<th class="num">m ohne Zeitersparnis</th><th class="num">B ohne Zeitersparnis</th></tr></thead><tbody>';
   var nMess=(r.p.rOff-r.p.rOn)/100*r.p.b, fk=r.n/nMess;
@@ -1585,7 +1585,7 @@ function baueErgebnis(r){
       '<td class="num">'+f2(z.N)+'</td><td class="num"><b>'+f0(z.m)+'</b></td><td class="num">'+f0(z.B)+
       '</td><td class="num">'+f0(z.m*fk)+'</td><td class="num">'+f0(z.B*fk)+'</td></tr>';
   });
-  h+='</tbody></table></div><div class="note"><b>Zur letzten Spaltengruppe.</b> Die Zeitersparnis je Vorgang ist die einzige Rechengroesse ohne Anker in einer Quelle. Die beiden rechten Spalten zeigen deshalb dauerhaft, wie die Schwellen ausfallen, wenn allein die gemessene Wirkung angesetzt wird, also der vermiedene Terminausfall. Die Entscheidung ueber eine Anbindung aendert sich dadurch nicht.</div><div class="note">Die obere Grenze misst die Adoption von Patientenportalen insgesamt, nicht den Anteil online gebuchter Termine, und mischt kontrollierte Bedingungen (71 Prozent) mit Alltagsbedingungen (23 Prozent). Sie dient als explorative Szenariogrenze, nicht als erwartbarer Zielwert. Umgekehrt bestaetigt derselbe Befund die untere Grenze, weil der gemessene Ausgangswert bereits darüber liegt (Fraccaro et al., 2017).</div>';
+  h+='</tbody></table></div><div class="note"><b>Zur letzten Spaltengruppe.</b> Die Zeitersparnis je Vorgang ist die einzige Rechengroesse ohne Anker in einer Quelle. Die beiden rechten Spalten zeigen deshalb dauerhaft, wie die Schwellen ausfallen, wenn allein die gemessene Wirkung angesetzt wird, also der vermiedene Terminausfall. Die Entscheidung ueber eine Anbindung aendert sich dadurch nicht.</div><div class="note">Die obere Grenze misst die Adoption von Patientenportalen insgesamt, nicht den Anteil online gebuchter Termine, und mischt kontrollierte Bedingungen (71 Prozent) mit Alltagsbedingungen (23 Prozent). Sie dient als explorative Obergrenze, nicht als erwartbarer Zielwert. Umgekehrt bestaetigt derselbe Befund die untere Grenze, weil der gemessene Ausgangswert bereits darüber liegt (Fraccaro et al., 2017).</div>';
   h+='<h3 id="e6">6 Sensitivitätsanalyse</h3>'+
    '<p>Jede Rechengröße wird einzeln variiert, während die übrigen unverändert bleiben.</p>'+
    '<div class="card"><div class="fig-h"><h4>Abbildung 5</h4>'+dlKnopf(5)+'</div><figure>'+
@@ -1626,7 +1626,7 @@ function baueErgebnis(r){
    'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
    '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>'+
    '<line x1="9" y1="3" x2="9" y2="21"/></svg>Als Excel exportieren</button></div>'+
-   '<p style="margin:0;color:var(--muted);font-size:13px">Alle Rechengrößen samt Herkunft, die Zwischengrößen, die Szenarienergebnisse und die Sensitivitätsanalyse. Die CSV-Datei enthält alles in einem Block, die Excel-Datei verteilt es auf vier Blätter und behält Zahlen als Zahlen. Die Excel-Datei enthält die Rechenwege als echte Formeln, sodass ein geänderter Eingabewert dort unmittelbar ein neues Ergebnis liefert. Die CSV-Datei enthält nur die berechneten Werte.</p></div>';
+   '<p style="margin:0;color:var(--muted);font-size:13px">Alle Rechengrößen samt Herkunft, die Zwischengrößen, die Ergebnisse der Rechenfälle und die Sensitivitätsanalyse. Die CSV-Datei enthält alles in einem Block, die Excel-Datei verteilt es auf vier Blätter und behält Zahlen als Zahlen. Die Excel-Datei enthält die Rechenwege als echte Formeln, sodass ein geänderter Eingabewert dort unmittelbar ein neues Ergebnis liefert. Die CSV-Datei enthält nur die berechneten Werte.</p></div>';
   document.getElementById("ergebnis").innerHTML=h;
   document.getElementById("dl-werte").addEventListener("click",speichereWerte);
   document.getElementById("dl-excel").addEventListener("click",speichereExcel);

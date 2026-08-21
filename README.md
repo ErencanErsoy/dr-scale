@@ -1,7 +1,7 @@
 # Dr. Scale
 
-Skalierungsrechner für das digitale Terminmanagement im Patientenportal. Szenarienbasierte
-Entscheidungsunterstützung für Krankenhäuser.
+Skalierungsrechner für das digitale Terminmanagement im Patientenportal.
+Entscheidungsunterstützung mit offengelegten Rechenfällen für Krankenhäuser.
 
 **→ [erencanersoy.github.io/dr-scale](https://erencanersoy.github.io/dr-scale/)**
 
@@ -128,7 +128,7 @@ nicht als Text ankommen.
 Die Arbeitsmappe enthält **echte Formeln**, keine ausgerechneten Zahlen. Wer im Blatt Eingaben
 einen Wert ändert, bekommt in Excel unmittelbar neue Ergebnisse. Der Aufbau ist fünfteilig:
 Eingaben, Jahre mit der Diskontierung und den Zeitpfaden, Modell mit den Größen der Gleichungen,
-Ergebnisse mit beiden Schwellen je Szenario und Sensitivität. Nur die Sensitivität steht als
+Ergebnisse mit beiden Schwellen je Rechenfall und Sensitivität. Nur die Sensitivität steht als
 Wert, weil jede ihrer Zeilen ein vollständiger zweiter Modelldurchlauf ist. Die CSV-Datei
 enthält demgegenüber nur die berechneten Werte.
 

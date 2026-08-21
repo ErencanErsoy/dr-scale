@@ -976,11 +976,7 @@ function alsPng(datei,name){
    Kapitalwertbeitraege den Fixblock decken, also den Break-even des Portals. */
 function abbEinheiten(r){
   var liste=einheitenLesen(EINHEITEN);
-  var W=760;
-  if(!liste.length)
-    return '<svg viewBox="0 0 '+W+' 90" role="img" aria-label="Noch keine Einheiten erfasst">'+
-      '<text x="'+(W/2)+'" y="46" text-anchor="middle" font-size="12.5" fill="var(--muted)">'+
-      'Noch keine Einheiten erfasst. Eine Zeile je Einheit im Feld darueber.</text></svg>';
+  var W=760, leer=!liste.length;
 
   /* Reihenfolge der Pruefung: das groesste Volumen zuerst, weil der Nutzen mit
      dem Volumen waechst, der Anbindungsaufwand aber nicht. */
@@ -999,10 +995,11 @@ function abbEinheiten(r){
     if(deckAb<0 && lauf>=r.F) deckAb=i;
   }
 
-  var T=16,B=92,L=196,R=104,zh=Math.max(15,Math.min(22,340/reihen.length));
-  var ph=reihen.length*zh, Hh=T+ph+B, iw=W-L-R;
+  var T=16,B=92,L=196,R=104;
+  var zh=leer?0:Math.max(15,Math.min(22,340/reihen.length));
+  var ph=leer?54:reihen.length*zh, Hh=T+ph+B, iw=W-L-R;
   var schwellen=r.sz.map(function(s){return s.m;});
-  var xmax=Math.max.apply(null,reihen.map(function(x){return x.V;}).concat(schwellen))*1.12;
+  var xmax=Math.max.apply(null,reihen.map(function(x){return x.V;}).concat(schwellen))*(leer?1.6:1.12);
   var fx=function(v){return L+Math.max(0,Math.min(v,xmax))/xmax*iw;};
   var fs=Math.max(8.5,Math.min(11,zh-6));
 
@@ -1027,6 +1024,9 @@ function abbEinheiten(r){
     s+='<line x1="'+x+'" y1="'+(T-4)+'" x2="'+x+'" y2="'+(T+ph+4)+'" stroke="'+FARBE[nn]+
        '" stroke-width="1.5"'+linienart(sz.stil)+'/>';
   });
+  if(leer)
+    s+='<text x="'+(L+iw/2)+'" y="'+(T+ph/2+4)+'" text-anchor="middle" font-size="12" '+
+       'fill="var(--muted)">Einheiten im Feld darüber erfassen, um sie hier einzuordnen.</text>';
   s+=achse(L,T+ph+4,W-R,T+ph+4);
   s+='<text x="'+(L+iw/2)+'" y="'+(T+ph+22)+'" text-anchor="middle" font-size="11" fill="var(--ink)">Termine je Jahr</text>';
 

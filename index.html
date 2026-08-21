@@ -999,7 +999,10 @@ function abbEinheiten(r){
   /* Feste Zeilenhoehe. Die Abbildung waechst mit der Zahl der Einheiten,
      statt die Zeilen zu stauchen. Der Browser skaliert auf die Breite,
      wodurch die Schrift unabhaengig von der Zeilenzahl gleich gross bleibt. */
-  var T=16,B=92,L=232,R=104,zh=leer?0:20;
+  /* Der untere Rand traegt die Legende. Ihre Zeilenzahl haengt davon ab, ob
+     die Deckung des Fixblocks erreicht wird, deshalb wird er mitgerechnet. */
+  var legZeilen=3+(deckAb>=0?1:0);
+  var T=16,B=45+legZeilen*16,L=232,R=104,zh=leer?0:20;
   var ph=leer?54:reihen.length*zh, Hh=T+ph+B, iw=W-L-R;
   var schwellen=r.sz.map(function(s){return s.m;});
   var xmax=Math.max.apply(null,reihen.map(function(x){return x.V;}).concat(schwellen))*(leer?1.6:1.12);
@@ -1008,42 +1011,42 @@ function abbEinheiten(r){
 
   var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Terminvolumen der Einheiten gegen das Mindestvolumen">';
 
+  /* Flaeche hinter den Zeilen, die zusammen den Fixblock decken. Sie steht
+     vor den Balken, damit sie hinter ihnen liegt. */
+  if(deckAb>=0)
+    s+='<rect x="'+(L-6)+'" y="'+(T-4)+'" width="'+(W-R-L+12)+'" height="'+
+       ((deckAb+1)*zh+4)+'" fill="var(--warn)" opacity="0.10"/>';
+
   /* Balken je Einheit */
   reihen.forEach(function(e,k){
     var y=T+k*zh, bh=12;
     var farbe = e.V>=schwellen[0] ? "var(--calc)" : (e.V>=schwellen[2] ? "var(--sek)" : "var(--line2)");
-    s+='<rect x="'+L+'" y="'+(y+(zh-bh)/2)+'" width="'+(fx(e.V)-L)+'" height="'+bh+'" fill="'+farbe+'"/>'+
+    s+='<rect class="bal" x="'+L+'" y="'+(y+(zh-bh)/2)+'" width="'+(fx(e.V)-L)+'" height="'+bh+'" fill="'+farbe+'"/>'+
        '<text x="'+(L-8)+'" y="'+(y+zh/2+fs*0.36)+'" text-anchor="end" font-size="'+fs+'" fill="var(--ink)">'+
        esc(e.name.length>34?e.name.slice(0,33)+"…":e.name)+'</text>'+
        '<text x="'+(fx(e.V)+6)+'" y="'+(y+zh/2+fs*0.36)+'" font-size="'+fs+'" fill="var(--muted)">'+f0(e.V)+'</text>';
   });
 
-  /* Trennlinie unter der letzten Einheit, die zur Deckung des Fixblocks noch
-     gebraucht wird. Oberhalb der Linie ist das Vorhaben als Ganzes gedeckt. */
-  if(deckAb>=0){
-    var yd=T+(deckAb+1)*zh;
-    s+='<line x1="'+L+'" y1="'+yd+'" x2="'+(W-R)+'" y2="'+yd+
-       '" stroke="var(--warn)" stroke-width="1.4" stroke-dasharray="6 4"/>'+
-       '<text x="'+(W-R)+'" y="'+(yd-4)+'" text-anchor="end" font-size="'+fs+
-       '" fill="var(--warn)">bis hier ist der Fixblock gedeckt</text>';
-  }
 
-  /* Senkrechte je Szenario, das Mindestvolumen */
-  r.sz.forEach(function(sz,nn){
-    var x=fx(sz.m);
-    if(sz.m>xmax) return;
-    s+='<line x1="'+x+'" y1="'+(T-4)+'" x2="'+x+'" y2="'+(T+ph+4)+'" stroke="'+FARBE[nn]+
-       '" stroke-width="1.5"'+linienart(sz.stil)+'/>';
-  });
   if(leer)
     s+='<text x="'+(L+iw/2)+'" y="'+(T+ph/2+4)+'" text-anchor="middle" font-size="12" '+
        'fill="var(--muted)">Einheiten im Feld darüber erfassen, um sie hier einzuordnen.</text>';
   s+=achse(L,T+ph+4,W-R,T+ph+4);
   s+='<text x="'+(L+iw/2)+'" y="'+(T+ph+22)+'" text-anchor="middle" font-size="11" fill="var(--ink)">Termine je Jahr</text>';
 
-  var ein=r.sz.map(function(sz,nn){
-    return {c:FARBE[nn],stil:sz.stil,t:sz.name,w:"Mindestvolumen "+f0(sz.m)};
-  });
+  /* Die Legende benennt die Farben, nicht mehr Linien. */
+  var ein=[
+    {art:"flaeche",c:"var(--calc)",deck:1,
+     t:"trägt sich in allen drei Szenarien", w:"ab "+f0(schwellen[0])+" Terminen"},
+    {art:"flaeche",c:"var(--sek)",deck:1,
+     t:"hängt vom Szenario ab", w:f0(schwellen[2])+" bis "+f0(schwellen[0])},
+    {art:"flaeche",c:"var(--line2)",deck:1,
+     t:"trägt sich in keinem Szenario", w:"unter "+f0(schwellen[2])}
+  ];
+  if(deckAb>=0)
+    ein.push({art:"flaeche",c:"var(--warn)",deck:0.10,
+              t:"diese Einheiten decken zusammen den Fixblock",
+              w:(deckAb+1)+" von "+reihen.length});
   s+=legendeBand(ein,10,T+ph+32,W-20);
   return s+'</svg>';
 }

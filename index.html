@@ -227,7 +227,7 @@ label.mussz input{margin-top:2px;flex:none}
   <div class="hd">
     <div id="mark"></div>
     <div class="claim"><b>Skalierungsrechner für das digitale Terminmanagement im Patientenportal</b>Entscheidungsunterstützung mit offengelegten Rechenfällen</div>
-    <span id="fassung" title="Fassung dieser Seite" style="font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap">Fassung 2026-08-21 &middot; 6b02040</span>
+    <span id="fassung" title="Fassung dieser Seite" style="font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap">Fassung 2026-08-21 &middot; 7cb4414</span>
     <button class="ghost" id="theme" type="button">Dark Mode</button>
   </div>
 </header>
@@ -1063,14 +1063,117 @@ var ABB=[
  {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität des Mindestvolumens für eine weitere Anbindung",
   u:"Verschiebung des Mindestvolumens bei Variation einzelner Rechengrößen, geordnet nach Wirkung."},
  {nr:6,name:"abb6-anbindungsreihenfolge.svg",t:"Reihenfolge der Anbindung und Deckung des Fixblocks",
-  u:"Terminvolumen der erfassten Einheiten, absteigend geordnet, gegen das Mindestvolumen der drei Rechenfälle. Rechts einer Linie trägt sich die Anbindung im jeweiligen Rechenfall. Die Marke bezeichnet die Einheit, ab der die aufsummierten Kapitalwertbeiträge den Fixblock decken."}
+  u:"Terminvolumen der erfassten Einheiten, absteigend geordnet, gegen das Mindestvolumen der drei Rechenfälle. Rechts einer Linie trägt sich die Anbindung im jeweiligen Rechenfall. Die Marke bezeichnet die Einheit, ab der die aufsummierten Kapitalwertbeiträge den Fixblock decken."},
+ {nr:7,name:"abb7-szenarien.svg",t:"Szenarien der Portalnutzung",
+  u:"Vier qualitative Zukunftsbilder aus den beiden Ungewissheiten Patientennutzung und Automatisierungsgrad. Der Punkt markiert die Basiskalkulation, die in beiden belegten Spannen mittig liegt. Die kursiven Angaben nennen die Richtung, in die Mindestvolumen und Break-even sich gegenüber dieser Lage bewegen, nicht deren Höhe. Ein eigener Ergebniswert ist den Szenarien bewusst nicht zugeordnet, weil die Literatur für die vier Zustände keinen beziffert."},
+ {nr:8,name:"abb8-matrix-beide-achsen.svg",t:"Mindestvolumen über beide Achsen",
+  u:"Mindestvolumen für eine weitere Anbindung, wenn Sättigungsgrenze und Zeitersparnis je Vorgang gemeinsam variiert werden. Beide Achsen sind die rechenbaren Entsprechungen der beiden Ungewissheiten aus Abbildung 7. Die Zeitersparnis läuft über die halbe, die eingestellte und die doppelte Dauer. Alle neun Werte sind gerechnet."}
 ];
+/* Vier qualitative Zukunftsbilder aus den beiden Ungewissheiten.
+   Bewusst ohne Zahlen: Fuer die vier Zustaende liegen keine bezifferten
+   Belege vor, eine Zuordnung erzeugte nur Scheingenauigkeit. */
+function abbSzenarien(r){
+  var W=760,T=18,L=74,R=20,bw=316,bh=104,gx=30,gy=44;
+  var Hh=T+bh*2+gy+58, xs=[L,L+bw+gx], ys=[T,T+bh+gy];
+  var felder=[
+   {c:0,z:0,ton:0.00,k:["Automatisierte Nische"],
+    b:["ein abgegrenztes,","standardisierbares Terminsegment"],
+    w:"Schwellen sinken, erreichbare Menge begrenzt"},
+   {c:1,z:0,ton:0.10,k:["Skalierte Automatisierung"],
+    b:["breite Nutzung über","viele Terminarten"],
+    w:"Schwellen sinken deutlich"},
+   {c:0,z:1,ton:0.04,k:["Begrenzte Digitalisierung"],
+    b:["Zusatzkanal neben","den gewohnten Wegen"],
+    w:"Schwellen steigen"},
+   {c:1,z:1,ton:0.00,k:["Breite digitale Nutzung bei","hoher manueller Restarbeit"],
+    b:["der Vorgang verlagert sich,","statt zu entfallen"],
+    w:"Schwellen steigen trotz hoher Nutzung"}
+  ];
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Szenarien der Portalnutzung">';
+  felder.forEach(function(f){
+    var x=xs[f.c],y=ys[f.z],yy=y+21;
+    s+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="6" fill="var(--ink)" opacity="'+f.ton+'"/>'+
+       '<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="6" fill="none" stroke="var(--line2)" stroke-width="1"/>';
+    f.k.forEach(function(zl){
+      s+='<text x="'+(x+14)+'" y="'+yy+'" font-size="12.5" font-weight="600" fill="var(--ink)">'+esc(zl)+'</text>';
+      yy+=16;
+    });
+    yy+=4;
+    f.b.forEach(function(zl){
+      s+='<text x="'+(x+14)+'" y="'+yy+'" font-size="11" fill="var(--ink)">'+esc(zl)+'</text>';
+      yy+=14;
+    });
+    s+='<text x="'+(x+14)+'" y="'+(y+bh-10)+'" font-size="10.5" font-style="italic" fill="var(--muted)">'+esc(f.w)+'</text>';
+  });
+  /* Ausgangspunkt der Rechnung, Mitte beider belegter Spannen */
+  var mx=L+bw+gx/2, my=T+bh+gy/2;
+  s+='<circle cx="'+mx+'" cy="'+(my-8)+'" r="3.4" fill="var(--ink)"/>'+
+     '<text x="'+mx+'" y="'+(my+11)+'" text-anchor="middle" font-size="10.5" fill="var(--muted)">Basiskalkulation</text>';
+  var ax=L-26, ay=T+bh*2+gy+14;
+  s+=achse(ax,ay,ax,T-4)+achse(ax,ay,W-R,ay);
+  s+='<text x="'+ax+'" y="'+(ay+15)+'" font-size="10.5" fill="var(--muted)">gering</text>'+
+     '<text x="'+(W-R)+'" y="'+(ay+15)+'" text-anchor="end" font-size="10.5" fill="var(--muted)">hoch</text>'+
+     '<text x="'+(L+bw+gx/2)+'" y="'+(ay+32)+'" text-anchor="middle" font-size="11" fill="var(--ink)">Patientennutzung</text>'+
+     '<text x="22" y="'+(T+bh+gy/2)+'" font-size="11" fill="var(--ink)" transform="rotate(-90 22 '+(T+bh+gy/2)+')" text-anchor="middle">Automatisierungsgrad</text>'+
+     '<text x="'+(W-R)+'" y="'+(ay+32)+'" text-anchor="end" font-size="10" font-style="italic" fill="var(--muted)">qualitativ, ohne zugeordnete Werte</text>';
+  return s+'</svg>';
+}
+
+/* Mindestvolumen, wenn beide Achsen gemeinsam variiert werden. Die
+   Zeitersparnis laeuft ueber die halbe, die eingestellte und die
+   doppelte Dauer. N ist linear in n, deshalb genuegt die Skalierung
+   des jeweils gerechneten Barwerts. */
+function abbMatrix(r){
+  var W=760,T=18,L=200,R=30,kh=34,zh=58,cw=(W-L-R)/3;
+  var Hh=T+kh+zh*3+58;
+  var p=r.p, basis=p.tmin;
+  /* Oben die hoechste Zeitersparnis, damit die senkrechte Achse in
+     dieselbe Richtung zeigt wie der Automatisierungsgrad in Abbildung 7. */
+  var minuten=[basis*2,basis,basis/2];
+  function nBei(x){return (p.rOff-p.rOn)/100*p.b+(x/60)*p.c-(p.entgelt||0);}
+  var werte=minuten.map(function(x){
+    var nx=nBei(x);
+    return r.sz.map(function(z){
+      return (nx>0 && isFinite(z.m)) ? z.m*r.n/nx : Infinity;
+    });
+  });
+  var alle=[];
+  werte.forEach(function(rw){rw.forEach(function(v){if(isFinite(v)) alle.push(v);});});
+  var vmax=Math.max.apply(null,alle.concat([1])), vmin=Math.min.apply(null,alle.concat([vmax]));
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Mindestvolumen über beide Achsen">';
+  s+='<text x="'+L+'" y="'+(T+12)+'" font-size="10.5" fill="var(--muted)">Sättigungsgrenze des digitalen Buchungsanteils</text>';
+  r.sz.forEach(function(z,c){
+    s+='<text x="'+(L+cw*c+cw/2)+'" y="'+(T+kh-6)+'" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">'+
+       esc(pz(z.D*100,0))+'</text>';
+  });
+  minuten.forEach(function(x,z){
+    var y=T+kh+zh*z;
+    s+='<text x="'+(L-12)+'" y="'+(y+zh/2+4)+'" text-anchor="end" font-size="11.5" fill="var(--ink)">'+
+       f1(x)+' Minuten'+(x===basis?' (Basis)':'')+'</text>';
+    werte[z].forEach(function(v,c){
+      var x0=L+cw*c, deck=isFinite(v)? 0.04+0.18*(v-vmin)/Math.max(1,vmax-vmin) : 0;
+      s+='<rect x="'+x0+'" y="'+y+'" width="'+(cw-3)+'" height="'+(zh-3)+'" rx="4" fill="var(--ink)" opacity="'+deck.toFixed(3)+'"/>';
+      if(x===basis && c===1)
+        s+='<rect x="'+x0+'" y="'+y+'" width="'+(cw-3)+'" height="'+(zh-3)+'" rx="4" fill="none" stroke="var(--calc)" stroke-width="2"/>';
+      s+='<text x="'+(x0+(cw-3)/2)+'" y="'+(y+zh/2+5)+'" text-anchor="middle" font-size="13" fill="var(--ink)">'+
+         (isFinite(v)?f0(v):"—")+'</text>';
+    });
+  });
+  var yb=T+kh+zh*3;
+  s+='<text x="22" y="'+(T+kh+zh*1.5)+'" font-size="11" fill="var(--ink)" transform="rotate(-90 22 '+(T+kh+zh*1.5)+')" text-anchor="middle">Zeitersparnis je Vorgang</text>';
+  s+='<text x="18" y="'+(yb+24)+'" font-size="10.5" fill="var(--muted)">Werte in Terminen je Jahr. Waagerecht die Achse Patientennutzung, senkrecht die Achse Automatisierungsgrad.</text>'+
+     '<text x="18" y="'+(yb+40)+'" font-size="10.5" fill="var(--muted)">Der Rahmen markiert die Basiskalkulation. Den Szenarien aus Abbildung 7 ist keiner dieser Werte zugeordnet.</text>';
+  return s+'</svg>';
+}
+
 function abbHolen(nr,r){
   if(nr===1) return abbKern(r);
   if(nr===2) return abbKapital(r);
   if(nr===3) return abbKlinik(r);
   if(nr===4) return abbPfad(r);
   if(nr===6) return abbEinheiten(r);
+  if(nr===7) return abbSzenarien(r);
+  if(nr===8) return abbMatrix(r);
   return abbTornado(tornadoZeilen(r),r.sz[1].m);
 }
 function speichereAbb(nr){

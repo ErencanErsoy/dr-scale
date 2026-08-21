@@ -227,7 +227,7 @@ label.mussz input{margin-top:2px;flex:none}
   <div class="hd">
     <div id="mark"></div>
     <div class="claim"><b>Skalierungsrechner für das digitale Terminmanagement im Patientenportal</b>Entscheidungsunterstützung mit offengelegten Rechenfällen</div>
-    <span id="fassung" title="Fassung dieser Seite" style="font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap">Fassung 2026-08-21 &middot; 7cb4414</span>
+    <span id="fassung" title="Fassung dieser Seite" style="font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap">Fassung 2026-08-21 &middot; 460e6fe</span>
     <button class="ghost" id="theme" type="button">Dark Mode</button>
   </div>
 </header>
@@ -804,11 +804,24 @@ function abbKern(r){
   return s+'</svg>';
 }
 
+/* Nutzen je Termin bei abweichender Zeitersparnis. N ist linear in n,
+   deshalb genuegt der Faktor gegenueber dem eingestellten Wert. Gibt 0
+   zurueck, wenn der Nutzen dabei nicht mehr positiv ist. */
+function nutzenBei(p,minuten){
+  var v=(p.rOff-p.rOn)/100*p.b+(minuten/60)*p.c-(p.entgelt||0);
+  return v>0? v : 0;
+}
+function zeitFaktoren(r){
+  var b=r.p.tmin, u=nutzenBei(r.p,b/2), o=nutzenBei(r.p,b*2);
+  return (r.n>0)? {u:u/r.n, o:o/r.n} : {u:1, o:1};
+}
+
 function abbKapital(r){
-  var W=760,T=18,B=52,L=88,R=26,ph=210,lb=r.sz.length*16+30;
+  var W=760,T=18,B=52,L=88,R=26,ph=210,lb=(r.sz.length+1)*16+30;
   var Hh=T+ph+B+lb,iw=W-L-R;
+  var zf=zeitFaktoren(r);
   var xmax=Math.max(r.p.T||1,r.sz[0].B*1.2,1);
-  var ymax=Math.max.apply(null,r.sz.map(function(z){return xmax*z.N-r.F;}).concat([1]));
+  var ymax=Math.max.apply(null,r.sz.map(function(z){return xmax*z.N*Math.max(1,zf.o)-r.F;}).concat([1]));
   var ymin=Math.min(-r.F,0);
   var fx=function(v){return L+v/xmax*iw;},fy=function(v){return T+ph-(v-ymin)/(ymax-ymin)*ph;};
   var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Kapitalwert nach angebundenem Terminvolumen">',k;
@@ -822,6 +835,15 @@ function abbKapital(r){
        '<text x="'+x+'" y="'+(T+ph+17)+'" text-anchor="middle" font-size="10.5" fill="var(--muted)">'+f0(xv/1000)+'</text>';}
   s+='<text x="'+(L+iw/2)+'" y="'+(T+ph+37)+'" text-anchor="middle" font-size="11" fill="var(--ink)">Angebundenes Terminvolumen V in Tausend Terminen je Jahr</text>';
   s+='<text x="14" y="'+(T+ph/2)+'" font-size="11" fill="var(--ink)" transform="rotate(-90 14 '+(T+ph/2)+')" text-anchor="middle">Kapitalwert in Mio. Euro</text>';
+  /* Korridor der zweiten Achse. Er steht vor den Geraden, damit er
+     hinter ihnen liegt. Beide Raender beginnen im selben Punkt minus F. */
+  r.sz.forEach(function(z,nn){
+    if(zf.u===zf.o) return;
+    s+='<path d="M'+fx(0)+' '+fy(-r.F)+
+       ' L'+fx(xmax)+' '+fy(xmax*z.N*zf.u-r.F)+
+       ' L'+fx(xmax)+' '+fy(xmax*z.N*zf.o-r.F)+' Z" fill="'+FARBE[nn]+'" opacity="0.10"/>';
+  });
+
   var ein=[];
   r.sz.forEach(function(z,nn){
     s+='<line x1="'+fx(0)+'" y1="'+fy(-r.F)+'" x2="'+fx(xmax)+'" y2="'+fy(xmax*z.N-r.F)+
@@ -829,6 +851,9 @@ function abbKapital(r){
     if(z.B<=xmax&&z.B>=0) s+='<circle cx="'+fx(z.B)+'" cy="'+fy(0)+'" r="3.6" fill="'+FARBE[nn]+'"/>';
     ein.push({c:FARBE[nn],stil:z.stil,t:z.name,w:r.F<=0?"Fixblock gedeckt":"Break-even "+f0(z.B)+" Termine"});
   });
+  ein.push({art:"flaeche",c:FARBE[1],deck:0.16,
+            t:"Korridor der Zeitersparnis, je Rechenfall in dessen Farbe",
+            w:f1(r.p.tmin/2)+" bis "+f1(r.p.tmin*2)+" Minuten"});
   s+=legendeBand(ein,L,T+ph+B+2,iw);
   return s+'</svg>';
 }
@@ -1055,7 +1080,7 @@ var ABB=[
  {nr:1,name:"abb1-aufbau-modell.svg",t:"Aufbau des Kosten-Nutzen-Modells",
   u:"Die vier Blöcke der Abbildung entsprechen den Abschnitten 2 bis 5 des Textes. Die Rechenfälle wirken ausschließlich über den Zeitpfad d_j auf die Nutzenseite, die Kostenseite bleibt von ihnen unberührt. Die Darstellung ist vollständig symbolisch."},
  {nr:2,name:"abb2-kapitalwert.svg",t:"Kapitalwert nach angebundenem Terminvolumen",
-  u:"Der Kapitalwert wächst linear mit dem angebundenen Terminvolumen. Der Schnittpunkt mit der Nulllinie ist der Break-even des Portals."},
+  u:"Der Kapitalwert waechst linear mit dem angebundenen Terminvolumen. Der Schnittpunkt mit der Nulllinie ist der Break-even des Portals. Die drei Geraden zeigen die Rechenfaelle, also die Achse der Patientennutzung. Der Korridor um jede Gerade zeigt die zweite Achse, seine Raender sind die halbe und die doppelte Zeitersparnis je Vorgang. Ueberlappen sich die Korridore zweier Rechenfaelle, kann die Zeitersparnis den Unterschied im Buchungsanteil ausgleichen. Ob sie das tun, haengt an den eingestellten Werten, denn je groesser der Anteil des Nutzens ist, der nicht an der Zeit haengt, desto schmaler faellt der Korridor aus."},
  {nr:3,name:"abb3-entscheidungsregel.svg",t:"Entscheidungsregel für eine einzelne Einheit",
   u:"Barwert des Nutzens einer organisatorischen Einheit nach ihrem Terminvolumen. Rechts des Schnittpunkts mit den Anbindungskosten trägt sich die Anbindung."},
  {nr:4,name:"abb4-buchungsanteil.svg",t:"Digitaler Buchungsanteil im Zeitverlauf",
@@ -1130,9 +1155,8 @@ function abbMatrix(r){
   /* Oben die hoechste Zeitersparnis, damit die senkrechte Achse in
      dieselbe Richtung zeigt wie der Automatisierungsgrad in Abbildung 7. */
   var minuten=[basis*2,basis,basis/2];
-  function nBei(x){return (p.rOff-p.rOn)/100*p.b+(x/60)*p.c-(p.entgelt||0);}
   var werte=minuten.map(function(x){
-    var nx=nBei(x);
+    var nx=nutzenBei(p,x);
     return r.sz.map(function(z){
       return (nx>0 && isFinite(z.m)) ? z.m*r.n/nx : Infinity;
     });

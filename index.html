@@ -1596,7 +1596,7 @@ function baueErgebnis(r){
    einheitenTabelle(r)+
    '<div class="card" style="margin-top:14px"><div class="fig-h">'+
    '<h4>Abbildung 6</h4>'+dlKnopf(6)+'</div><figure>'+
-   abbEinheiten(r)+bu(6)+'</figure></div>'+
+   abbEinheiten(r)+bu(6)+einheitenHinweis()+'</figure></div>'+
    '<div class="card"><div class="fig-h"><h4>Rechnung exportieren</h4>'+
    '<button class="dl" type="button" id="dl-werte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
    'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
@@ -1715,15 +1715,19 @@ function amortText(v){ return v===null? "nicht im Zeitraum" : f1(v)+" Jahre"; }
 /* ============ Einheitenliste ============ */
 var EINHEITEN="";
 function einheitenLesen(txt){
-  var aus=[],zeilen=txt.split(/\r?\n/),i;
+  var aus=[],zeilen=String(txt||"").split(/\r?\n/),i;
+  aus.verworfen=0;
   for(i=0;i<zeilen.length;i++){
     var z=zeilen[i].trim();
     if(!z) continue;
-    var f=z.split(/[;\t]/);
+    /* Semikolon und Tabulator trennen immer. Das Komma nur dann, wenn die
+       Zeile kein Semikolon enthaelt, sonst ginge das Dezimalkomma der
+       Terminzahl verloren. */
+    var f=(z.indexOf(";")>=0||z.indexOf("\t")>=0)? z.split(/[;\t]/) : z.split(",");
     var name=(f[0]||"").trim();
-    var vol=parseFloat((f[1]||"").replace(/\./g,"").replace(",","."));
+    var vol=parseFloat((f[1]||"").replace(/[.\s]/g,"").replace(",","."));
     var jahr=parseInt((f[2]||"").trim(),10);
-    if(!name||!isFinite(vol)) continue;
+    if(!name||!isFinite(vol)){ aus.verworfen++; continue; }
     aus.push({name:name,V:vol,jahr:isFinite(jahr)?jahr:null});
   }
   return aus;
@@ -1733,6 +1737,15 @@ function barwertAb(r,z,start){
   var s=0,j;
   for(j=start;j<=r.H;j++) s+=r.n*z.path[j-1]/r.jahre[j-1].disk;
   return s;
+}
+/* Meldet Zeilen, die sich nicht deuten liessen, statt sie zu verschlucken. */
+function einheitenHinweis(){
+  var n=einheitenLesen(EINHEITEN).verworfen||0;
+  if(!n) return '';
+  return '<p class="src" style="color:var(--warn)">'+n+
+    (n===1? ' Zeile wurde nicht gelesen.' : ' Zeilen wurden nicht gelesen.')+
+    ' Erwartet wird Name, Terminzahl und wahlweise das Jahr, getrennt durch '+
+    'Semikolon, zum Beispiel <em>Augenheilkunde; 18200; 2027</em>.</p>';
 }
 function einheitenTabelle(r){
   var liste=einheitenLesen(EINHEITEN);

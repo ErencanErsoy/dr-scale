@@ -1047,7 +1047,7 @@ var ABB=[
   u:"Die beiden Balken zeigen, was das Modell tatsächlich behauptet: den gemessenen Ausgangswert und die angenommene Sättigungsgrenze des Basisfalls. Der Verlauf dazwischen ist eine Interpolation und kein beobachteter Adoptionsverlauf. In der Praxis ist mit Sprüngen durch die Freischaltung weiterer Angebote und mit Sättigungsphasen einzelner Einheiten zu rechnen."},
  {nr:5,name:"abb5-sensitivitaet.svg",t:"Sensitivität des Mindestvolumens für eine weitere Anbindung",
   u:"Verschiebung des Mindestvolumens bei Variation einzelner Rechengrößen, geordnet nach Wirkung."},
- {nr:6,name:"abb6-anbindungsreihenfolge.svg",t:"Reihenfolge der Anbindung und Deckung des Fixblocks",
+ {nr:6,lokal:true,name:"abb6-anbindungsreihenfolge.svg",t:"Reihenfolge der Anbindung und Deckung des Fixblocks",
   u:"Terminvolumen der erfassten Einheiten, absteigend geordnet, gegen das Mindestvolumen der drei Szenarien. Rechts einer Linie trägt sich die Anbindung im jeweiligen Szenario. Die Marke bezeichnet die Einheit, ab der die aufsummierten Kapitalwertbeiträge den Fixblock decken."}
 ];
 function abbHolen(nr,r){
@@ -1615,6 +1615,9 @@ function baueErgebnis(r){
 function baueAbb(r){
   var h='';
   ABB.forEach(function(a){
+    /* Abbildung 6 haengt an der Einheitenliste und steht deshalb in
+       Abschnitt 7, unmittelbar unter dem Eingabefeld. */
+    if(a.lokal) return;
     h+='<div class="card"><div class="fig-h"><h4>Abbildung '+a.nr+'</h4>'+dlKnopf(a.nr)+'</div><figure>'+
       abbHolen(a.nr,r)+bu(a.nr)+'</figure></div>';
   });

@@ -1,7 +1,7 @@
 # Dr. Scale
 
 Skalierungsrechner für das digitale Terminmanagement im Patientenportal.
-Entscheidungsunterstützung mit offengelegten Rechenfällen für Krankenhäuser.
+Entscheidungsunterstützung mit offengelegten Annahmen für Krankenhäuser.
 
 **→ [erencanersoy.github.io/dr-scale](https://erencanersoy.github.io/dr-scale/)**
 

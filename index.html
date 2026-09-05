@@ -1,0 +1,2207 @@
+<!doctype html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Interaktives Berechnungswerkzeug für die wirtschaftliche Bewertung der Online-Terminvereinbarung im Patientenportal eines Krankenhauses.">
+<title>Dr. Scale — Bewertungsmodell für die Online-Terminvereinbarung</title>
+</head>
+<body>
+<style id="hauptstil">
+:root{
+  --bg:#f0f3f6; --panel:#fff; --panel2:#f7fafb; --sidebar:#fff;
+  --ink:#111c25; --muted:#576571; --line:#d5dfe6; --line2:#e9eff3;
+  --petrol:#0d5f7d; --accent:#c8781a;
+  --lit:#0d5f7d; --recht:#4a5866; --sek:#c8781a; --ann:#4a5866; --fest:#4a5866; --calc:#0d5f7d;
+  --lit-bg:#e4eff4; --recht-bg:#eef1f4; --sek-bg:#faeedc; --ann-bg:#eef1f4; --fest-bg:#eef1f4; --calc-bg:#e4eff4;
+  --warn:#94331a; --warn-bg:#fae9e4;
+  --gut:#2e6e4e; --gut-bg:#e3efe8;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:"Courier New",Courier,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0b1116; --panel:#131c23; --panel2:#18222a; --sidebar:#101821;
+  --ink:#e1e9ef; --muted:#91a2b0; --line:#222e38; --line2:#1b2630;
+  --petrol:#57bfe2; --accent:#e0a04a;
+  --lit:#57bfe2; --recht:#9aa7b3; --sek:#e0a04a; --ann:#9aa7b3; --fest:#9aa7b3; --calc:#57bfe2;
+  --lit-bg:#0b2833; --recht-bg:#1a222a; --sek-bg:#30220b; --ann-bg:#1a222a; --fest-bg:#1a222a; --calc-bg:#0b2833;
+  --warn:#ee8366; --warn-bg:#2f140f;
+  --gut:#7fc39a; --gut-bg:#12291c;}}
+:root[data-theme="dark"]{
+  --bg:#0b1116; --panel:#131c23; --panel2:#18222a; --sidebar:#101821;
+  --ink:#e1e9ef; --muted:#91a2b0; --line:#222e38; --line2:#1b2630;
+  --petrol:#57bfe2; --accent:#e0a04a;
+  --lit:#57bfe2; --recht:#9aa7b3; --sek:#e0a04a; --ann:#9aa7b3; --fest:#9aa7b3; --calc:#57bfe2;
+  --lit-bg:#0b2833; --recht-bg:#1a222a; --sek-bg:#30220b; --ann-bg:#1a222a; --fest-bg:#1a222a; --calc-bg:#0b2833;
+  --warn:#ee8366; --warn-bg:#2f140f;
+  --gut:#7fc39a; --gut-bg:#12291c;}
+:root[data-theme="light"]{
+  --bg:#f0f3f6; --panel:#fff; --panel2:#f7fafb; --sidebar:#fff;
+  --ink:#111c25; --muted:#576571; --line:#d5dfe6; --line2:#e9eff3;
+  --petrol:#0d5f7d; --accent:#c8781a;
+  --lit:#0d5f7d; --recht:#4a5866; --sek:#c8781a; --ann:#4a5866; --fest:#4a5866; --calc:#0d5f7d;
+  --lit-bg:#e4eff4; --recht-bg:#eef1f4; --sek-bg:#faeedc; --ann-bg:#eef1f4; --fest-bg:#eef1f4; --calc-bg:#e4eff4;
+  --warn:#94331a; --warn-bg:#fae9e4;
+  --gut:#2e6e4e; --gut-bg:#e3efe8;}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+     font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+header{background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.hd{max-width:1520px;margin:0 auto;padding:12px 22px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+#mark svg{height:32px;width:auto;display:block}
+.claim{font-size:12px;color:var(--muted);border-left:1px solid var(--line);padding-left:16px;line-height:1.35}
+.claim b{display:block;color:var(--ink);font-size:12.5px;font-weight:600}
+.ghost{margin-left:auto;background:none;border:1px solid var(--line);color:var(--muted);border-radius:7px;
+       padding:6px 13px;font:inherit;font-size:12.5px;cursor:pointer}
+.ghost:hover{color:var(--ink);border-color:var(--muted)}
+
+/* Die Leiste bleibt seitenbreit; ihr Inhalt beginnt auf derselben Linie
+   wie die Wortmarke im Kopf (max-width 1520 plus 22 Innenabstand). */
+nav.toc{position:sticky;top:57px;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:2px 4px;max-width:none;
+  padding:6px max(22px, calc(50% - 738px))}
+nav.toc a{font-size:12px;color:var(--muted);text-decoration:none;padding:4px 9px;border-radius:6px}
+nav.toc a:hover{color:var(--petrol);background:var(--panel2)}
+section{scroll-margin-top:104px;margin:0 0 38px}
+section>h2{font-size:17px;border-bottom:2px solid var(--line);padding-bottom:6px;margin:0 0 14px}
+.eingaben-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;align-items:start}
+.eingaben-grid .grp{margin:0}
+@media (max-width:1000px){
+  .hd{padding:10px 14px;gap:10px}
+  nav.toc{padding:5px 14px}
+  main{padding:14px 14px 60px}
+  .kpi .v{font-size:21px}
+  .gl .sym{font-size:12px;padding-right:40px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .gl .nr{right:9px}
+}
+main{max-width:1520px;margin:0 auto;padding:20px 22px 80px;min-width:0}
+
+/* Zweispaltiger Aufbau: links die Eingaben, rechts alles Uebrige. Unter
+   1100 px stehen beide Bereiche in der Reihenfolge der Seite untereinander. */
+.layout{display:block}
+.spalte-links{min-width:0}
+.spalte-rechts{min-width:0}
+@media (min-width:1100px){
+  .layout{display:grid;grid-template-columns:350px minmax(0,1fr);gap:34px;align-items:start}
+  .spalte-links{position:sticky;top:104px;align-self:start;
+    max-height:calc(100vh - 124px);overflow-y:auto;overscroll-behavior:contain;
+    padding-right:4px}
+  .spalte-links section{margin-bottom:0}
+  .spalte-links .eingaben-grid{grid-template-columns:1fr}
+}
+
+/* Fusszeile, bewusst untergeordnet */
+.fuss{border-top:1px solid var(--line);margin:36px 0 0;padding:14px 0 0;
+      font-size:11.5px;color:var(--muted);line-height:1.5}
+
+.import{border:1px solid var(--petrol);background:var(--lit-bg);border-radius:9px;padding:11px 12px;margin:0 0 13px}
+.import h4{margin:0 0 3px;font-size:12px;font-weight:700;color:var(--petrol)}
+.import p{margin:0 0 9px;font-size:11px;color:var(--muted);line-height:1.45}
+.import .zeile{display:flex;gap:6px}
+.qbtn{flex:1;font:inherit;font-size:11.5px;font-weight:600;padding:7px 8px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}
+.qbtn[aria-pressed="true"]{border-color:var(--petrol);background:var(--petrol);color:#fff}
+.qbtn:hover{border-color:var(--petrol)}
+.pwbox{margin-top:9px;display:none}.pwbox.an{display:block}
+.pwbox input{width:100%;font:inherit;font-size:12px;padding:6px 8px;border-radius:6px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.pwbox input:focus{outline:2px solid var(--petrol);outline-offset:1px}
+.pwbox .rr{display:flex;gap:6px;margin-top:6px}
+.pwmsg{font-size:11px;margin-top:6px;line-height:1.4}
+.pwmsg.err{color:var(--warn)}.pwmsg.ok{color:var(--petrol)}
+
+.sb-h{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 7px}
+.grp{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:11px 12px;margin:0 0 10px}
+.grp h4{margin:0 0 8px;font-size:12px;font-weight:700}
+.ctl{margin:0 0 12px}.ctl:last-child{margin-bottom:0}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:7px}
+.ctl label{font-size:11.5px;font-weight:500;line-height:1.35}
+.ctl .unit{font-size:10.5px;color:var(--muted);font-weight:400}
+.ctl input[type=number]{font:inherit;font-family:var(--mono);font-weight:700;font-size:11.5px;width:98px;text-align:right;
+  background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:5px;
+  padding:3px 6px;font-variant-numeric:tabular-nums;flex:none}
+.ctl input[type=number]:focus{outline:2px solid var(--petrol);outline-offset:1px}
+.ctl input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:17px;background:transparent;
+  margin:5px 0 0;cursor:pointer;display:block}
+.ctl input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;
+  background:linear-gradient(90deg,var(--petrol) var(--f,50%),var(--line) var(--f,50%))}
+.ctl input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line)}
+.ctl input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--petrol)}
+.ctl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--panel);border:2.5px solid var(--petrol);margin-top:-5px}
+.ctl input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;
+  background:var(--panel);border:2.5px solid var(--petrol)}
+.ctl input[type=range]:focus-visible{outline:2px solid var(--petrol);outline-offset:3px;border-radius:4px}
+.ctl .qz{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+.ctl select{font:inherit;font-size:11.5px;background:var(--panel);border:1px solid var(--line);
+  color:var(--ink);border-radius:5px;padding:3px 6px}
+
+nav.tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);margin:0 0 20px}
+nav.tabs button{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);
+  font:inherit;font-size:13px;padding:9px 13px;cursor:pointer;white-space:nowrap;border-radius:6px 6px 0 0}
+nav.tabs button:hover{color:var(--ink);background:var(--panel2)}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--petrol);font-weight:650}
+nav.tabs button:focus-visible{outline:2px solid var(--petrol);outline-offset:-2px}
+section[hidden]{display:none}
+
+h2{font-size:19px;margin:0 0 6px;font-weight:700}
+h3{font-size:15px;margin:32px 0 10px;font-weight:700;padding-bottom:5px;border-bottom:1px solid var(--line);scroll-margin-top:70px}
+h3:first-of-type{margin-top:0}
+details.stufe{margin:0;scroll-margin-top:70px}
+details.stufe>summary{cursor:pointer;font-size:15px;font-weight:700;margin:32px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--line);list-style:none}
+details.stufe>summary::-webkit-details-marker{display:none}
+details.stufe>summary::before{content:"\u25b8";color:var(--muted);margin-right:7px}
+details.stufe[open]>summary::before{content:"\u25be"}
+h4{font-size:13.5px;margin:20px 0 7px;font-weight:650}
+.lead{color:var(--muted);font-size:13.5px;margin:0 0 18px;max-width:none}
+p{margin:0 0 11px;max-width:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:16px 18px;margin:0 0 13px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+.tag{display:inline-block;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;
+     border-radius:3px;font-weight:700;white-space:nowrap}
+.t-lit{background:var(--lit-bg);color:var(--lit)}.t-recht{background:var(--recht-bg);color:var(--recht)}
+.t-sek{background:var(--sek-bg);color:var(--sek)}.t-ann{background:var(--ann-bg);color:var(--ann)}
+.t-fest{background:var(--fest-bg);color:var(--fest)}
+.t-calc{background:var(--calc-bg);color:var(--calc)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;font-style:normal}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:7px;background:var(--panel);margin:0 0 10px}
+table{border-collapse:collapse;width:100%;font-size:12.6px}
+th,td{text-align:left;padding:7px 11px;border-bottom:1px solid var(--line2);vertical-align:top}
+thead th{background:var(--panel2);font-size:10.3px;letter-spacing:.04em;text-transform:uppercase;
+         color:var(--muted);font-weight:700}
+tbody tr:last-child td{border-bottom:0}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:normal;min-width:88px}
+td.num{font-family:var(--mono);font-weight:700}
+table input[type=number]{font-family:var(--mono);font-weight:700;font-size:12px;width:96px;
+  text-align:right;background:var(--panel);color:var(--ink);border:1px solid var(--line);
+  border-radius:5px;padding:4px 6px}
+table input[type=text]{font:inherit;font-size:12.5px;background:var(--panel);color:var(--ink);
+  border:1px solid var(--line);border-radius:5px;padding:4px 6px;width:100%;min-width:150px}
+/* Szenariotabelle ohne waagerechtes Rollen. Kompakt gesetzt passt die
+   vollstaendige Tabelle ab rund 880 px Behaelterbreite; ist weniger Platz
+   da, wird jede Zeile zu einer Karte mit beschrifteten Wertpaaren. Der
+   Umbruch haengt ueber eine Container-Abfrage am tatsaechlich
+   verfuegbaren Platz, nicht an der Fensterbreite; Browser ohne
+   Container-Abfragen behalten als Rueckfall das Rollen im Rahmen. */
+.tw.ohne-rollen{overflow-x:auto}
+@supports (container-type: inline-size){
+  .tw.ohne-rollen{overflow:visible;container-type:inline-size}
+}
+#szen-tab input[type=text]{min-width:252px;font-size:10.8px}
+#szen-tab input[type=number]{width:62px;font-size:11px}
+#szen-tab th,#szen-tab td{padding:6px 6px}
+#szen-tab th.num{min-width:60px;font-size:9.8px}
+#szen-tab button.dl{padding:4px 8px;font-size:11px}
+@container (max-width: 879px){
+  #szen-tab{display:block;width:100%}
+  #szen-tab thead{display:none}
+  #szen-tab tbody{display:block;width:100%}
+  #szen-tab tr{display:block;border-bottom:1px solid var(--line);padding:9px 11px}
+  #szen-tab tr:last-child{border-bottom:0}
+  #szen-tab td{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    border-bottom:0;padding:3px 0;white-space:normal}
+  #szen-tab td::before{content:attr(data-l);font-size:11px;color:var(--muted);
+    text-align:left;font-family:var(--sans);font-weight:400}
+  #szen-tab td:first-child{display:block}
+  #szen-tab td:first-child::before,#szen-tab td:last-child::before{content:none}
+  #szen-tab td:last-child{justify-content:flex-end;padding-top:6px}
+  #szen-tab input[type=text]{width:100%;min-width:0}
+}
+table select{font:inherit;font-size:12.5px;background:var(--panel);color:var(--ink);
+  border:1px solid var(--line);border-radius:5px;padding:4px 6px}
+td.sym{font-family:var(--mono);font-weight:600;white-space:nowrap}
+tr.total td{background:var(--panel2);font-weight:650}
+.src{color:var(--muted);font-size:11.3px;display:block;margin-top:2px}
+.gl{background:var(--panel2);border:1px solid var(--line);border-radius:7px;margin:11px 0;position:relative}
+.gl .sym{font-weight:700;font-family:var(--mono);font-size:13.5px;padding:12px 52px 6px 15px;white-space:pre;overflow-x:auto;line-height:1.7}
+.gl .wort{font-size:12.3px;color:var(--muted);padding:0 52px 11px 15px;border-top:1px dashed var(--line);
+          margin-top:6px;padding-top:8px;line-height:1.5}
+.gl .wort b{color:var(--ink);font-weight:600}
+.gl .nr{position:absolute;right:13px;top:12px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.gl.haupt{background:var(--lit-bg);border-color:var(--petrol)}
+.gl.haupt .sym{font-size:15px;font-weight:600}
+.note{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--lit);
+      border-radius:7px;padding:11px 14px;font-size:12.6px;color:var(--muted);margin:12px 0}
+.note b{color:var(--ink)}
+.note.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+/* Statusanzeige der Deckungseinordnung. Die Farbe steht nie allein: Jede
+   Einordnung erscheint zusaetzlich als Text, im Druck ohne Fuellung. */
+.st{display:inline-block;font-size:11.8px;font-weight:600;padding:2px 8px;border-radius:4px;line-height:1.45}
+.st-gruen{background:var(--gut-bg);color:var(--gut)}
+.st-orange{background:var(--sek-bg);color:var(--sek)}
+.st-rot{background:var(--warn-bg);color:var(--warn)}
+.kpi{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--petrol);border-radius:9px;padding:13px 15px}
+.kpi .l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.kpi .v{font-family:var(--mono);font-size:25px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15;margin:4px 0 2px}
+.kpi .s{font-size:11.5px;color:var(--muted);line-height:1.4}
+.kpi .e{font-size:11px;color:var(--muted);margin:0 0 6px}
+.kpi.haupt{border-left-width:4px;padding:18px 20px}
+.kpi.haupt .l{font-size:11px}
+.kpi.haupt .v{font-size:38px;margin:6px 0 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:0 0 22px}
+h3{font-size:14.5px;margin:26px 0 10px;letter-spacing:.01em}
+figure{margin:0 0 4px}
+figure svg{max-width:100%;height:auto}
+figcaption{font-size:12.2px;color:var(--ink);margin-top:9px;line-height:1.5}
+figcaption .qq{color:var(--muted);display:block;margin-top:3px;font-size:11.3px}
+svg{display:block;max-width:100%;height:auto}
+.fig-h{display:flex;justify-content:space-between;align-items:center;gap:8px 12px;margin:0 0 10px;flex-wrap:wrap}
+.fig-h h4{margin:0}
+.dl-gruppe{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dl{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);
+    color:var(--ink);font:inherit;font-size:11.5px;border-radius:6px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.dl:hover{border-color:var(--petrol);color:var(--petrol)}
+.dl.primaer{border-color:var(--accent);color:var(--accent);font-weight:600}
+.dl.primaer:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.dl svg{width:12px;height:12px}
+.status{font-size:12px;padding:8px 12px;border-radius:7px;margin:12px 0 0;display:none}
+.status.an{display:block}
+.status.gut{background:var(--lit-bg);color:var(--petrol)}
+.status.schlecht{background:var(--warn-bg);color:var(--warn)}
+@media (max-width:480px){
+  .hd{padding:8px 10px;gap:8px}
+  #mark svg{height:24px}
+  .ghost{padding:5px 9px;font-size:11.5px}
+  nav.toc{padding:5px 10px}
+  main{padding:12px 10px 60px}
+  .werkzeug button.dl{white-space:normal;text-align:left}
+  figure svg{max-width:100%;height:auto}
+  .kpi .v{font-size:20px}
+  .gl .sym{padding:12px 15px 6px 15px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:11.5px}
+  .gl .nr{position:static;display:block;padding:6px 15px 0;text-align:right;top:auto;right:auto}
+  .gl .wort{padding:0 15px 11px 15px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- Drucklayout, Grundlage fuer die Ausgabe als PDF ---------- */
+.nurdruck{display:none}
+@media print{
+  :root,:root[data-theme="dark"],:root[data-theme="light"]{
+    --bg:#fff; --panel:#fff; --panel2:#fff; --sidebar:#fff;
+    --ink:#000; --muted:#3d3d3d; --line:#8a8a8a; --line2:#c8c8c8;
+    --petrol:#000; --accent:#000;
+    --lit:#000; --recht:#000; --sek:#000; --ann:#000; --fest:#000; --calc:#000;
+    --lit-bg:#fff; --recht-bg:#fff; --sek-bg:#fff; --ann-bg:#fff; --fest-bg:#fff; --calc-bg:#fff;
+    --warn:#000; --warn-bg:#fff;
+    --gut:#000; --gut-bg:#fff;
+  }
+  @page{margin:18mm 15mm}
+  html,body{background:#fff}
+  body{font-size:10pt;line-height:1.45}
+  header,nav.toc,.status,.dl,.dl-gruppe,.ghost,button{display:none!important}
+  input,select{border:0!important;background:none!important;padding:0!important;
+    font-family:var(--mono);font-weight:700;font-size:8pt;
+    width:auto!important;min-width:0!important;max-width:70pt}
+  /* Szenarionamen sind lang; im Druck stehen sie kleiner, damit sie
+     vollstaendig lesbar bleiben und die Tabelle trotzdem passt. */
+  table input[type=text]{width:165pt!important;max-width:165pt;font-size:7pt;letter-spacing:-0.01em}
+  th.num{white-space:normal}
+  main{padding:0;min-width:0;max-width:none}
+  .layout{display:block}
+  .spalte-links{position:static;max-height:none;overflow:visible;padding-right:0}
+  .fuss{border-top:0.6pt solid #000;font-size:8.5pt;margin-top:14pt}
+  .nurdruck{display:block;border-bottom:1px solid #000;padding-bottom:6pt;margin-bottom:14pt}
+  .nurdruck b{font-size:13pt;display:block}
+  .nurdruck span{font-size:9pt;color:#3d3d3d}
+  h2{font-size:15pt;margin:0 0 4pt}
+  h3{font-size:12pt;margin:16pt 0 6pt;page-break-after:avoid;break-after:avoid}
+  details.stufe>summary{font-size:12pt;margin:16pt 0 6pt;page-break-after:avoid;break-after:avoid}
+  details.stufe>summary::before{content:""}
+  h4{font-size:10.5pt;margin:11pt 0 4pt;page-break-after:avoid;break-after:avoid}
+  p,li{orphans:3;widows:3}
+  .card,.tw,.gl,.note,.kpi,figure{page-break-inside:avoid;break-inside:avoid}
+  .card{border:1px solid #8a8a8a;box-shadow:none;padding:8pt 10pt;margin:0 0 8pt}
+  .tw{overflow:visible;border:1px solid #8a8a8a}
+  table{font-size:8pt}
+  th,td{padding:3pt 5pt}
+  thead th{background:#f0f0f0}
+  .gl .sym{font-size:10pt;padding:8pt 40pt 4pt 10pt}
+  .gl .wort{font-size:9pt;padding:0 40pt 8pt 10pt}
+  .tag{border:0.6pt solid #000;background:#fff!important;color:#000!important}
+  .st{border:0.6pt solid #000;background:#fff!important;color:#000!important}
+  .legend i{border:0.6pt solid #000}
+  figcaption{font-size:9pt}
+  svg{max-width:100%;height:auto}
+  figure svg{max-height:95mm}
+  a{color:#000;text-decoration:none}
+  p{margin:0 0 6pt}
+  .lead{margin:0 0 8pt}
+  .note{padding:5pt 8pt;margin:0 0 5pt;font-size:9pt}
+  .kpi{padding:6pt 8pt}
+  .kpi .v{font-size:15pt}
+  .kpi .s{font-size:8.5pt}
+  .grid3{gap:6pt}
+  .gl{margin:6pt 0}
+  .fig-h{margin:0 0 4pt}
+  h3{margin:12pt 0 5pt}
+}
+
+details.muss{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+details.muss summary{cursor:pointer;font-size:12px;color:var(--muted);user-select:none}
+details.muss summary:hover{color:var(--fg)}
+.mussgrp{margin:8px 0}
+.mussgrp h5{margin:0 0 4px;font-size:11.5px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted)}
+label.mussz{display:flex;gap:6px;align-items:flex-start;font-size:12px;line-height:1.35;padding:2px 0;cursor:pointer}
+label.mussz input{margin-top:2px;flex:none}
+.mussid{font-variant-numeric:tabular-nums;color:var(--muted);flex:none;min-width:38px}
+</style>
+
+<header>
+  <div class="hd">
+    <div id="mark"></div>
+
+    <button class="ghost" id="theme" type="button">Dark Mode</button>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Inhalt">
+  <a href="#zweck">Zweck</a><a href="#eingaben">Eingaben</a>
+  <a href="#ergebnisse">Ergebnisse</a><a href="#szenarien">Szenarien</a>
+  <a href="#bereiche">Krankenhausbereiche</a><a href="#sensitivitaet">Sensitivität</a>
+  <a href="#rechenweg">Rechenweg</a><a href="#export">Export</a>
+  <a href="#quellen">Quellen</a>
+</nav>
+
+<main id="seite">
+  <div class="nurdruck"><b>Dr. Scale, Berechnungsnachweis</b><span id="druck-quelle">Datengrundlage: Musterkrankenhaus</span></div>
+  <section id="zweck"><h2>1&#8195;Zweck des Modells</h2>
+    <p>Dr. Scale ist ein Berechnungstool für Krankenhäuser zur wirtschaftlichen Bewertung der Online-Terminvereinbarung in einem Patientenportal. Es berechnet zwei wirtschaftliche Schwellen. Der Portal-Break-even zeigt, ab welchem jährlichen Terminvolumen über alle angebundenen Krankenhausbereiche die berücksichtigten Kosten des Patientenportals gedeckt sind. Die Terminschwelle zeigt, wie viele Termine ein weiterer Krankenhausbereich pro Jahr benötigt, damit die wirtschaftlichen Vorteile seine Anbindungskosten decken.</p>
+    <p>Das Modell berücksichtigt Erkenntnisse aus der Literatur zum digitalen Buchungsanteil, zur Bearbeitungszeit und zu Terminausfällen sowie die Vorgaben der Digitalisierungsabschlags-Vereinbarung zum Fördertatbestand 2.</p>
+    <p>Fehlende Krankenhausdaten können durch begründete Annahmen ergänzt werden. Vier Szenarien verbinden einen niedrigen oder hohen Anteil der von Patienten digital gebuchten Termine mit einer geringen oder hohen administrativen Zeitersparnis im Krankenhaus und zeigen die daraus entstehende Ergebnisspanne. Die Einweg-Sensitivitätsanalyse zeigt ergänzend, wie stark einzelne Eingangsgrößen die Terminschwelle beeinflussen.</p></section>
+
+  <div class="layout">
+  <div class="spalte-links">
+  <section id="eingaben"><h2>2&#8195;Eingaben</h2>
+    <p class="lead">Passen Sie die Eingangsgrößen an das betrachtete Krankenhaus an. Änderungen werden unmittelbar in den Ergebnissen, Szenarien und Abbildungen berücksichtigt.</p>
+    <div class="import card" style="max-width:560px">
+      <h4 style="margin-top:0">Datengrundlage</h4>
+      <p style="font-size:12.5px;color:var(--muted)">Voreingestellt ist ein Musterkrankenhaus mit frei gewählten, gerundeten Werten. Die Werte
+         der Charité sind verschlüsselt hinterlegt und erfordern ein Passwort.</p>
+      <div class="zeile">
+        <button class="qbtn" id="q-muster" type="button" aria-pressed="true">Musterkrankenhaus</button>
+        <button class="qbtn" id="q-charite" type="button" aria-pressed="false">Daten importieren</button>
+      </div>
+      <div class="pwbox" id="pwbox">
+        <label for="pw" style="display:block;font-size:12px;color:var(--muted);margin:0 0 4px">Passwort für die Fallwerte</label>
+        <input type="password" id="pw" placeholder="Passwort" autocomplete="off" aria-label="Passwort für die Fallwerte">
+        <div class="rr">
+          <button class="qbtn" id="pw-ok" type="button">Entschlüsseln</button>
+          <button class="qbtn" id="pw-ab" type="button">Abbrechen</button>
+        </div>
+        <div class="pwmsg" id="pwmsg"></div>
+      </div>
+    </div>
+    <div id="sidebar" class="eingaben-grid"></div>
+  </section>
+  </div>
+
+  <div class="spalte-rechts">
+  <section id="ergebnisse"><h2>3&#8195;Ergebnisse</h2>
+    <p class="lead">Der Basisfall verwendet die aktuell eingegebenen Werte. Er dient als Vergleichspunkt für die Abbildungen, die Szenarien und die Sensitivitätsanalyse.</p>
+    <div id="ergebnis"></div><div id="warnung"></div></section>
+
+  <section id="szenarien"><h2>4&#8195;Szenarien</h2>
+    <p class="lead">Zusätzlich zum Basisfall werden vier Szenarien berechnet. Sie zeigen, wie sich ein niedriger oder hoher Anteil der von Patienten digital gebuchten Termine zusammen mit einer geringen oder hohen administrativen Zeitersparnis im Krankenhaus auf die beiden Schwellen auswirkt.</p>
+    <p class="lead">In den voreingestellten Szenarien bleibt der Buchungsanteil bei geringer Nutzung auf dem Ausgangswert. Bei hoher Nutzung erreicht er am Ende des Betrachtungszeitraums den oberen Literaturwert. Die geringe Zeitersparnis entspricht der Hälfte des Basiswerts, die hohe Zeitersparnis dem Doppelten. Die Szenarien stellen keine Prognosen dar und können angepasst werden.</p>
+    <div id="szen-ui"></div><div id="szen-aus"></div></section>
+
+  <section id="bereiche"><h2>5&#8195;Vergleich nach Krankenhausbereichen</h2>
+    <p class="lead">Tragen Sie die jährlichen Terminvolumina der Krankenhausbereiche ein. Dr. Scale zeigt für jeden Bereich, ob das eingegebene Volumen die Terminschwelle erreicht. Zusätzlich wird geprüft, ob die Summe der eingegebenen Termine den Portal-Break-even erreicht.</p>
+    <p class="lead">Ambulante Fallzahlen sind keine Terminvolumina. Sie werden deshalb nur als Vergleichswerte angezeigt und gehen nicht in die Berechnung ein.</p>
+    <div id="ber-ui"></div><div id="ber-aus"></div></section>
+
+  <section id="sensitivitaet"><h2>6&#8195;Sensitivitätsanalyse</h2>
+    <p class="lead">Die Einweg-Sensitivitätsanalyse zeigt, wie stark einzelne Eingangsgrößen die Terminschwelle verändern. Dafür wird jeweils eine Eingangsgröße innerhalb der angegebenen Spanne verändert. Alle übrigen Werte bleiben wie im Basisfall.</p>
+    <div id="sensi"></div></section>
+
+  <section id="rechenweg"><h2>7&#8195;Rechenweg</h2>
+    <p class="lead">Der Rechenweg zeigt in vier Schritten, wie Dr. Scale aus den Eingaben die beiden wirtschaftlichen Schwellen berechnet. Zu jedem Schritt werden die Formel, die eingesetzten Werte und das Ergebnis angezeigt.</p>
+    <h3>Verwendete Variablen</h3>
+    <div class="tw"><table><thead><tr><th>Zeichen</th><th>Bedeutung</th><th>Einheit</th></tr></thead><tbody>
+      <tr><td class="sym">n</td><td>Vorteil je digital gebuchtem Termin</td><td>Euro</td></tr>
+      <tr><td class="sym">&Delta;r</td><td>Unterschied der No-Show-Raten</td><td>Prozentpunkte</td></tr>
+      <tr><td class="sym">b</td><td>Deckungsbeitrag je Termin</td><td>Euro</td></tr>
+      <tr><td class="sym">t</td><td>Eingesparte Bearbeitungszeit</td><td>Minuten</td></tr>
+      <tr><td class="sym">c</td><td>Personalkostensatz</td><td>Euro je Stunde</td></tr>
+      <tr><td class="sym">k</td><td>Variable Kosten je digitaler Buchung</td><td>Euro</td></tr>
+      <tr><td class="sym">d<sub>0</sub></td><td>Digitaler Buchungsanteil zu Beginn</td><td>Prozent</td></tr>
+      <tr><td class="sym">d<sub>j</sub></td><td>Digitaler Buchungsanteil im Jahr j</td><td>Prozent</td></tr>
+      <tr><td class="sym">d<sub>H</sub></td><td>Digitaler Buchungsanteil am Ende des Betrachtungszeitraums</td><td>Prozent</td></tr>
+      <tr><td class="sym">j</td><td>Jahr innerhalb des Betrachtungszeitraums</td><td>Jahr</td></tr>
+      <tr><td class="sym">H</td><td>Betrachtungszeitraum</td><td>Jahre</td></tr>
+      <tr><td class="sym">i</td><td>Kalkulationszinssatz</td><td>Prozent</td></tr>
+      <tr><td class="sym">N</td><td>Barwert des Vorteils je Termin</td><td>Euro</td></tr>
+      <tr><td class="sym">I<sub>0</sub></td><td>Investitionssumme</td><td>Euro</td></tr>
+      <tr><td class="sym">K<sub>j</sub></td><td>Laufende Kosten im Jahr j</td><td>Euro</td></tr>
+      <tr><td class="sym">A<sub>j</sub></td><td>Vermiedener Digitalisierungsabschlag im Jahr j</td><td>Euro</td></tr>
+      <tr><td class="sym">F</td><td>Portalweite Nettokosten</td><td>Euro</td></tr>
+      <tr><td class="sym">a</td><td>Anbindungskosten eines Krankenhausbereichs</td><td>Euro</td></tr>
+      <tr><td class="sym">m</td><td>Terminschwelle eines Krankenhausbereichs</td><td>Termine je Jahr</td></tr>
+      <tr><td class="sym">B</td><td>Portal-Break-even</td><td>Termine je Jahr</td></tr>
+      <tr><td class="sym">V</td><td>Tatsächliches aggregiertes Terminvolumen</td><td>Termine je Jahr</td></tr>
+    </tbody></table></div>
+    <div id="rechenwegik"></div></section>
+
+  <section id="export"><h2>8&#8195;Berechnungsnachweis exportieren</h2>
+    <p class="lead">Der Export enthält die Eingaben, den Rechenweg, die Ergebnisse, die Szenarien und die Sensitivitätsanalyse.</p>
+    <div class="card"><div class="fig-h"><h4 style="margin:0">Berechnungsnachweis</h4>
+      <span class="dl-gruppe"><button class="dl primaer" type="button" id="dl-excel">Als Excel-Datei exportieren</button></span></div>
+      <div class="status" id="status"></div></div></section>
+
+  <section id="quellen"><h2>9&#8195;Quellen</h2>
+    <p class="lead">Die folgenden Quellen bilden die Grundlage der verwendeten Literaturwerte, Rechtsparameter und Bewertungsmethode.</p>
+    <div id="quellenliste"></div></section>
+
+  </div>
+  </div>
+
+  <footer class="fuss">Dr. Scale wurde von Erencan Ersoy im Rahmen einer Masterarbeit an der Freien Universität Berlin entwickelt. <span id="fuss-version">Version 1.11 vom 05.09.2026</span> &middot; Stand: <span id="fuss-datum"></span> &middot; Datengrundlage: <span id="fuss-quelle">Musterkrankenhaus</span>.</footer>
+</main>
+
+<!-- ExcelJS 4.4.0, MIT, siehe vendor/LICENSE-exceljs.txt -->
+<script src="exceljs.min.js"></script>
+<script>
+"use strict";
+/* ============ Pixel-Wortmarke ============ */
+var GLY={D:["11110","10001","10001","10001","10001","10001","11110"],
+ R:["11110","10001","10001","11110","10100","10010","10001"],
+ ".":["00","00","00","00","00","11","11"]," ":["000","000","000","000","000","000","000"],
+ S:["01111","10000","10000","01110","00001","00001","11110"],
+ C:["01110","10001","10000","10000","10000","10001","01110"],
+ A:["01110","10001","10001","11111","10001","10001","10001"],
+ L:["10000","10000","10000","10000","10000","10000","11111"],
+ E:["11111","10000","10000","11110","10000","10000","11111"]};
+function wortmarke(px){
+  var t="DR. SCALE",teile=[],x=0,i,g;
+  for(i=0;i<t.length;i++){g=GLY[t.charAt(i)];if(!g)continue;teile.push({g:g,x:x});x+=g[0].length+1;}
+  var W=(x-1)*px,H=7*px;
+  function koerper(dx,dy,f){var s="";teile.forEach(function(P){
+    for(var r=0;r<7;r++)for(var c=0;c<P.g[r].length;c++) if(P.g[r].charAt(c)==="1")
+      s+='<rect x="'+((P.x+c)*px+dx)+'" y="'+(r*px+dy)+'" width="'+px+'" height="'+px+'" fill="'+f+'"/>';});
+    return s;}
+  return '<svg viewBox="0 0 '+(W+px)+' '+(H+px)+'" role="img" aria-label="Dr. Scale" '+
+    'xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">'+
+    koerper(px,px,"var(--accent)")+koerper(0,0,"var(--petrol)")+'</svg>';
+}
+document.getElementById("mark").innerHTML=wortmarke(5);
+/* ============ Allgemeines Modell ============ */
+var FTB2={2027:{v:0.0040,n:0.0009},2028:{v:0.0030,n:0.0018},2029:{v:0.0025,n:0.0023},
+          2030:{v:0.0020,n:0.0027},2031:{v:0.0010,n:0.0036}};
+var N_VERF=19,N_NUTZ=3,LIT_GRENZE=0.52;
+/* Die 19 Muss-Anforderungen der Kategorie Verfuegbarkeit, Wortlaut aus Anhang 1
+   der Abschlagsvereinbarung. Sie werden zu gleichen Teilen bewertet, jede
+   erfuellte vermeidet ein Neunzehntel des Gewichts. */
+var MUSS=[
+  {id:"2.V1",ab:"Aufnahmemanagement",kurz:"Terminvereinbarung ambulant",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten oder deren vorgelagerten Leistungserbringer Termine für ambulante Versorgungsleistungen (u. a. Untersuchungen im Rahmen der Vor- und Nachsorge) online vereinbaren. Termine für die teil- und vollstationäre Behandlung können online angefragt und abgestimmt werden."},
+  {id:"2.V2",ab:"Aufnahmemanagement",kurz:"Terminvereinbarung ASV",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten oder deren vorgelagerten Leistungserbringer Termine für Leistungen der spezialfachärztlichen Versorgung (ASV) am Standort nach § 116b SGB V online vereinbaren."},
+  {id:"2.V3",ab:"Aufnahmemanagement",kurz:"Anamnese von zu Hause",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten, eine Anamnese digital von zu Hause aus durchführen, ( z.B. Ausfüllen von Fragebögen von zu Hause und Übernahme der Informationen in das KIS/KAS)."},
+  {id:"2.V4",ab:"Aufnahmemanagement",kurz:"Unterlagen hochladen",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten ihre Behandlungsunterlagen sowie weitere zur Aufnahme und Behandlung relevante Daten und Unterlagen, insbesondere den bundeseinheitlichen Medikationsplan (Barcode-Scan zur strukturierten Weiterverarbeitung), vorab online hochladen."},
+  {id:"2.V5",ab:"Aufnahmemanagement",kurz:"Zugriff per Consent",txt:"Im Rahmen des digitalen Aufnahmemanagements können dem Leistungserbringer im Rahmen einer vom Patienten oder der Patientin digital erteilten temporären Berechtigung (Consent) der Zugriff auf die Daten (z. B. in einer existierenden elektronischen Akte) ermöglicht werden."},
+  {id:"2.V6",ab:"Aufnahmemanagement",kurz:"Antworten auf häufige Fragen",txt:"Im Rahmen des digitalen Aufnahmemanagements können Patientinnen und Patienten, online Antworten zu den häufigsten Fragen eines Krankenhaus-Aufenthalts finden."},
+  {id:"2.V7",ab:"Aufnahmemanagement",kurz:"Überweisungsschein vorab",txt:"Im Rahmen des digitalen Aufnahmemanagements können vorgelagerte Leistungserbringer Überweisungsscheine bereits vorab online der Klinik zukommen lassen."},
+  {id:"2.V8",ab:"Aufnahmemanagement",kurz:"Nachrichten an Patienten",txt:"Im Rahmen des digitalen Aufnahmemanagements können Mitarbeiterinnen und Mitarbeiter des Aufnahmemanagements den Patientinnen und Patienten Nachrichten schicken."},
+  {id:"2.V9",ab:"Aufnahmemanagement",kurz:"Anamnese in der Klinik",txt:"Im Rahmen des digitalen Aufnahmemanagements wird Mitarbeiterinnen und Mitarbeitern des Aufnahmemanagements ermöglicht, eine Anamnese auch digital in der Klinik vorzunehmen (z.B. Ortsunabhängiges Ausfüllen von Fragebögen und Übertragung der Infos an KIS/KAS)."},
+  {id:"2.V10",ab:"Aufnahmemanagement",kurz:"Schnittstellen zu KIS und ERP",txt:"Das digitale Aufnahmemanagement weist Schnittstellen zu bestehenden KIS und/oder ERP-Systemen vor, sodass die digital erfassten Daten der Patientin/des Patienten auch für nachgelagerte organisatorische Prozesse sowie Prozesse der Ressourcenplanung (z. B. Personalplanung oder Bettenmanagement) automatisch und interoperabel zur Verfügung stehen."},
+  {id:"2.V11",ab:"Behandlungsmanagement",kurz:"Orientierung im Haus",txt:"Das digitale Behandlungsmanagements ermöglicht es Patientinnen und Patienten auf ihrem eigenen Endgerät, sich während ihres Aufenthaltes im Krankenhaus zurecht zu finden (mindestens zu örtlichen Gegebenheiten, Ansprechpersonen)."},
+  {id:"2.V12",ab:"Behandlungsmanagement",kurz:"Information zur Behandlung",txt:"Das digitale Behandlungsmanagement ermöglicht den Patientinnen und Patienten auf ihrem eigenen Endgerät, sich über ihre Behandlung, beispielsweise in Form von Aufklärungsvideos, zu informieren und vorab Fragen zur späteren Klärung zu notieren."},
+  {id:"2.V13",ab:"Behandlungsmanagement",kurz:"Behandlungstagebuch",txt:"Das digitale Behandlungsmanagement ermöglicht es Patientinnen und Patienten, digitale Behandlungstagebücher auf ihrem eigenen Endgerät zu führen."},
+  {id:"2.V14",ab:"Behandlungsmanagement",kurz:"Erinnerung an Untersuchungen",txt:"Das digitale Behandlungsmanagement ermöglicht den Patientinnen und Patienten auf ihrem eigenen Endgerät, Erinnerungen an Untersuchungstermine im Laufe ihres Aufenthaltes zu erhalten."},
+  {id:"2.V15",ab:"Behandlungsmanagement",kurz:"Mobile digitale Visite",txt:"Das digitale Behandlungsmanagement ermöglicht es Mitarbeiterinnen und Mitarbeitern durch eine mobile und digitale Visite, schneller auf relevante Informationen, insbesondere im KIS/KAS und Patientendatenmanagementsystem, zugreifen zu können."},
+  {id:"2.V16",ab:"Behandlungsmanagement",kurz:"Speicherung in der ePA",txt:"Das digitale Behandlungsmanagement ermöglicht die Speicherung von Daten der Patientinnen und Patienten in deren elektronischer Patientenakte nach § 341 SGB V (insbesondere klinische Daten zu Befunden, Diagnosen, Therapiemaßnahmen, Früherkennungsuntersuchungen, Behandlungsberichten und sonstigen Untersuchungen)."},
+  {id:"2.V17",ab:"Entlassmanagement",kurz:"Strukturierter Datenaustausch",txt:"Das digitale Entlassmanagement ermöglicht einen strukturierten Datenaustausch zwischen Leistungserbringern und die Bereitstellung von Dokumenten auf Basis anerkannter Standards an nachgelagerte Leistungserbringer (z. B. bzgl. der Medikamenteneinnahmen, Hinweisen zur Ernährung, Einschränkungen der körperlichen Belastbarkeit, notwendigen Kontrolluntersuchungen, Ansprechpartner bei Komplikationen oder pflegerischen Fragen etc.)."},
+  {id:"2.V18",ab:"Entlassmanagement",kurz:"Versorgungsplattform im Netzwerk",txt:"Das digitale Entlassmanagement ermöglicht auf Basis einer digitalen Plattform innerhalb eines Netzwerkes von ambulanten und stationären Pflege- oder Rehabilitationsanbietern den Versorgungsbedarf ihrer Patientinnen und Patienten melden zu können und mit Hilfe der digitalen Plattform innerhalb eines Netzwerkes zeitnah Rückmeldung hinsichtlich passender freier Kapazitäten zu erhalten."},
+  {id:"2.V19",ab:"Entlassmanagement",kurz:"Speicherung in der ePA",txt:"Das digitale Entlassmanagement ermöglicht die Speicherung von Daten der Patientinnen und Patienten in deren elektronischer Patientenakte nach § 341 SGB V."},
+];
+/* ============ Rechengrößen ============ */
+/* Sichtbar sind genau die Eingangsgroessen des Hauptmodells, geordnet
+   nach den vier Rechenbloecken der Arbeit. */
+var FELDER=[
+ {id:"dr",g:"Vorteil je digital gebuchtem Termin",l:"No-Show-Differenz",e:"Prozentpunkte",min:0,max:35,step:0.1,
+  q:"Unterschied der No-Show-Raten zwischen nicht digital und digital gebuchten Terminen, in Prozentpunkten."},
+ {id:"b",g:"Vorteil je digital gebuchtem Termin",l:"Deckungsbeitrag je Termin",e:"Euro",min:0,max:400,step:5,
+  q:"Betrag, der dem Krankenhaus entgeht, wenn ein Termin ausfällt."},
+ {id:"tmin",g:"Vorteil je digital gebuchtem Termin",l:"Zeitersparnis je Termin",e:"Minuten",min:0,max:20,step:0.5,
+  q:"Bearbeitungszeit, die eine Onlinebuchung je Termin einspart."},
+ {id:"c",g:"Vorteil je digital gebuchtem Termin",l:"Personalkostensatz",e:"Euro je Stunde",min:0,max:120,step:0.1,
+  q:"Personalkosten einer Arbeitsstunde in der Terminvergabe."},
+ {id:"entgelt",g:"Vorteil je digital gebuchtem Termin",l:"Variable Kosten je digitaler Buchung",e:"Euro",min:0,max:20,step:0.1,
+  q:"Variable Kosten, die mit jeder digitalen Buchung anfallen. Sie mindern den Vorteil je Termin."},
+ {id:"dIst",g:"Nutzung und Betrachtungszeitraum",l:"Digitaler Buchungsanteil heute",e:"Prozent",min:0,max:70,step:0.5,
+  q:"Anteil der Termine, die heute online gebucht werden."},
+ {id:"dZiel",g:"Nutzung und Betrachtungszeitraum",l:"Buchungsanteil am Ende des Betrachtungszeitraums",e:"Prozent",min:0,max:80,step:0.5,
+  q:"Angesetzter digitaler Buchungsanteil im letzten Jahr des Betrachtungszeitraums. Er muss über dem heutigen Wert liegen."},
+ {id:"start",g:"Nutzung und Betrachtungszeitraum",l:"Erstes Betrachtungsjahr",e:"Jahreszahl",min:2025,max:2040,step:1,
+  q:"Erstes Jahr, für das gerechnet wird."},
+ {id:"H",g:"Nutzung und Betrachtungszeitraum",l:"Betrachtungszeitraum",e:"Jahre",min:1,max:15,step:1,
+  q:"Zahl der Jahre, über die gerechnet wird."},
+ {id:"zins",g:"Nutzung und Betrachtungszeitraum",l:"Kalkulationszinssatz",e:"Prozent",min:0,max:10,step:0.1,
+  q:"Satz, mit dem künftige Beträge auf den Beginn des Zeitraums umgerechnet werden."},
+ {id:"I0",g:"Kosten des Portals",l:"Investitionssumme",e:"Euro",min:0,max:12000000,step:1000,
+  q:"Bereits getätigte Ausgaben für Einführung und Implementierung, brutto."},
+ {id:"K",g:"Kosten des Portals",l:"Laufende Kosten",e:"Euro je Jahr",min:0,max:600000,step:1000,
+  q:"Jährliche Ausgaben für Wartung, Lizenzen und Betrieb des Portals."},
+ {id:"KAB",g:"Kosten des Portals",l:"Laufende Kosten ab Jahr",e:"Jahreszahl",min:2025,max:2040,step:1,
+  q:"Erstes Jahr, in dem die laufenden Kosten anfallen."},
+ {id:"ANB",g:"Kosten des Portals",l:"Anbindungskosten je Krankenhausbereich",e:"Euro",min:0,max:120000,step:250,
+  q:"Einmaliger Aufwand für die Anbindung eines weiteren Bereichs."},
+ {id:"items",g:"Vermiedener Digitalisierungsabschlag",l:"Zugerechnete Verfügbarkeitsanforderungen",e:"von 19",min:1,max:19,step:1,
+  q:"Wie viele der 19 Muss-Anforderungen des Fördertatbestands 2 das Portal erfüllt. Alle 19 werden gleich gewichtet."},
+ {id:"E",g:"Vermiedener Digitalisierungsabschlag",l:"Stationäre Erlöse",e:"Euro je Jahr",min:0,max:6000000000,step:10000000,
+  q:"Jährliche stationäre Erlöse als Bemessungsgrundlage des Abschlags."}
+];
+
+var MUSTER={I0:2000000,ANB:30000,K:100000,KAB:2029,dIst:20,dZiel:30,dr:5,
+            b:100,tmin:4,c:38.43,items:1,entgelt:0,E:500000000,start:2027,H:5,zins:1.3,
+            name:"Musterkrankenhaus"};
+var NUTZLAST="1D7RlLb1N2/5gU7RHyDxISpH3WYBi5k68hD3Cd/0Ph+rKp/fENdfn2uy1SvvMzaBEpdIIJUWx2aRwDF5x0APL0VUzaLnYHbHH9N3+aOvJwgQ2XyRdjpjo2tZKJH312Q8+jtbwcgYAXlEFkps1qPJVBZSQGJMdMsi4WePlysCk8qb4n7P7U2yMZXCAi2c/z0c8MVOql82F1+LnluYXE2/rMjO90fBvKwHORhcBTJMwmi5GakGqz9NylCjyPkcwMzv3mlz9pf2w66ykxbtskxcpJR9yX+RmpUHGcJ0WXUTvY+kREINt70aEO8832NZQZRLCvnnmydJe/xeEjSckNXNKQ+/vrJ7VKhjAZWn44haLKWOn4Ms6fVFsrErTFCPmC8DuZiPDi8IPuW6tjMvJYlEVuhpfVxjmRylVj11XDdi3VneCqgPVxT/+1fmiv6OnDVeJKQe";
+var GELADEN=null, QUELLE="muster", M=Object.assign({},MUSTER);
+/* Wird beim Bau der veroeffentlichten Seite ersetzt. */
+var FASSUNG="Version 1.11 vom 05.09.2026";
+
+/* ============ Rechenkern ============ */
+function calc(ov){
+  var p=Object.assign({},M,ov||{});
+  var i=p.zins/100,H=Math.max(1,Math.round(p.H)),st=Math.round(p.start);
+  var n=(p.dr||0)/100*p.b+(p.tmin/60)*p.c-(p.entgelt||0);
+  var ANB=p.ANB;
+  var dIst=p.dIst/100;
+  var jahre=[],bwA=0,bwK=0,bwN1=0;
+  for(var j=1;j<=H;j++){
+    var jahr=st+j-1,disk=Math.pow(1+i,j);
+    var wv=FTB2[jahr]?FTB2[jahr].v:0, wn=FTB2[jahr]?FTB2[jahr].n:0;
+    var A=(wv/N_VERF*(p.items||1))*p.E, K=(jahr>=p.KAB?p.K:0), N1=(wn/N_NUTZ)*p.E;
+    bwA+=A/disk; bwK+=K/disk; bwN1+=N1/disk;
+    jahre.push({j:j,jahr:jahr,disk:disk,gew:wv,A:A,ABW:A/disk,K:K,KBW:K/disk});
+  }
+  var F=p.I0+bwK-bwA;
+  var defs=[
+   {name:"Geringer digitaler Buchungsanteil",D:dIst,hk:"sek",stil:"solid",
+    was:"Der digitale Buchungsanteil bleibt auf dem heute berichteten Wert. Ohne Annahme über einen Anstieg."},
+   {name:"Mittlerer digitaler Buchungsanteil",D:p.dZiel/100,hk:"sek",stil:"dash",
+    was:"Der Zielwert des Krankenhauses wird im letzten Jahr erreicht."},
+   {name:"Hoher digitaler Buchungsanteil",D:LIT_GRENZE,hk:"lit",stil:"dot",
+    was:"Explorativ hoher Buchungsanteil am Ende des Betrachtungszeitraums."}
+  ];
+  var sz=defs.map(function(d){
+    var pf=[],Pd=0,k;
+    for(k=1;k<=H;k++) pf.push(d.D>dIst? dIst+(d.D-dIst)*k/H : dIst);
+    for(k=1;k<=H;k++) Pd+=pf[k-1]/Math.pow(1+i,k);
+    var N=n*Pd;
+    return {name:d.name,was:d.was,hk:d.hk,stil:d.stil,D:d.D,
+            stg:d.D>dIst?(d.D-dIst)/H:0,path:pf,P:Pd,N:N,
+            m:N>0?ANB/N:Infinity,B:N>0?F/N:Infinity};
+  });
+  /* Die vier kombinierten Szenarien der Arbeit: digitaler Buchungsanteil
+     (bleibt auf dem heutigen Wert beziehungsweise erreicht 52 Prozent)
+     mal Prozessentlastung (halbe beziehungsweise doppelte Zeitersparnis).
+     Der Basisfall ist sz[1]. Alles wird aus den Eingaben gerechnet. */
+  var szenarien=[
+   ["S1","Geringe Nutzung und geringe Prozessentlastung",0,0.5],
+   ["S2","Geringe Nutzung und hohe Prozessentlastung",0,2],
+   ["S3","Hohe Nutzung und geringe Prozessentlastung",2,0.5],
+   ["S4","Hohe Nutzung und hohe Prozessentlastung",2,2]
+  ].map(function(d){
+    var tS=p.tmin*d[3], nS=nutzenBei(p,tS), NS=nS*sz[d[2]].P;
+    return {kurz:d[0],name:d[1],D:sz[d[2]].D,t:tS,n:nS,N:NS,
+            m:NS>0?ANB/NS:Infinity,B:NS>0?F/NS:Infinity};
+  });
+  return {p:p,i:i,H:H,st:st,n:n,ANB:ANB,jahre:jahre,bwA:bwA,bwK:bwK,bwN1:bwN1,F:F,sz:sz,szenarien:szenarien};
+}
+
+/* Vorteil je Termin bei abweichender Zeitersparnis, nie negativ. */
+function nutzenBei(p,minuten){
+  var v=(p.dr||0)/100*p.b+(minuten/60)*p.c-(p.entgelt||0);
+  return v>0? v : 0;
+}
+
+/* ============ Formatierung ============ */
+function f0(x){return isFinite(x)?Math.round(x).toLocaleString("de-DE"):"—";}
+function f1(x){return isFinite(x)?x.toLocaleString("de-DE",{minimumFractionDigits:1,maximumFractionDigits:1}):"—";}
+function f2(x){return isFinite(x)?x.toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";}
+function f4(x){return isFinite(x)?x.toLocaleString("de-DE",{minimumFractionDigits:4,maximumFractionDigits:4}):"—";}
+function eur0(x){return f0(x)+" Euro";}
+function mio(x){return Math.abs(x)>=1e6?f2(x/1e6)+" Mio. Euro":eur0(x);}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+/* ============ Druckkopf ============ */
+function druckkopf(){
+  var b=document.getElementById("druck-quelle");
+  if(b) b.textContent="Datengrundlage: "+((QUELLE==="charite"&&GELADEN)?GELADEN.name:"Musterkrankenhaus")+
+    ", "+FASSUNG+", Stand "+new Date().toLocaleDateString("de-DE");
+}
+
+/* ============ Seitenleiste ============ */
+var STEUER={};
+(function(){
+  var host=document.getElementById("sidebar"),grp=[];
+  FELDER.forEach(function(f){if(grp.indexOf(f.g)<0)grp.push(f.g);});
+  grp.forEach(function(g){
+    var box=document.createElement("div");box.className="grp";
+    var html='<h4>'+esc(g)+'</h4>';
+    FELDER.filter(function(f){return f.g===g;}).forEach(function(f){
+      html+='<div class="ctl"><div class="top"><label for="n-'+f.id+'">'+
+        esc(f.l)+(f.e?' <span class="unit">('+esc(f.e)+')</span>':'')+'</label>'+
+        '<input id="n-'+f.id+'" type="number" step="any" inputmode="decimal" min="'+f.min+'" max="'+f.max+'"></div>'+
+        '<input id="s-'+f.id+'" type="range" min="'+f.min+'" max="'+f.max+'" step="'+f.step+
+        '" aria-label="'+esc(f.l)+'">'+
+        '<div class="qz">'+esc(f.q)+'</div>'+
+        (f.id==="items"? mussListe() : '')+'</div>';
+    });
+    box.innerHTML=html;
+    host.appendChild(box);
+  });
+  FELDER.forEach(function(f){
+    var num=document.getElementById("n-"+f.id),sld=document.getElementById("s-"+f.id);
+    STEUER[f.id]={num:num,sld:sld,spec:f};
+    num.addEventListener("input",function(){
+      var v=parseFloat(String(num.value).replace(",","."));
+      if(!isFinite(v))return;
+      var mi=+f.min, ma=+f.max;
+      if(v<mi||v>ma){ v=Math.min(Math.max(v,mi),ma); num.value=gerundet(v,f.step); }
+      M[f.id]=v;setzeSchieber(f.id,v);if(f.id==="items")mussZeigen();render();
+    });
+    sld.addEventListener("input",function(){
+      var v=parseFloat(sld.value);M[f.id]=v;num.value=gerundet(v,f.step);fuellung(f.id,v);if(f.id==="items")mussZeigen();render();
+    });
+  });
+  document.getElementById("q-muster").addEventListener("click",function(){ setzeQuelle("muster"); });
+  document.getElementById("q-charite").addEventListener("click",function(){
+    if(GELADEN){ setzeQuelle("charite"); return; }
+    var b=document.getElementById("pwbox");
+    b.className="pwbox an"; document.getElementById("pw").focus();
+  });
+  document.getElementById("pw-ab").addEventListener("click",function(){
+    document.getElementById("pwbox").className="pwbox";
+    document.getElementById("pwmsg").textContent="";
+  });
+  document.getElementById("pw-ok").addEventListener("click",entschluesseln);
+  document.getElementById("pw").addEventListener("keydown",function(e){
+    if(e.key==="Enter") entschluesseln();
+  });
+})();
+function gerundet(v,step){var d=(String(step).split(".")[1]||"").length;return d?v.toFixed(d):String(Math.round(v));}
+function fuellung(id,v){
+  var s=STEUER[id],mi=+s.spec.min,ma=+s.spec.max;
+  var q=ma>mi?(Math.min(Math.max(v,mi),ma)-mi)/(ma-mi):0;
+  s.sld.style.setProperty("--f",(q*100).toFixed(2)+"%");
+}
+function setzeSchieber(id,v){
+  var s=STEUER[id];s.sld.value=Math.min(Math.max(v,+s.spec.min),+s.spec.max);fuellung(id,v);
+}
+function ausfuellen(){
+  FELDER.forEach(function(f){STEUER[f.id].num.value=M[f.id];setzeSchieber(f.id,M[f.id]);});
+  if(typeof mussZeigen==="function") mussZeigen();
+}
+function setzeQuelle(name){
+  QUELLE=name;
+  LMU_AN=(name==="charite");
+  M=Object.assign({}, name==="charite"? GELADEN : MUSTER);
+  document.getElementById("q-muster").setAttribute("aria-pressed",name==="muster"?"true":"false");
+  document.getElementById("q-charite").setAttribute("aria-pressed",name==="charite"?"true":"false");
+  ausfuellen();render();druckkopf();
+}
+function b64bytes(s){
+  var bin=atob(s),arr=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return arr;
+}
+function entschluesseln(){
+  var pw=document.getElementById("pw").value, msg=document.getElementById("pwmsg");
+  if(!pw){ msg.className="pwmsg err"; msg.textContent="Bitte Passwort eingeben."; return; }
+  if(!(window.crypto&&window.crypto.subtle)){
+    msg.className="pwmsg err"; msg.textContent="Entschlüsselung wird in dieser Ansicht nicht unterstützt."; return;
+  }
+  msg.className="pwmsg"; msg.textContent="Entschlüsselung läuft.";
+  var roh=b64bytes(NUTZLAST), salt=roh.slice(0,16), iv=roh.slice(16,28), rest=roh.slice(28);
+  var ec=new TextEncoder();
+  window.crypto.subtle.importKey("raw",ec.encode(pw),"PBKDF2",false,["deriveKey"])
+   .then(function(km){
+     return window.crypto.subtle.deriveKey(
+       {name:"PBKDF2",salt:salt,iterations:250000,hash:"SHA-256"},
+       km,{name:"AES-GCM",length:256},false,["decrypt"]);
+   })
+   .then(function(key){ return window.crypto.subtle.decrypt({name:"AES-GCM",iv:iv},key,rest); })
+   .then(function(pt){
+     GELADEN=JSON.parse(new TextDecoder().decode(pt));
+     /* Die Nutzlast stammt aus dem alten Modellstand mit kanalbezogenen
+        Quoten und Foerderfeld. Die No-Show-Differenz von fuenf
+        Prozentpunkten ist die in der Arbeit oeffentlich dokumentierte
+        Basisfallannahme und steht deshalb nicht in der Nutzlast. */
+     GELADEN.dr=5; delete GELADEN.rOff; delete GELADEN.rOn; delete GELADEN.foerder;
+     msg.className="pwmsg ok"; msg.textContent="Daten geladen: "+GELADEN.name+".";
+     document.getElementById("pwbox").className="pwbox";
+     document.getElementById("pw").value="";
+     setzeQuelle("charite");
+   })
+   .catch(function(){
+     msg.className="pwmsg err"; msg.textContent="Passwort falsch.";
+   });
+}
+
+/* ============ Abbildungen ============ */
+/* Die Abbildungen sind wissenschaftliche Darstellungen und deshalb
+   unabhaengig vom Farbschema der Seite schwarz auf weiss. Unterschieden
+   wird ueber Grauwerte, Linienart und Schraffur. */
+var FSCHWARZ="#000", FGRAU="#555", FGRAU2="#8c8c8c", FHILF="#c9c9c9", FWEISS="#fff";
+/* Statusfarben der Deckungseinordnung, zurueckhaltend gewaehlt. Rot traegt
+   in den Diagrammen zusaetzlich eine weisse Schraffur, damit die Kategorien
+   auch in Graustufen unterscheidbar bleiben (gruen dunkel und glatt,
+   orange hell, rot dunkel und schraffiert). */
+var FGRUEN="#2e6e4e", FORANGE="#d08a2e", FROT="#a33b25";
+function zonenFarbe(z){ return z==="oben"?FGRUEN:(z==="mitte"?FORANGE:FROT); }
+function statusBalken(x,y,b,h,zone){
+  var s='<rect x="'+x+'" y="'+y+'" width="'+b+'" height="'+h+'" fill="'+zonenFarbe(zone)+'"/>';
+  if(zone==="unten")
+    s+='<rect x="'+x+'" y="'+y+'" width="'+b+'" height="'+h+'" fill="url(#schraffurhell)"/>';
+  return s;
+}
+var STRICH={solid:"",dash:"7 4",dot:"2 3.5"};
+/* Weisser Grund und Schraffurmuster fuer jede Abbildung. */
+function grund(W,H){
+  return '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="'+FWEISS+'"/>'+
+   '<defs><pattern id="schraffur" width="6" height="6" patternUnits="userSpaceOnUse" '+
+   'patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="'+FSCHWARZ+
+   '" stroke-width="1.6"/></pattern>'+
+   '<pattern id="schraffurhell" width="6" height="6" patternUnits="userSpaceOnUse" '+
+   'patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="'+FWEISS+
+   '" stroke-width="1.4"/></pattern></defs>';
+}
+function linienart(st){return STRICH[st]?' stroke-dasharray="'+STRICH[st]+'"':'';}
+function achse(a,b,c,d){return '<line x1="'+a+'" y1="'+b+'" x2="'+c+'" y2="'+d+'" stroke="'+FSCHWARZ+'" stroke-width="1"/>';}
+function legendeBand(ein,X,y0,breite){
+  var s='<line x1="'+X+'" y1="'+(y0-14)+'" x2="'+(X+breite)+'" y2="'+(y0-14)+'" stroke="'+FHILF+'" stroke-width="0.8"/>';
+  s+='<text x="'+X+'" y="'+(y0-3)+'" font-size="10" fill="'+FGRAU+'" letter-spacing="0.5">LEGENDE</text>';
+  ein.forEach(function(e,n){
+    var y=y0+13+n*16;
+    if(e.art==="schraffur")
+      s+='<rect x="'+X+'" y="'+(y-8)+'" width="26" height="10" fill="url(#schraffur)" stroke="'+FSCHWARZ+'" stroke-width="0.9"/>';
+    else if(e.art==="flaeche"){
+      s+='<rect x="'+X+'" y="'+(y-8)+'" width="26" height="10" fill="'+e.c+'" opacity="'+(e.deck||0.55)+'" stroke="'+e.c+'" stroke-width="0.9"/>';
+      if(e.hatch) s+='<rect x="'+X+'" y="'+(y-8)+'" width="26" height="10" fill="url(#schraffurhell)"/>';
+    }
+    else
+      s+='<line x1="'+X+'" y1="'+(y-4)+'" x2="'+(X+26)+'" y2="'+(y-4)+'" stroke="'+e.c+'" stroke-width="2.2"'+linienart(e.stil)+'/>';
+    s+='<text x="'+(X+33)+'" y="'+y+'" font-size="11" fill="'+FSCHWARZ+'">'+esc(e.t)+'</text>';
+    if(e.w) s+='<text x="'+(X+breite)+'" y="'+y+'" text-anchor="end" font-size="11" fill="'+FSCHWARZ+'" font-weight="600">'+esc(e.w)+'</text>';
+  });
+  return s;
+}
+
+/* Grenzszenarien der angezeigten Szenarienliste: das Szenario mit dem
+   kleinsten und das mit dem groessten Barwert je Termin. Sie begrenzen die
+   graue Ergebnisspanne beider Abbildungen und die LMU-Einordnung. Bei den
+   vier voreingestellten Szenarien der Arbeit sind das Szenario 1 (geringe
+   Nutzung und geringe Prozessentlastung) und Szenario 4 (hohe Nutzung und
+   hohe Prozessentlastung); veraendert jemand die Szenarien, folgen die
+   Grenzen dem tatsaechlichen Minimum und Maximum der Liste. */
+function szenGrenzen(r){
+  var liste=szenarienListe(r), alle=[], i;
+  for(i=0;i<liste.length;i++){
+    var w=szenarioWerte(r,liste[i].D,liste[i].t);
+    alle.push({name:"Szenario "+(i+1)+": "+liste[i].name,N:w.N,m:w.m,B:w.B});
+  }
+  var gueltig=alle.filter(function(s){return isFinite(s.N)&&s.N>0;});
+  if(!gueltig.length) return {alle:alle,lo:null,hi:null,anzahl:liste.length};
+  var lo=gueltig[0],hi=gueltig[0];
+  gueltig.forEach(function(s){ if(s.N<lo.N)lo=s; if(s.N>hi.N)hi=s; });
+  return {alle:alle,lo:lo,hi:hi,anzahl:liste.length};
+}
+function szenAnzahlWort(n){ return n===4?"vier":f0(n); }
+
+/* 1-2-5-Achsenteilung: Schrittweite aus der Reihe 1, 2, 5 mal Zehnerpotenz,
+   so gewaehlt, dass fuenf bis neun runde Achsenwerte entstehen. Die
+   Obergrenze ist der auf den naechsten Schritt aufgerundete groesste Wert;
+   feste Achsenwerte gibt es nicht. */
+function achsenTeilung(maxWert){
+  if(!(isFinite(maxWert)&&maxWert>0)) return {schritt:1,ende:1};
+  var zehner=Math.pow(10,Math.floor(Math.log(maxWert/6)/Math.LN10));
+  var schritt=zehner*10;
+  [1,2,5,10].some(function(f){
+    if(maxWert/(zehner*f)<=8){ schritt=zehner*f; return true; }
+    return false;
+  });
+  return {schritt:schritt,ende:Math.ceil(maxWert/schritt-1e-9)*schritt};
+}
+
+function abbKapital(r){
+  var W=760,T=18,B=52,L=88,R=26,ph=210,lb=4*16+30;
+  var Hh=T+ph+B+lb,iw=W-L-R;
+  var basis=r.sz[1],g=szenGrenzen(r),lo=g.lo,hi=g.hi;
+  /* Achsengrenze aus den Break-even-Werten, nicht aus der Fallzahl. Das
+     Grenzszenario mit dem kleinsten Barwert (lo) hat den hoechsten
+     Break-even und bestimmt die Breite. */
+  var xmax=Math.max(basis.B*1.4,1);
+  if(lo&&isFinite(lo.B)&&lo.B>0) xmax=Math.max(xmax,lo.B*1.25);
+  if(!isFinite(xmax)||xmax<=0) xmax=100000;
+  var ymax=Math.max((hi?hi.N:r.sz[1].N)*xmax-r.F,1), ymin=Math.min(-r.F,0);
+  var fx=function(v){return L+v/xmax*iw;},fy=function(v){return T+ph-(v-ymin)/(ymax-ymin)*ph;};
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Portal-Break-even. Kapitalwert des Portals nach angebundenem Terminvolumen, mit Basisfall und der Ergebnisspanne der Szenarien">'+grund(W,Hh),k;
+  for(k=0;k<=4;k++){var yv=ymin+(ymax-ymin)*k/4,y=fy(yv);
+    s+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#c9c9c9" stroke-width="0.8"/>'+
+       '<text x="'+(L-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10.5" fill="#555555">'+f1(yv/1e6)+'</text>';}
+  s+=achse(L,T,L,T+ph)+achse(L,T+ph,W-R,T+ph);
+  s+='<line x1="'+L+'" y1="'+fy(0)+'" x2="'+(W-R)+'" y2="'+fy(0)+'" stroke="#000000" stroke-width="0.9" stroke-dasharray="3 3"/>';
+  for(k=0;k<=4;k++){var xv=xmax*k/4,x=fx(xv);
+    s+='<line x1="'+x+'" y1="'+(T+ph)+'" x2="'+x+'" y2="'+(T+ph+4)+'" stroke="#000000" stroke-width="0.9"/>'+
+       '<text x="'+x+'" y="'+(T+ph+17)+'" text-anchor="middle" font-size="10.5" fill="#555555">'+f0(xv/1000)+'</text>';}
+  s+='<text x="'+(L+iw/2)+'" y="'+(T+ph+37)+'" text-anchor="middle" font-size="11" fill="#000000">Tats\u00e4chlich angebundenes Terminvolumen V in Tausend Terminen je Jahr</text>';
+  s+='<text x="14" y="'+(T+ph/2)+'" font-size="11" fill="#000000" transform="rotate(-90 14 '+(T+ph/2)+')" text-anchor="middle">Kapitalwert in Mio. Euro</text>';
+  /* Ergebnisspanne der angezeigten Szenarien zwischen den Grenzszenarien. */
+  if(lo&&hi){
+    s+='<path d="M'+fx(0)+' '+fy(-r.F)+
+       ' L'+fx(xmax)+' '+fy(xmax*lo.N-r.F)+
+       ' L'+fx(xmax)+' '+fy(xmax*hi.N-r.F)+' Z" fill="#8c8c8c" opacity="0.10"/>';
+    s+='<line x1="'+fx(0)+'" y1="'+fy(-r.F)+'" x2="'+fx(xmax)+'" y2="'+fy(xmax*lo.N-r.F)+'" stroke="#8c8c8c" stroke-width="1.1" stroke-dasharray="5 4"/>'+
+       '<line x1="'+fx(0)+'" y1="'+fy(-r.F)+'" x2="'+fx(xmax)+'" y2="'+fy(xmax*hi.N-r.F)+'" stroke="#8c8c8c" stroke-width="1.1" stroke-dasharray="2 3.5"/>';
+  }
+  /* Basisfall als kraeftige Linie mit Break-even-Punkt. */
+  s+='<line x1="'+fx(0)+'" y1="'+fy(-r.F)+'" x2="'+fx(xmax)+'" y2="'+fy(xmax*basis.N-r.F)+'" stroke="#000000" stroke-width="3"/>';
+  if(r.F>0&&basis.B<=xmax) s+='<circle cx="'+fx(basis.B)+'" cy="'+fy(0)+'" r="4.6" fill="#000000"/>';
+  /* Die Legende nennt die tatsaechlich dargestellten Grenzszenarien mit
+     ihrem Portal-Break-even; alles kommt aus dem aktuellen Modellzustand. */
+  var ein=[
+   {c:"#000000",stil:"solid",t:"Basisfall",
+    w:r.F<=0?"Nettokosten gedeckt":"Break-even "+f0(basis.B)+" Termine"}
+  ];
+  if(lo&&hi){
+    ein.push({c:"#8c8c8c",stil:"dash",t:lo.name,
+      w:r.F<=0?"":"Break-even "+f0(lo.B)+" Termine"});
+    if(hi!==lo) ein.push({c:"#8c8c8c",stil:"dot",t:hi.name,
+      w:r.F<=0?"":"Break-even "+f0(hi.B)+" Termine"});
+    ein.push({art:"flaeche",c:"#8c8c8c",deck:0.10,
+      t:"Ergebnisspanne der "+szenAnzahlWort(g.anzahl)+" Szenarien",
+      w:r.F<=0?"":f0(hi.B)+" bis "+f0(lo.B)+" Termine"});
+  }
+  s+=legendeBand(ein,L,T+ph+B+2,iw);
+  return s+'</svg>';
+}
+
+function abbKlinik(r){
+  var W=760,T=18,B=52,L=88,R=26,ph=210,lb=5*16+30;
+  var Hh=T+ph+B+lb,iw=W-L-R;
+  var basis=r.sz[1],g=szenGrenzen(r),lo=g.lo,hi=g.hi;
+  /* lo hat die hoechste Terminschwelle und bestimmt die Achsenbreite. */
+  var xm0=(lo&&isFinite(lo.m))?lo.m:(isFinite(basis.m)?basis.m:0);
+  var xmax=Math.max(xm0*1.6,1200),ymax=Math.max(r.ANB*1.8,12000);
+  var fx=function(v){return L+Math.min(v,xmax)/xmax*iw;},fy=function(v){return T+ph-Math.min(v,ymax)/ymax*ph;};
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Terminschwelle für eine weitere Anbindung. Barwert des Nutzens eines Krankenhausbereichs gegen die Anbindungskosten, mit Basisfall und der Ergebnisspanne der Szenarien">'+grund(W,Hh),k;
+  for(k=0;k<=4;k++){var yv=ymax*k/4,y=fy(yv);
+    s+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#c9c9c9" stroke-width="0.8"/>'+
+       '<text x="'+(L-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10.5" fill="#555555">'+f0(yv/1000)+'</text>';}
+  s+=achse(L,T,L,T+ph)+achse(L,T+ph,W-R,T+ph);
+  for(k=0;k<=4;k++){var xv=xmax*k/4,x=fx(xv);
+    s+='<line x1="'+x+'" y1="'+(T+ph)+'" x2="'+x+'" y2="'+(T+ph+4)+'" stroke="#000000" stroke-width="0.9"/>'+
+       '<text x="'+x+'" y="'+(T+ph+17)+'" text-anchor="middle" font-size="10.5" fill="#555555">'+f0(xv)+'</text>';}
+  s+='<text x="'+(L+iw/2)+'" y="'+(T+ph+37)+'" text-anchor="middle" font-size="11" fill="#000000">Termine des Bereichs je Jahr</text>';
+  s+='<text x="14" y="'+(T+ph/2)+'" font-size="11" fill="#000000" transform="rotate(-90 14 '+(T+ph/2)+')" text-anchor="middle">Barwert in Tausend Euro</text>';
+  /* Ergebnisspanne der angezeigten Szenarien zwischen den Grenzszenarien. */
+  if(lo&&hi){
+    var xeG=Math.min(xmax,ymax/lo.N),xeH=Math.min(xmax,ymax/hi.N);
+    s+='<path d="M'+fx(0)+' '+fy(0)+' L'+fx(xeG)+' '+fy(xeG*lo.N)+
+       (xeG<xmax?' L'+fx(xmax)+' '+fy(ymax):'')+
+       (xeH<xmax?' L'+fx(xeH<xmax?xmax:xeH)+' '+fy(ymax):'')+
+       ' L'+fx(xeH)+' '+fy(xeH*hi.N)+' Z" fill="#8c8c8c" opacity="0.10"/>';
+    s+='<line x1="'+fx(0)+'" y1="'+fy(0)+'" x2="'+fx(xeG)+'" y2="'+fy(xeG*lo.N)+'" stroke="#8c8c8c" stroke-width="1.1" stroke-dasharray="5 4"/>'+
+       '<line x1="'+fx(0)+'" y1="'+fy(0)+'" x2="'+fx(xeH)+'" y2="'+fy(xeH*hi.N)+'" stroke="#8c8c8c" stroke-width="1.1" stroke-dasharray="2 3.5"/>';
+  }
+  /* Basisfall kraeftig, Anbindungskosten als waagerechte Linie. */
+  var xeB=Math.min(xmax,ymax/basis.N);
+  s+='<line x1="'+fx(0)+'" y1="'+fy(0)+'" x2="'+fx(xeB)+'" y2="'+fy(xeB*basis.N)+'" stroke="#000000" stroke-width="3"/>';
+  var yk=fy(r.ANB);
+  s+='<line x1="'+L+'" y1="'+yk+'" x2="'+(W-R)+'" y2="'+yk+'" stroke="#000000" stroke-width="1.6" stroke-dasharray="5 4"/>';
+  if(basis.m<=xmax) s+='<circle cx="'+fx(basis.m)+'" cy="'+yk+'" r="4.6" fill="#000000"/>';
+  (lo&&hi?[lo,hi]:[]).forEach(function(z){
+    if(z.m<=xmax) s+='<circle cx="'+fx(z.m)+'" cy="'+yk+'" r="3" fill="none" stroke="#8c8c8c" stroke-width="1.4"/>';
+  });
+  /* Die Legende nennt die tatsaechlich dargestellten Grenzszenarien mit
+     ihrer Terminschwelle; alles kommt aus dem aktuellen Modellzustand. */
+  var ein=[
+   {c:"#000000",stil:"solid",t:"Basisfall",
+    w:"Terminschwelle "+f0(basis.m)+" Termine"}
+  ];
+  if(lo&&hi){
+    ein.push({c:"#8c8c8c",stil:"dash",t:lo.name,
+      w:"Terminschwelle "+f0(lo.m)+" Termine"});
+    if(hi!==lo) ein.push({c:"#8c8c8c",stil:"dot",t:hi.name,
+      w:"Terminschwelle "+f0(hi.m)+" Termine"});
+    ein.push({art:"flaeche",c:"#8c8c8c",deck:0.10,
+      t:"Ergebnisspanne der "+szenAnzahlWort(g.anzahl)+" Szenarien",
+      w:f0(hi.m)+" bis "+f0(lo.m)+" Termine"});
+  }
+  ein.push({c:"#000000",stil:"dash",t:"Anbindungskosten je Krankenhausbereich",w:eur0(r.ANB)});
+  s+=legendeBand(ein,L,T+ph+B+2,iw);
+  return s+'</svg>';
+}
+
+function abbTornado(rows,basis){
+  var W=760,rh=30,T=30,B=40,L=248,lb=2*16+30;
+  var Hh=T+B+rows.length*rh+lb;
+  var lo=Math.min.apply(null,rows.map(function(x){return Math.min(x.a,x.b);}));
+  var hi=Math.max.apply(null,rows.map(function(x){return Math.max(x.a,x.b);}));
+  lo=Math.min(lo,basis);hi=Math.max(hi,basis);
+  var pad=(hi-lo)*0.1||Math.max(1,Math.abs(hi)*0.1);lo-=pad;hi+=pad;
+  var mz=0;rows.forEach(function(x){mz=Math.max(mz,f0(Math.min(x.a,x.b)).length,f0(Math.max(x.a,x.b)).length);});
+  var gut=Math.ceil(mz*10.5*0.56)+11,X0=L+gut,X1=W-gut-10,iw=Math.max(60,X1-X0);
+  var fx=function(v){return X0+(v-lo)/(hi-lo)*iw;};
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Sensitivität der Terminschwelle">'+grund(W,Hh);
+  s+='<line x1="'+fx(basis)+'" y1="'+(T-8)+'" x2="'+fx(basis)+'" y2="'+(T+rows.length*rh+6)+'" stroke="#000000" stroke-width="0.9" stroke-dasharray="3 3"/>'+
+     '<text x="'+fx(basis)+'" y="'+(T-13)+'" text-anchor="middle" font-size="10.5" fill="#000000">Basisfall '+f0(basis)+'</text>';
+  rows.forEach(function(x,nn){
+    var y=T+nn*rh+rh/2,x1=fx(Math.min(x.a,x.b)),x2=fx(Math.max(x.a,x.b));
+    s+='<text x="'+(L-11)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="11" fill="#000000">'+esc(x.n)+'</text>'+
+       '<rect x="'+x1+'" y="'+(y-8)+'" width="'+Math.max(2,x2-x1)+'" height="16" fill="#8c8c8c" opacity="0.55" stroke="#8c8c8c" stroke-width="0.9"/>'+
+       '<text x="'+(x1-6)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10.5" fill="#555555">'+f0(Math.min(x.a,x.b))+'</text>'+
+       '<text x="'+(x2+6)+'" y="'+(y+3.5)+'" font-size="10.5" fill="#555555">'+f0(Math.max(x.a,x.b))+'</text>';
+  });
+  var yA=T+rows.length*rh+16;
+  s+='<text x="'+(X0+iw/2)+'" y="'+yA+'" text-anchor="middle" font-size="11" fill="#000000">Terminschwelle für eine weitere Anbindung in Terminen je Jahr</text>';
+  s+=legendeBand([{c:"#8c8c8c",art:"flaeche",t:"Spanne bei Variation der Rechengröße"},
+                  {c:"#000000",stil:"dot",t:"Basisfall, alle Größen unverändert"}],L,yA+18,W-L-20);
+  return s+'</svg>';
+}
+
+/* ============ Herunterladen ============ */
+function meldung(t,gut){var el=document.getElementById("status");el.className="status an "+(gut?"gut":"schlecht");el.textContent=t;}
+function browserSave(name,daten,mime){
+  try{var b=new Blob([daten],{type:mime}),u=URL.createObjectURL(b),a=document.createElement("a");
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(u);a.remove();},0);
+    meldung(name+" wurde bereitgestellt.",true);
+  }catch(e){meldung("Speichern ist in dieser Ansicht nicht möglich.",false);}
+}
+/* ============ Auswahl der Muss-Anforderungen ============ */
+/* Die Liste ist ein Eingabehelfer: Sie schreibt ihre Zahl in das Feld items.
+   Wer die Zahl unmittelbar eintraegt, kommt zum selben Ergebnis. */
+function mussListe(){
+  var abschnitte=[],h='';
+  MUSS.forEach(function(m){ if(abschnitte.indexOf(m.ab)<0) abschnitte.push(m.ab); });
+  h+='<details class="muss"><summary>Anforderungen einzeln auswählen</summary>';
+  h+='<p class="qz" style="margin:6px 0 8px">Angehakt wird, was das Portal erfüllt. '+
+     'Die Zahl oben folgt der Auswahl. Voreingestellt ist allein '+
+     '<strong>2.V1</strong>, die Online-Terminvereinbarung, der Gegenstand des Modells.</p>';
+  abschnitte.forEach(function(ab){
+    h+='<div class="mussgrp"><h5>'+esc(ab)+'</h5>';
+    MUSS.filter(function(m){return m.ab===ab;}).forEach(function(m){
+      h+='<label class="mussz" title="'+esc(m.txt)+'">'+
+         '<input type="checkbox" data-muss="'+m.id+'"> '+
+         '<span class="mussid">'+m.id+'</span> '+esc(m.kurz)+'</label>';
+    });
+    h+='</div>';
+  });
+  h+='</details>';
+  return h;
+}
+function mussSetzen(){
+  if(!document.querySelectorAll) return;
+  var kaesten=document.querySelectorAll('[data-muss]');
+  if(!kaesten.length) return;
+  var n=0; Array.prototype.forEach.call(kaesten,function(k){ if(k.checked) n++; });
+  if(n<1) n=1;
+  M.items=n;
+  STEUER.items.num.value=n; setzeSchieber("items",n);
+  render();
+}
+function mussAnbinden(){
+  if(!document.querySelectorAll) return;   /* Liste nicht im Dokument */
+  var kaesten=document.querySelectorAll('[data-muss]');
+  Array.prototype.forEach.call(kaesten,function(k){
+    k.addEventListener("change",mussSetzen);
+  });
+  mussZeigen();
+}
+/* Zahl -> Liste: Der Charité-Fall haekt die vier dokumentierten
+   Anforderungen an, sonst werden die ersten n der Reihe nach gesetzt.
+   Liste -> Zahl laeuft ueber mussSetzen; die Liste wird dabei nicht
+   ueberschrieben, damit eine eigene Auswahl bestehen bleibt. */
+var MUSS_CHARITE=["2.V1","2.V4","2.V6","2.V8"];
+function mussZeigen(){
+  if(!document.querySelectorAll) return;
+  var kaesten=document.querySelectorAll('[data-muss]');
+  if(!kaesten.length) return;
+  var n=Math.min(Math.max(Math.round(M.items||1),1),19),ids=[],i;
+  if(QUELLE==="charite" && GELADEN && n===Math.round(GELADEN.items||0)){
+    ids=MUSS_CHARITE.slice(0,n);
+    for(i=0;ids.length<n && i<MUSS.length;i++)
+      if(ids.indexOf(MUSS[i].id)<0) ids.push(MUSS[i].id);
+  } else { for(i=0;i<n;i++) ids.push(MUSS[i].id); }
+  Array.prototype.forEach.call(kaesten,function(k){
+    k.checked=ids.indexOf(k.getAttribute("data-muss"))>=0;
+  });
+}
+
+/* ============ Export als Excel-Arbeitsmappe ============ */
+/* Aufbau und Gestaltung folgen dem Bewertungsmodell-Prototyp der Arbeit:
+   fuenf Blaetter, dunkle Kopfzeilen, blau hinterlegte Eingabezellen, feste
+   Spaltenbreiten, deutsche Zahlenformate und dieselbe Reihenfolge aus
+   Eingaben, Berechnung und Ergebnissen.
+
+   Der Rechenweg steht als echte Formel in der Mappe: Wer im Blatt Modell
+   eine Eingabe aendert, bekommt neue Ergebnisse. Als Werte stehen nur die
+   Zeilen, die einen zweiten Modelldurchlauf mit frei gewaehltem
+   Buchungsanteil darstellen; das betrifft eigene Szenarien und ist dort
+   vermerkt. */
+
+var XBLAU='FFDCE6F1', XKOPF='FF404040', XERG='FFEDEDED';
+var XEURO='#,##0.00', XEURO4='#,##0.0000', XANTEIL='0.0%', XGEW='0.00%',
+    XTERMINE='#,##0', XGANZ='0', XMIN='#,##0.0', XPUNKT='#,##0.0';
+
+function xFuellung(farbe){
+  return {type:"pattern",pattern:"solid",fgColor:{argb:farbe}};
+}
+function xBreiten(ws,paare,rand){
+  paare.forEach(function(p){ ws.getColumn(p[0]).width=p[1]; });
+  ws.getColumn(rand).width=3;          /* optischer Rand */
+}
+function xKopf(ws,zeile,texte,rechts,hoehe){
+  texte.forEach(function(t,i){
+    var c=ws.getCell(zeile,i+1);
+    c.value=t;
+    c.fill=xFuellung(XKOPF);
+    c.font={bold:true,color:{argb:"FFFFFFFF"}};
+    c.alignment={vertical:"middle",wrapText:true,
+                 horizontal:(rechts&&rechts.indexOf(i+1)>=0)?"right":"left"};
+  });
+  ws.getRow(zeile).height=hoehe||36;
+}
+function xText(ws,zeile,spalte,wert,fett,umbruch){
+  var c=ws.getCell(zeile,spalte);
+  c.value=wert;
+  c.alignment={horizontal:"left",vertical:"middle",wrapText:umbruch!==false};
+  if(fett) c.font={bold:true};
+  return c;
+}
+function xZahl(ws,zeile,spalte,wert,fmt,fuell,fett){
+  var c=ws.getCell(zeile,spalte);
+  c.value=wert;
+  c.numFmt=fmt;
+  c.alignment={horizontal:"right",vertical:"middle"};
+  if(fuell) c.fill=xFuellung(fuell);
+  if(fett) c.font={bold:true};
+  return c;
+}
+function xFormel(ws,zeile,spalte,formel,wert,fmt,fuell,fett){
+  return xZahl(ws,zeile,spalte,{formula:formel,result:wert},fmt,fuell,fett);
+}
+function xHinweis(ws,zeile,bis,txt,breite){
+  ws.mergeCells(zeile,1,zeile,bis);
+  var c=ws.getCell(zeile,1);
+  c.value=txt;
+  c.alignment={horizontal:"left",vertical:"top",wrapText:true};
+  ws.getRow(zeile).height=Math.max(17,Math.ceil(txt.length/(breite-2))*15+3);
+}
+function xAnsicht(ws,zelle,ySplit){
+  ws.views=[{state:"frozen",ySplit:ySplit,topLeftCell:zelle,activeCell:zelle}];
+}
+
+/* ---------------------------------------------- Blatt 1: Modell ---- */
+/* Zeilen wie im Prototyp, davor drei Zeilen Nachweiskopf. */
+function xModell(wb,r){
+  var p=r.p, ws=wb.addWorksheet("Modell");
+  xBreiten(ws,[[1,52],[2,22],[3,22],[4,22],[5,22],[6,22],[7,18],[8,18],[9,18],
+               [10,16],[11,19],[12,19],[13,19],[14,19]],15);
+  xText(ws,1,1,"Dr. Scale, Berechnungsnachweis der Online-Terminvereinbarung",false,false)
+    .font={bold:true,size:13};
+  xHinweis(ws,2,4,"Datengrundlage: "+((QUELLE==="charite"&&GELADEN)?GELADEN.name:"Musterkrankenhaus")+
+    " · "+FASSUNG+" · Berechnet am "+new Date().toLocaleDateString("de-DE")+
+    ". Die Eingaben wurden lokal im Browser verarbeitet und nicht übertragen.",118);
+  xHinweis(ws,3,4,"Blau hinterlegte Zellen enthalten die Eingabewerte und können "+
+    "bei Bedarf angepasst werden. Grau hinterlegte Zellen kennzeichnen berechnete "+
+    "Zwischen- und Ergebnisgrößen. Alle übrigen Zellen werden automatisch "+
+    "berechnet.",118);
+
+  xText(ws,5,1,"1  Eingangsgrößen",true,false);
+  xKopf(ws,6,["Rechengröße","Wert","Einheit"],[2]);
+  var EIN=[
+   ["No-Show-Differenz",p.dr,XPUNKT,"Prozentpunkte"],
+   ["Deckungsbeitrag je Termin",p.b,XEURO,"Euro"],
+   ["Zeitersparnis je digital gebuchtem Termin",p.tmin,XMIN,"Minuten"],
+   ["Personalkostensatz",p.c,XEURO,"Euro je Stunde"],
+   ["Variable Kosten je digitaler Buchung",p.entgelt||0,XEURO,"Euro"],
+   ["Digitaler Buchungsanteil im Ausgangsjahr",p.dIst/100,XANTEIL,"Anteil"],
+   ["Betrachtungszeitraum",r.H,XGANZ,"Jahre"],
+   ["Erstes Betrachtungsjahr",r.st,XGANZ,"Jahreszahl"],
+   ["Kalkulationszinssatz",r.i,XANTEIL,"Anteil"],
+   ["Investitionssumme, brutto",p.I0,XEURO,"Euro"],
+   ["Laufende Kosten je Jahr",p.K,XEURO,"Euro"],
+   ["Erstes Jahr mit laufenden Kosten",p.KAB,XGANZ,"Jahreszahl"],
+   ["Anbindungskosten je Krankenhausbereich",r.ANB,XEURO,"Euro"],
+   ["Stationäre Erlöse je Jahr",p.E,XEURO,"Euro"],
+   ["Zahl der Verfügbarkeitsanforderungen",N_VERF,XGANZ,"Anzahl"],
+   ["Davon dem Portal zugerechnet",p.items||1,XGANZ,"Anzahl"]
+  ];
+  EIN.forEach(function(e,i){
+    var z=7+i;
+    xText(ws,z,1,e[0]);
+    xZahl(ws,z,2,e[1],e[2],XBLAU);
+    xText(ws,z,3,e[3]);
+  });
+
+  xText(ws,24,1,"2  Vorteil je digital gebuchtem Termin",true,false);
+  xText(ws,25,1,"Vermiedene Terminausfälle");
+  xFormel(ws,25,2,"B7/100*B8",p.dr/100*p.b,XEURO4);
+  xText(ws,26,1,"Bewertete Zeitersparnis");
+  xFormel(ws,26,2,"B9/60*B10",p.tmin/60*p.c,XEURO4);
+  xText(ws,27,1,"Vorteil je digital gebuchtem Termin (Euro)",true);
+  xFormel(ws,27,2,"B25+B26-B11",r.n,XEURO4,XERG,true);
+
+  xText(ws,29,1,"3  Ausprägungen des digitalen Buchungsanteils",true,false);
+  xKopf(ws,30,["Ausprägung","Buchungsanteil am Ende des Betrachtungszeitraums"],[2],50);
+  xText(ws,31,1,"geringer digitaler Buchungsanteil");
+  xFormel(ws,31,2,"B12",r.sz[0].D,XANTEIL);
+  xText(ws,32,1,"mittlerer digitaler Buchungsanteil (Basisfall)");
+  xZahl(ws,32,2,r.sz[1].D,XANTEIL,XBLAU);
+  xText(ws,33,1,"hoher digitaler Buchungsanteil");
+  xZahl(ws,33,2,r.sz[2].D,XANTEIL,XBLAU);
+
+  xText(ws,35,1,"4  Zeitpfad, Barwerte und vermiedener Abschlag je Jahr",true,false);
+  xKopf(ws,36,["Kalenderjahr","Jahr der Betrachtung","Abzinsungsfaktor",
+    "Buchungsanteil gering","Buchungsanteil mittel","Buchungsanteil hoch",
+    "Barwertbeitrag gering","Barwertbeitrag mittel","Barwertbeitrag hoch",
+    "Gewicht der Verfügbarkeit","Vermiedener Abschlag","Barwert des Abschlags",
+    "Laufende Kosten","Barwert der laufenden Kosten"],
+    [1,2,3,4,5,6,7,8,9,10,11,12,13,14],44);
+  var z0=37, ende=z0+r.jahre.length-1;
+  r.jahre.forEach(function(y,k){
+    var z=z0+k, dz=String(z);
+    xFormel(ws,z,1,"$B$14+"+k,y.jahr,XGANZ);
+    xZahl(ws,z,2,y.j,XGANZ);
+    xFormel(ws,z,3,"1/(1+$B$15)^B"+dz,1/y.disk,XEURO4);
+    ["B31","B32","B33"].forEach(function(ref,s){
+      xFormel(ws,z,4+s,"$B$12+("+ref+"-$B$12)*B"+dz+"/$B$13",r.sz[s].path[k],XANTEIL);
+    });
+    [4,5,6].forEach(function(sp,s){
+      xFormel(ws,z,7+s,"$B$27*"+String.fromCharCode(64+sp)+dz+"*C"+dz,
+              r.n*r.sz[s].path[k]/y.disk,XEURO4);
+    });
+    xZahl(ws,z,10,y.gew,XGEW,XBLAU);
+    xFormel(ws,z,11,"J"+dz+"/$B$21*$B$22*$B$20",y.A,XEURO);
+    xFormel(ws,z,12,"K"+dz+"*C"+dz,y.ABW,XEURO);
+    xFormel(ws,z,13,"IF(A"+dz+">=$B$18,$B$17,0)",y.K,XEURO);
+    xFormel(ws,z,14,"M"+dz+"*C"+dz,y.KBW,XEURO);
+  });
+  var zs=ende+1;
+  xText(ws,zs,1,"Summe",true,false);
+  [[7,r.sz[0].N,XEURO4],[8,r.sz[1].N,XEURO4],[9,r.sz[2].N,XEURO4],
+   [12,r.bwA,XEURO],[14,r.bwK,XEURO]].forEach(function(s){
+    var b=String.fromCharCode(64+s[0]);
+    xFormel(ws,zs,s[0],"SUM("+b+z0+":"+b+ende+")",s[1],s[2],XERG,true);
+  });
+
+  var ze=zs+2;
+  xText(ws,ze,1,"5  Ergebnisgrößen",true,false);
+  xKopf(ws,ze+1,["Größe","geringer Buchungsanteil",
+    "mittlerer Buchungsanteil (Basisfall)","hoher Buchungsanteil"],[2,3,4],44);
+  xText(ws,ze+2,1,"Barwert des Vorteils je Termin (Euro)");
+  ["G","H","I"].forEach(function(q,s){
+    xFormel(ws,ze+2,2+s,q+zs,r.sz[s].N,XEURO4,XERG);
+  });
+  xText(ws,ze+3,1,"Terminschwelle für eine weitere Anbindung (Termine je Jahr)",true);
+  ["B","C","D"].forEach(function(sp,s){
+    xFormel(ws,ze+3,2+s,"$B$19/"+sp+(ze+2),r.sz[s].m,XTERMINE,XERG,true);
+  });
+  xText(ws,ze+4,1,"Portalweite Nettokosten (Euro, Barwert)");
+  xFormel(ws,ze+4,2,"B16+N"+zs+"-L"+zs,r.F,XEURO,XERG);
+  xText(ws,ze+5,1,"Portal-Break-even (Termine je Jahr)",true);
+  ["B","C","D"].forEach(function(sp,s){
+    xFormel(ws,ze+5,2+s,"$B$"+(ze+4)+"/"+sp+(ze+2),r.F<=0?0:r.sz[s].B,XTERMINE,XERG,true);
+  });
+
+  var zz=ze+7;
+  xText(ws,zz,1,"6  Berechnete Zwischengröße",true,false);
+  xKopf(ws,zz+1,["Ausprägung","Summe der abgezinsten jährlichen Buchungsanteile"],[2],50);
+  [["geringer digitaler Buchungsanteil","G",0],
+   ["mittlerer digitaler Buchungsanteil (Basisfall)","H",1],
+   ["hoher digitaler Buchungsanteil","I",2]].forEach(function(a,k){
+    xText(ws,zz+2+k,1,a[0]);
+    xFormel(ws,zz+2+k,2,a[1]+zs+"/$B$27",r.sz[a[2]].P,XEURO4);
+  });
+  xAnsicht(ws,"A7",6);
+  return {ergZeile:ze+2, summe:zs, netto:ze+4, zwischen:zz+2};
+}
+
+/* ------------------------------------ Blatt 2: Werte und Herkunft ---- */
+/* Aufbau wie im Prototyp: vier Spalten, neunzehn Zeilen, kein Hinweistext.
+   Blattname, Spaltenueberschriften und Eintraege ordnen die Werte ein.
+
+   Die Spalte "Einordnung" nutzt eine geschlossene Liste:
+     Modellvoreinstellung   allgemein gesetzter Wert des Musterkrankenhauses
+     Geladener Fallwert     Wert aus den geschuetzten Falldaten
+     Literaturwert          allgemeiner Wert aus einer Literaturquelle
+     Rechtsparameter        Wert aus der Digitalisierungsabschlags-Vereinbarung
+     Methodische Festlegung Festlegung der Rechenmethode
+     Rechnerische Ableitung aus anderen Groessen berechneter Wert
+     Begruendete Annahme    gesetzter Wert ohne dokumentierten Zahlenwert
+
+   Quellen der exemplarischen Anwendung stehen hier nicht. Sie wuerden Werte
+   des Musterkrankenhauses mit einer Herkunft belegen, die diese Werte nicht
+   haben. Sind geschuetzte Fallwerte geladen, tritt an die Stelle jeder
+   Herleitung der Vermerk "Geladener Fallwert"; berechnete Groessen daraus
+   tragen "Aus geladenen Fallwerten berechnet". */
+function xEuroTxt(v){ return (Math.abs(v%1)<1e-9?f0(v):f2(v))+" Euro"; }
+function xProzTxt(v){ return (Math.abs(v%1)<1e-9?f0(v):f1(v))+" Prozent"; }
+function xFrei(v){ return Math.abs(v%1)<1e-9?f0(v):f1(v); }
+
+/* [Bezeichnung, Feld, Wertfunktion, Einordnung, Herleitung, Art]
+   Art: "direkt"     der Wert stammt unmittelbar aus dem Datensatz
+        "abgeleitet" der Wert wird aus einem solchen Wert berechnet
+        "allgemein"  der Wert haengt nicht vom Datensatz ab            */
+var XHERKUNFT=[
+ ["No-Show-Differenz","dr",
+  function(){ return f0(M.dr)+" Prozentpunkte"; },
+  "Modellvoreinstellung","—","direkt"],
+ ["Deckungsbeitrag je Termin","b",
+  function(){ return xEuroTxt(M.b); },
+  "Begründete Annahme",
+  "Größenordnungsanker: 196 US-Dollar je versäumtem Termin "+
+  "(Kheirkhah et al., 2016); der angesetzte Wert liegt darunter.","direkt"],
+ ["Zeitersparnis je digital gebuchtem Termin","tmin",
+  function(){ return xFrei(M.tmin)+" Minuten"; },
+  "Begründete Annahme",
+  "Mittelbarer Größenordnungsanker: North et al. (2023).","direkt"],
+ ["Personalkostensatz","c",
+  function(){ return f2(M.c)+" Euro je Stunde"; },
+  "Rechnerische Ableitung",
+  "Aus Entgeltgruppe E 6 einschließlich Personalnebenkosten bei 129 "+
+  "Arbeitsstunden je Monat abgeleitet (Bundesministerium der Finanzen "+
+  "[BMF], 2026).","direkt"],
+ ["Variable Kosten je digitaler Buchung","entgelt",
+  function(){ return xEuroTxt(M.entgelt||0); },
+  "Begründete Annahme",
+  "Ohne Ansatz variabler Kosten je Buchung.","direkt"],
+ ["Digitaler Buchungsanteil im Ausgangsjahr","dIst",
+  function(){ return xProzTxt(M.dIst); },
+  "Modellvoreinstellung","—","direkt"],
+ ["Buchungsanteil am Ende des Betrachtungszeitraums, gering","dIst",
+  function(){ return xProzTxt(M.dIst); },
+  "Rechnerische Ableitung",
+  "Fortschreibung des Ausgangswerts ohne Zuwachs.","abgeleitet"],
+ ["Buchungsanteil am Ende des Betrachtungszeitraums, mittel","dZiel",
+  function(){ return xProzTxt(M.dZiel); },
+  "Modellvoreinstellung","—","direkt"],
+ ["Buchungsanteil am Ende des Betrachtungszeitraums, hoch",null,
+  function(){ return xProzTxt(LIT_GRENZE*100); },
+  "Literaturwert",
+  "Gepoolte Adoptionsrate aus 40 Studien (Fraccaro et al., 2017).","allgemein"],
+ ["Verlauf des Buchungsanteils",null,
+  function(){ return "linear"; },
+  "Methodische Festlegung",
+  "Lineare Fortschreibung zwischen Ausgangs- und Zielanteil.","allgemein"],
+ ["Betrachtungszeitraum","H",
+  function(){ return f0(M.H)+" Jahre, "+M.start+" bis "+(M.start+M.H-1); },
+  "Methodische Festlegung",
+  "Zeitraum der Jahresgewichte nach Anlage 3 der Digitalisierungsabschlags-"+
+  "Vereinbarung (GKV-Spitzenverband und Deutsche Krankenhausgesellschaft "+
+  "[GKV-SV und DKG], 2024).","allgemein"],
+ ["Kalkulationszinssatz","zins",
+  function(){ return f1(M.zins)+" Prozent nominal"; },
+  "Methodische Festlegung",
+  "Amtlicher Referenzwert (BMF, 2026).","allgemein"],
+ ["Investitionssumme, brutto","I0",
+  function(){ return xEuroTxt(M.I0); },
+  "Modellvoreinstellung","—","direkt"],
+ ["Laufende Kosten je Jahr","K",
+  function(){ return xEuroTxt(M.K)+" ab "+M.KAB; },
+  "Modellvoreinstellung","—","direkt"],
+ ["Anbindungskosten je Krankenhausbereich","ANB",
+  function(){ return xEuroTxt(M.ANB); },
+  "Modellvoreinstellung","—","direkt"],
+ ["Stationäre Erlöse je Jahr","E",
+  function(){ return xEuroTxt(M.E); },
+  "Modellvoreinstellung","—","direkt"],
+ ["Gewicht der Verfügbarkeit je Jahr",null,
+  function(){ return "0,40 bis 0,10 Prozent"; },
+  "Rechtsparameter",
+  "Jahresgewichte nach Anlage 3 der Digitalisierungsabschlags-Vereinbarung "+
+  "(GKV-SV und DKG, 2024).","allgemein"],
+ ["Zahl der Verfügbarkeitsanforderungen",null,
+  function(){ return String(N_VERF); },
+  "Rechtsparameter",
+  "19 Anforderungen nach Anhang 1 der Digitalisierungsabschlags-Vereinbarung "+
+  "(GKV-SV und DKG, 2023).","allgemein"],
+ ["Davon dem Portal zugerechnet","items",
+  function(){ return f0(M.items)+" von "+N_VERF; },
+  "Begründete Annahme",
+  "Eigene Zuordnung der Anforderungen anhand des Funktionsumfangs.","direkt"]
+];
+
+/* Einordnung und Herleitung haengen davon ab, ob geschuetzte Fallwerte
+   geladen sind. Ueber die Falldaten selbst sagt das Blatt dann nichts aus. */
+function xEinordnung(h){
+  var id=h[1], art=h[5];
+  var geladen=(QUELLE==="charite"&&GELADEN);
+  if(geladen&&id&&GELADEN[id]!==undefined&&art==="direkt")
+    return ["Geladener Fallwert","—"];
+  if(geladen&&art==="abgeleitet")
+    return ["Rechnerische Ableitung","Aus geladenen Fallwerten berechnet"];
+  return [h[3],h[4]];
+}
+
+function xHerkunft(wb,r){
+  var ws=wb.addWorksheet("Werte und Herkunft");
+  xBreiten(ws,[[1,52],[2,30],[3,44],[4,68]],5);
+  xText(ws,1,1,"Werte und Herkunft",false,false).font={bold:true,size:13};
+  xKopf(ws,4,["Rechengröße","Wert","Einordnung","Quelle oder Herleitung"]);
+  XHERKUNFT.forEach(function(h,i){
+    var z=5+i, id=h[1], e=xEinordnung(h);
+    xText(ws,z,1,h[0]);
+    var c=xText(ws,z,2,h[2]());
+    /* Ein blau hinterlegter Wert weicht von der Voreinstellung des
+       geladenen Datensatzes ab; die Einordnung bleibt die der Groesse. */
+    if(id){
+      var wert=(id==="entgelt")?(M[id]||0):M[id];
+      var soll=(QUELLE==="charite"&&GELADEN&&GELADEN[id]!==undefined)?
+               GELADEN[id]:MUSTER[id];
+      if(soll!==undefined&&Math.abs(wert-soll)>1e-9){
+        c.fill=xFuellung(XBLAU);
+        c.note="von der Voreinstellung abweichend";
+      }
+    }
+    xText(ws,z,3,e[0]);
+    xText(ws,z,4,e[1]);
+  });
+  xAnsicht(ws,"A5",4);
+}
+
+/* ------------------------------------------- Blatt 3: Ergebnisse ---- */
+function xErgebnisse(wb,r,adr){
+  var ws=wb.addWorksheet("Ergebnisse"), liste=szenarienListe(r);
+  xBreiten(ws,[[1,46],[2,30],[3,20],[4,22],[5,22],[6,26],[7,28]],8);
+  xText(ws,1,1,"Ergebnisse des Basisfalls und der Szenarien",false,false)
+    .font={bold:true,size:13};
+  xHinweis(ws,2,7,"Die Szenarien verbinden den Buchungsanteil am Ende des "+
+    "Betrachtungszeitraums mit der Zeitersparnis je digital gebuchtem Termin.",194);
+  xKopf(ws,4,["Rechenfall","Buchungsanteil am Ende des Betrachtungszeitraums",
+    "Zeitersparnis (Minuten)","Vorteil je Termin (Euro)","Barwert je Termin (Euro)",
+    "Terminschwelle (Termine je Jahr)","Portal-Break-even (Termine je Jahr)"],
+    [2,3,4,5,6,7],44);
+  var basis=r.sz[1];
+  xText(ws,5,1,"Basisfall",true);
+  xFormel(ws,5,2,"Modell!B32",basis.D,XANTEIL);
+  xFormel(ws,5,3,"Modell!B9",r.p.tmin,XMIN);
+  xFormel(ws,5,4,"Modell!B27",r.n,XEURO4);
+  xFormel(ws,5,5,"Modell!C"+adr.ergZeile,basis.N,XEURO4);
+  xFormel(ws,5,6,"Modell!C"+(adr.ergZeile+1),basis.m,XTERMINE,XERG,true);
+  xFormel(ws,5,7,"Modell!C"+(adr.ergZeile+3),r.F<=0?0:basis.B,XTERMINE,XERG,true);
+  /* Ein Szenario laesst sich als Formel fuehren, wenn sein Buchungsanteil
+     einer der drei Auspraegungen entspricht. Sonst steht das Ergebnis als
+     Wert, weil es einen eigenen Zeitpfad verlangt. */
+  var ANTEILSP={0:"B",1:"C",2:"D"};
+  var wertig=false;
+  liste.forEach(function(s,i){
+    var z=6+i, w=szenarioWerte(r,s.D,s.t), sp=null, k;
+    for(k=0;k<3;k++) if(Math.abs(r.sz[k].D*100-s.D)<1e-9) sp=k;
+    xText(ws,z,1,s.name);
+    xZahl(ws,z,2,s.D/100,XANTEIL,XBLAU);
+    xZahl(ws,z,3,s.t,XMIN,XBLAU);
+    xFormel(ws,z,4,"Modell!$B$7/100*Modell!$B$8+C"+z+"/60*Modell!$B$10-Modell!$B$11",
+            w.n,XEURO4);
+    if(sp===null){ wertig=true; xZahl(ws,z,5,w.N,XEURO4); }
+    else xFormel(ws,z,5,"D"+z+"*Modell!$B$"+(adr.zwischen+sp),w.N,XEURO4);
+    xFormel(ws,z,6,"Modell!$B$19/E"+z,w.m,XTERMINE,XERG);
+    xFormel(ws,z,7,"Modell!$B$"+adr.netto+"/E"+z,r.F<=0?0:w.B,XTERMINE,XERG);
+  });
+  var zl=6+liste.length+1;
+  if(wertig){
+    xHinweis(ws,zl,7,"Für Szenarien mit einem frei gewählten Buchungsanteil steht "+
+      "der Barwert je Termin als Wert, weil er einen eigenen Zeitpfad über den "+
+      "gesamten Betrachtungszeitraum verlangt.",194);
+    zl+=1;
+  }
+  xText(ws,zl,1,"Lesart",true,false);
+  xHinweis(ws,zl+1,7,"Die Terminschwelle berücksichtigt die Kosten einer weiteren "+
+    "Anbindung. Bereits entstandene Kosten des Patientenportals werden ihr nicht "+
+    "erneut zugerechnet.",194);
+  xHinweis(ws,zl+2,7,"Der Portal-Break-even berücksichtigt die Kosten des gesamten "+
+    "Patientenportals und bezieht sich auf das Terminvolumen aller angebundenen "+
+    "Krankenhausbereiche.",194);
+  xAnsicht(ws,"A5",4);
+}
+
+/* ----------------------------------------- Blatt 4: Sensitivität ---- */
+function xSensitivitaet(wb,r,adr){
+  var ws=wb.addWorksheet("Sensitivität"), zeilen=tornadoZeilen(r);
+  xBreiten(ws,[[1,46],[2,20],[3,16],[4,16],[5,30],[6,30],[7,18]],8);
+  xText(ws,1,1,"Einweg-Sensitivitätsanalyse der Terminschwelle",false,false)
+    .font={bold:true,size:13};
+  xHinweis(ws,2,7,"Je Zeile wird eine Eingangsgröße verändert, während alle "+
+    "übrigen Werte dem Basisfall entsprechen. Blau hinterlegte Spannengrenzen "+
+    "können angepasst werden.",176);
+  xKopf(ws,4,["Rechengröße","Basiswert","von","bis","Terminschwelle Untergrenze",
+    "Terminschwelle Obergrenze","Spanne"],[2,3,4,5,6,7]);
+  /* Der Vorteil je Termin bei veraenderter Groesse, jeweils vollstaendig
+     gerechnet, geteilt durch den abgezinsten Buchungsanteil des Basisfalls. */
+  var PM="Modell!$B$"+(adr.zwischen+1);
+  var VORLAGE={
+   "No-Show-Differenz":["Modell!B7",XPUNKT,
+     function(s){return "Modell!$B$19/(("+s+"/100*Modell!$B$8+Modell!$B$9/60*Modell!$B$10-Modell!$B$11)*"+PM+")";},
+     function(x){return x;}],
+   "Anbindungskosten je Krankenhausbereich":["Modell!B19",XEURO,
+     function(s){return s+"/(Modell!$B$27*"+PM+")";},null],
+   "Deckungsbeitrag":["Modell!B8",XEURO,
+     function(s){return "Modell!$B$19/((Modell!$B$7/100*"+s+"+Modell!$B$9/60*Modell!$B$10-Modell!$B$11)*"+PM+")";},null],
+   "Zeitersparnis":["Modell!B9",XMIN,
+     function(s){return "Modell!$B$19/((Modell!$B$7/100*Modell!$B$8+"+s+"/60*Modell!$B$10-Modell!$B$11)*"+PM+")";},null],
+   "Digitaler Buchungsanteil":["Modell!B32",XANTEIL,null,null],
+   "Personalkostensatz":["Modell!B10",XEURO,
+     function(s){return "Modell!$B$19/((Modell!$B$7/100*Modell!$B$8+Modell!$B$9/60*"+s+"-Modell!$B$11)*"+PM+")";},null]
+  };
+  zeilen.forEach(function(x,i){
+    var z=5+i, v=VORLAGE[x.n]||[null,XEURO,null,null];
+    xText(ws,z,1,x.n+(x.v?" ("+x.v+")":""));
+    if(v[0]) xFormel(ws,z,2,v[0],0,v[1]); else xText(ws,z,2,"");
+    var lo=Math.min(x.a,x.b), hi=Math.max(x.a,x.b);
+    if(x.n==="Digitaler Buchungsanteil"){
+      xFormel(ws,z,3,"Modell!B31",r.sz[0].D,XANTEIL);
+      xFormel(ws,z,4,"Modell!B33",r.sz[2].D,XANTEIL);
+      xFormel(ws,z,5,"Modell!B"+(adr.ergZeile+1),r.sz[0].m,XTERMINE);
+      xFormel(ws,z,6,"Modell!D"+(adr.ergZeile+1),r.sz[2].m,XTERMINE);
+    }else{
+      var gr=xGrenzen(x,r);
+      xZahl(ws,z,3,gr[0],v[1],XBLAU);
+      xZahl(ws,z,4,gr[1],v[1],XBLAU);
+      xFormel(ws,z,5,v[2]("C"+z),x.a,XTERMINE);
+      xFormel(ws,z,6,v[2]("D"+z),x.b,XTERMINE);
+    }
+    xFormel(ws,z,7,"ABS(F"+z+"-E"+z+")",Math.abs(x.a-x.b),XTERMINE,XERG,true);
+  });
+  xAnsicht(ws,"A5",4);
+}
+/* Die geprueften Spannen stammen aus derselben Quelle wie die Abbildung. */
+function xGrenzen(x,r){
+  var p=r.p;
+  if(x.n==="No-Show-Differenz") return [0,(p.dr||0)*2];
+  if(x.n==="Anbindungskosten je Krankenhausbereich") return [10000,60000];
+  if(x.n==="Deckungsbeitrag") return [p.b*0.5,p.b*2];
+  if(x.n==="Zeitersparnis") return [p.tmin*0.5,p.tmin*2];
+  if(x.n==="Personalkostensatz") return [33.20,43.33];
+  return [0,0];
+}
+
+/* --------------------------------------------- Blatt 5: Quellen ---- */
+/* Wortgleich aus dem Literaturverzeichnis der Masterarbeit. */
+var XQUELLEN=[
+ ["Bundesministerium der Finanzen [BMF], 2026","Personalkostensatz und Kalkulationszinssatz",
+  "Bundesministerium der Finanzen. (2026, Juni). Personal- und Sachkosten in der Bundesverwaltung für Wirtschaftlichkeitsuntersuchungen und Kostenberechnungen (PSK); Kalkulationszinssätze für Wirtschaftlichkeitsuntersuchungen. (Rundschreiben vom 8. Juni 2026, GZ II A 3 – H 1012/00236/008/005)"],
+ ["Fraccaro et al., 2017","Buchungsanteil am Ende des Betrachtungszeitraums, hohe Ausprägung",
+  "Fraccaro, P., Vigo, M., Balatsoukas, P., Buchan, I. E., Peek, N. & van der Veer, S. N. (2017). Patient Portal Adoption Rates: A Systematic Literature Review and Meta-Analysis. In A. V. Gundlapalli, M.-C. Jaulent & D. Zhao (Hrsg.), MEDINFO 2017: Precision Healthcare through Informatics (S. 79–83). IOS Press. doi: 10.3233/978-1-61499-830-3-79"],
+ ["GKV-SV und DKG, 2023","Zahl der Verfügbarkeitsanforderungen",
+  "GKV-Spitzenverband und Deutsche Krankenhausgesellschaft. (2023). Anhang 1 zur Digitalisierungsabschlags-Vereinbarung. Tabelle zur Erfassung und Berechnung (Erhebungsinstrument). (Fassung vom 03.07.2023)"],
+ ["GKV-SV und DKG, 2024","Jahresgewichte der Verfügbarkeit und Betrachtungszeitraum",
+  "GKV-Spitzenverband und Deutsche Krankenhausgesellschaft. (2024). Vereinbarung gemäß § 5 Absatz 3h KHEntgG und § 5 Absatz 7 BPflV zur Umsetzung der Abschläge bei fehlender Bereitstellung und Nutzung der digitalen Dienste gemäß § 19 Absatz 1 Satz 1 Nummer 2 bis 6 KHSFV (Digitalisierungsabschlags-Vereinbarung). Zugriff auf https://www.dkgev.de/fileadmin/Mediapool/2_Themen/2.1_Digitalisierung_Daten/2.1.8._Krankenhauszukunftsfonds__KHZF_/2024-08-30_Digitalisierungs-AbschlagsVb__final_Telematik_KH.pdf (Änderungsvereinbarung, Anlage 3, vom 20.08.2024)"],
+ ["Kheirkhah et al., 2016","Größenordnungsanker des Deckungsbeitrags je Termin",
+  "Kheirkhah, P., Feng, Q., Travis, L. M., Tavakoli-Tabasi, S. & Sharafkhaneh, A. (2016). Prevalence, predictors and economic consequences of no-shows. BMC Health Services Research, 16, 13. doi: 10.1186/s12913-015-1243-z"],
+ ["North et al., 2023","Mittelbarer Größenordnungsanker der Zeitersparnis",
+  "North, F., Jensen, T. B., Stroebel, R. J., Nelson, E. M., Johnson, B. J., Thompson, M. C., . . . Crum, B. A. (2023). Self-Triage Use, Subsequent Healthcare Utilization, and Diagnoses: A Retrospective Study of Process and Clinical Outcomes Following Self-Triage and Self-Scheduling for Ear or Hearing Symptoms. Health Services Research and Managerial Epidemiology, 10, 1–11. doi: 10.1177/23333928231168121"],
+ ["Senatsverwaltung für Finanzen Berlin, 2024","Kapitalwertmethode als Bewertungsmaßstab",
+  "Senatsverwaltung für Finanzen Berlin. (2024). Berliner Haushaltsrecht. Landeshaushaltsordnung (LHO) mit Ausführungsvorschriften. Berlin. (Zitiert werden § 105 Abs. 1 Nr. 2 LHO sowie Nr. 2.3.2 der Ausführungsvorschriften zu § 7 LHO)"]
+];
+function xQuellen(wb){
+  var ws=wb.addWorksheet("Quellen");
+  xBreiten(ws,[[1,40],[2,52],[3,96]],4);
+  xText(ws,1,1,"Quellen",false,false).font={bold:true,size:13};
+  xHinweis(ws,2,3,"Vollständige Angaben zu den Kurzbelegen des Blattes „Werte und "+
+    "Herkunft“, in der Form des Literaturverzeichnisses der zugrunde "+
+    "liegenden Arbeit.",188);
+  xKopf(ws,4,["Kurzbeleg","Verwendung im Modell","Quellenangabe"]);
+  XQUELLEN.forEach(function(q,i){
+    xText(ws,5+i,1,q[0]); xText(ws,5+i,2,q[1]); xText(ws,5+i,3,q[2]);
+  });
+  xAnsicht(ws,"A5",4);
+}
+
+function mappeBauen(r){
+  var wb=new ExcelJS.Workbook();
+  wb.creator="Dr. Scale";
+  wb.created=new Date();
+  var adr=xModell(wb,r);
+  xHerkunft(wb,r);
+  xErgebnisse(wb,r,adr);
+  xSensitivitaet(wb,r,adr);
+  xQuellen(wb);
+  return wb;
+}
+
+function speichereExcel(){
+  if(typeof ExcelJS==="undefined"){
+    meldung("Die Tabellenbibliothek wurde nicht geladen. Bitte die Seite neu laden oder den PDF-Berechnungsnachweis verwenden.");
+    return;
+  }
+  try{
+    mappeBauen(calc()).xlsx.writeBuffer().then(function(daten){
+      browserSave("dr-scale-berechnungsnachweis.xlsx", new Uint8Array(daten),
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    }).catch(function(){ meldung("Die Excel-Datei konnte nicht erzeugt werden."); });
+  }catch(err){ meldung("Die Excel-Datei konnte nicht erzeugt werden."); }
+}
+
+/* ============ Deutung ============ */
+function tornadoZeilen(r){
+  var p=r.p;
+  /* Genau die sechs Groessen der Einweg-Sensitivitaetsanalyse der Arbeit. */
+  var defs=[
+   {n:"No-Show-Differenz",a:{dr:0},b:{dr:(p.dr||0)*2},v:"null bis doppelter Wert"},
+   {n:"Anbindungskosten je Krankenhausbereich",a:{ANB:10000},b:{ANB:60000},v:"10.000 bis 60.000 Euro"},
+   {n:"Deckungsbeitrag",a:{b:p.b*0.5},b:{b:p.b*2},v:"halber bis doppelter Wert"},
+   {n:"Zeitersparnis",a:{tmin:p.tmin*0.5},b:{tmin:p.tmin*2},v:"halber bis doppelter Wert"},
+   {n:"Digitaler Buchungsanteil",a:{dZiel:p.dIst},b:{dZiel:LIT_GRENZE*100},
+    v:xFrei(p.dIst)+" bis "+xFrei(LIT_GRENZE*100)+" Prozent"},
+   {n:"Personalkostensatz",a:{c:33.20},b:{c:43.33},v:"33,20 bis 43,33 Euro je Stunde"},
+  ];
+  return defs.map(function(d){return {n:d.n,v:d.v,a:calc(d.a).sz[1].m,b:calc(d.b).sz[1].m};})
+   .filter(function(x){return isFinite(x.a)&&isFinite(x.b);})
+   .sort(function(x,y){return Math.abs(y.a-y.b)-Math.abs(x.a-x.b);});
+}
+/* Nur Zeilen mit Ergebniswirkung. Die Abbildung blendet wirkungslose
+   Groessen aus, die Tabelle im Ergebnisreiter behaelt sie mit Spanne
+   null, damit sichtbar bleibt, dass sie geprueft wurden. */
+function tornadoWirksam(zeilen){
+  return zeilen.filter(function(x){return Math.abs(x.a-x.b)>1e-9;});
+}
+/* ============ Panels ============ */
+function st(id,txt){var el=document.getElementById(id);if(el)el.textContent=txt;}
+function glz(zeilen){
+  return '<div class="gl"><div class="sym">'+zeilen.map(esc).join('\n')+'</div></div>';
+}
+
+/* ============ Szenarien und Bereiche, Zustand ============ */
+var SZEN_EIGEN=null;   /* null: die vier Szenarien der Arbeit, aus den Eingaben abgeleitet */
+var BEREICHE=[{name:"",vol:0,art:"termine"}];  /* eine leere Zeile ist sichtbar */
+
+/* Veroeffentlichte ambulante Faelle je Fachgebiet, LMU Klinikum,
+   Jahresbericht 2024, Kennzahlen S. 60 f. Sie dienen ausschliesslich der
+   Groesseneinordnung und gehen in keine Rechnung ein: weder in die
+   Terminschwelle noch in den Portal-Break-even noch in ein aggregiertes
+   Terminvolumen. Ambulante Faelle sind keine vereinbarten Termine. */
+var LMU=[["Innere Medizin",63805],["Dermatologie",48728],["Augenheilkunde",46492],
+ ["Interdisziplinäre Notaufnahmen und Nothilfen",37235],["Orthopädie und Unfallchirurgie",26802],
+ ["Frauenheilkunde und Geburtshilfe",24353],["Zahnheilkunde",22419],["Kinderheilkunde",21355],
+ ["HNO-Heilkunde",17280],["Integriertes Sozialpädiatrisches Zentrum",13414],
+ ["Radiologie",12752],["Neurologie",12270],["Chirurgie",11168],["Urologie",11026],
+ ["Mund-, Kiefer- und Gesichtschirurgie",9913],["Kinderchirurgie",9774],["Psychiatrie",9677],
+ ["Anästhesiologie",8920],["Nuklearmedizin",7056],["Neurochirurgie",6650],
+ ["Laboratoriumsmedizin",4888],["Strahlenheilkunde",4529],
+ ["Transplantationszentrum München der LMU",4294],["Herzchirurgie",2129],
+ ["Neuroimmunologie",1813],["Schlaganfall- und Demenzforschung",1221],["Humangenetik",1022],
+ ["Deutsches Schwindelzentrum",931],["Palliativmedizin",642],["Arbeitsmedizin",312],
+ ["Sonstige",177]];
+var LMU_AN=false;   /* nur zusammen mit den geschuetzten Fallwerten */
+
+/* Ergebnisse eines Szenarios aus Buchungsanteil (Prozent) und
+   Zeitersparnis (Minuten). Nutzt dieselben Gleichungen wie der Kern:
+   linearer Pfad, Abzinsung, Gegenueberstellung mit a und F. */
+function szenarioWerte(r,Dproz,tmin){
+  var p=r.p,dIst=p.dIst/100,D=(isFinite(Dproz)?Dproz:0)/100,P=0,k;
+  for(k=1;k<=r.H;k++) P+=(dIst+(D-dIst)*k/r.H)/Math.pow(1+r.i,k);
+  var n=nutzenBei(p,isFinite(tmin)?tmin:0),N=n*P;
+  return {n:n,N:N,m:N>0?r.ANB/N:Infinity,B:N>0?r.F/N:Infinity};
+}
+function szenarienListe(r){
+  if(SZEN_EIGEN) return SZEN_EIGEN;
+  return r.szenarien.map(function(s){return {name:s.name,D:s.D*100,t:s.t};});
+}
+function szenLesen(){
+  if(!document.querySelectorAll) return;
+  var namen=document.querySelectorAll('input[data-szen="name"]');
+  if(!namen.length) return;
+  var aus=[],i;
+  for(i=0;i<namen.length;i++){
+    var dEl=document.querySelector('input[data-szen="D"][data-i="'+i+'"]');
+    var tEl=document.querySelector('input[data-szen="t"][data-i="'+i+'"]');
+    var d=parseFloat(String(dEl?dEl.value:"").replace(",","."));
+    var tm=parseFloat(String(tEl?tEl.value:"").replace(",","."));
+    aus.push({name:String(namen[i].value||("Szenario "+(i+1))),
+              D:isFinite(d)?Math.min(Math.max(d,0),100):0,
+              t:isFinite(tm)?Math.min(Math.max(tm,0),60):0});
+  }
+  SZEN_EIGEN=aus;
+}
+function berLesen(){
+  if(!document.querySelectorAll) return;
+  var namen=document.querySelectorAll('input[data-ber="name"]');
+  var aus=[],i;
+  for(i=0;i<namen.length;i++){
+    var vEl=document.querySelector('input[data-ber="vol"][data-i="'+i+'"]');
+    var aEl=document.querySelector('select[data-ber="art"][data-i="'+i+'"]');
+    var v=parseFloat(String(vEl?vEl.value:"").replace(/[.\s]/g,"").replace(",","."));
+    aus.push({name:String(namen[i].value||""),
+              vol:isFinite(v)&&v>=0?v:0,
+              art:(aEl&&aEl.value==="faelle")?"faelle":"termine"});
+  }
+  BEREICHE=aus;
+}
+
+/* ============ Abschnitt 3: zentrale Ergebnisse ============ */
+function baueErgebnis(r){
+  var m=r.sz[1];
+  var h='<div class="grid2">'+
+   '<div class="kpi haupt"><div class="l">Terminschwelle für eine weitere Anbindung</div>'+
+   '<div class="v">'+f0(m.m)+'</div><div class="e">Termine je Jahr</div>'+
+   '<div class="s">Ab diesem jährlichen Terminvolumen deckt ein weiterer Krankenhausbereich die Kosten seiner Anbindung.</div></div>'+
+   '<div class="kpi haupt"><div class="l">Portal-Break-even</div>'+
+   '<div class="v">'+(r.F<=0?"0":f0(m.B))+'</div><div class="e">angebundene Termine je Jahr</div>'+
+   '<div class="s">'+(r.F<=0?
+     "Der vermiedene Digitalisierungsabschlag deckt die portalweiten Nettokosten bereits vollständig.":
+     "Ab diesem Terminvolumen über alle angebundenen Bereiche sind die portalweiten Nettokosten gedeckt.")+
+   '</div></div></div>';
+  h+='<div class="grid3">'+
+   '<div class="kpi"><div class="l">Vorteil je digital gebuchtem Termin</div><div class="v">'+f2(r.n)+'</div>'+
+   '<div class="e">Euro</div><div class="s">Bewertete Zeitersparnis und vermiedene Terminausfälle, vermindert um variable Kosten je Buchung.</div></div>'+
+   '<div class="kpi"><div class="l">Barwert des Vorteils je Termin</div><div class="v">'+f2(m.N)+'</div>'+
+   '<div class="e">Euro über '+r.H+' Jahre</div><div class="s">Wert eines Termins, der in jedem Jahr des Betrachtungszeitraums anfällt.</div></div>'+
+   '<div class="kpi"><div class="l">Portalweite Nettokosten</div><div class="v">'+mio(r.F)+'</div>'+
+   '<div class="e">Barwert</div><div class="s">Investition und laufende Kosten, vermindert um den vermiedenen Abschlag.</div></div></div>';
+  /* Abbildung 1 zeigt den Portal-Break-even, Abbildung 2 die Terminschwelle.
+     Ueberschrift und kurze Erklaerung stehen vor der Abbildung; eine
+     Unterschrift gibt es nicht. */
+  h+='<div class="card" style="margin-top:14px"><div class="fig-h"><h4>Portal-Break-even</h4></div>'+
+   '<p class="src">Die Abbildung zeigt, ab welchem gesamten Terminvolumen die berücksichtigten Kosten des Patientenportals gedeckt sind. Der schwarze Punkt markiert den Portal-Break-even im Basisfall. Die graue Fläche zeigt die Ergebnisspanne der vier Szenarien.</p>'+
+   '<figure>'+abbKapital(r)+'</figure></div>'+
+   '<div class="card"><div class="fig-h"><h4>Terminschwelle für eine weitere Anbindung</h4></div>'+
+   '<p class="src">Die Abbildung zeigt, ab welchem jährlichen Terminvolumen die wirtschaftlichen Vorteile einer weiteren Anbindung deren Kosten decken. Der schwarze Punkt markiert die Terminschwelle im Basisfall. Die graue Fläche zeigt die Ergebnisspanne der vier Szenarien.</p>'+
+   '<figure>'+abbKlinik(r)+'</figure></div>';
+  document.getElementById("ergebnis").innerHTML=h;
+}
+
+/* ============ Abschnitt 4: Szenarien ============ */
+function baueSzenarienUI(){
+  var r=calc(), liste=szenarienListe(r), h;
+  h='<div class="tw ohne-rollen"><table id="szen-tab"><thead><tr><th>Szenario</th>'+
+   '<th class="num">Buchungsanteil am Ende des Betrachtungszeitraums (Prozent)</th>'+
+   '<th class="num">Zeitersparnis je Termin (Minuten)</th>'+
+   '<th class="num">Vorteil je Termin (Euro)</th><th class="num">Barwert je Termin (Euro)</th>'+
+   '<th class="num">Terminschwelle (Termine je Jahr)</th><th class="num">Portal-Break-even (Termine je Jahr)</th>'+
+   '<th></th></tr></thead><tbody>';
+  /* Der Basisfall wird hier bearbeitet wie jedes andere Szenario. Seine
+     beiden Groessen sind dieselben wie in den Eingaben links; beide
+     Darstellungen werden nach jeder Aenderung abgeglichen. */
+  h+='<tr><td><b>Basisfall</b></td>'+
+   '<td class="num" data-l="Buchungsanteil am Ende (Prozent)"><input type="number" step="0.5" min="0" max="100" data-basis="dZiel" '+
+   'value="'+M.dZiel+'" aria-label="Buchungsanteil am Ende des Betrachtungszeitraums im Basisfall"></td>'+
+   '<td class="num" data-l="Zeitersparnis je Termin (Minuten)"><input type="number" step="0.5" min="0" max="60" data-basis="tmin" '+
+   'value="'+M.tmin+'" aria-label="Zeitersparnis je Termin im Basisfall"></td>'+
+   '<td class="num" data-l="Vorteil je Termin (Euro)" id="szb-n"></td>'+
+   '<td class="num" data-l="Barwert je Termin (Euro)" id="szb-N"></td>'+
+   '<td class="num" data-l="Terminschwelle (Termine je Jahr)" id="szb-m"></td>'+
+   '<td class="num" data-l="Portal-Break-even (Termine je Jahr)" id="szb-B"></td><td></td></tr>';
+  liste.forEach(function(s,i){
+    h+='<tr><td><input type="text" data-szen="name" data-i="'+i+'" value="'+esc(s.name).replace(/"/g,"&quot;")+'" aria-label="Szenarioname"></td>'+
+     '<td class="num" data-l="Buchungsanteil am Ende (Prozent)"><input type="number" step="0.5" min="0" max="100" data-szen="D" data-i="'+i+'" value="'+s.D+'" aria-label="Buchungsanteil am Ende des Betrachtungszeitraums"></td>'+
+     '<td class="num" data-l="Zeitersparnis je Termin (Minuten)"><input type="number" step="0.5" min="0" max="60" data-szen="t" data-i="'+i+'" value="'+s.t+'" aria-label="Zeitersparnis je Termin"></td>'+
+     '<td class="num" data-l="Vorteil je Termin (Euro)" id="szw-n-'+i+'"></td>'+
+     '<td class="num" data-l="Barwert je Termin (Euro)" id="szw-N-'+i+'"></td>'+
+     '<td class="num" data-l="Terminschwelle (Termine je Jahr)" id="szw-m-'+i+'"></td>'+
+     '<td class="num" data-l="Portal-Break-even (Termine je Jahr)" id="szw-B-'+i+'"></td>'+
+     '<td><button class="dl" type="button" data-szen-del="'+i+'">Entfernen</button></td></tr>';
+  });
+  h+='</tbody></table></div>'+
+   '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px">'+
+   '<button class="dl" type="button" id="szen-plus">Szenario hinzufügen</button>'+
+   '<button class="dl" type="button" id="szen-reset">Auf die Szenarien der Arbeit zurücksetzen</button></div>';
+  document.getElementById("szen-ui").innerHTML=h;
+}
+function baueSzenarienAus(r){
+  var basis=r.sz[1], liste=szenarienListe(r), ms=[],bs=[];
+  st("szb-n",f2(r.n)); st("szb-N",f2(basis.N));
+  st("szb-m",f0(basis.m)); st("szb-B",r.F<=0?"0":f0(basis.B));
+  liste.forEach(function(s,i){
+    var w=szenarioWerte(r,s.D,s.t);
+    st("szw-n-"+i,f2(w.n)); st("szw-N-"+i,f2(w.N));
+    st("szw-m-"+i,f0(w.m)); st("szw-B-"+i,r.F<=0?"0":f0(w.B));
+    if(isFinite(w.m)) ms.push(w.m);
+    if(isFinite(w.B)) bs.push(w.B);
+  });
+  var h='';
+  if(ms.length&&bs.length){
+    h='<div class="tw" style="max-width:640px"><table><tbody>'+
+     '<tr><td>Niedrigste und höchste Terminschwelle (Termine je Jahr)</td>'+
+     '<td class="num">'+f0(Math.min.apply(null,ms))+' / '+f0(Math.max.apply(null,ms))+'</td></tr>'+
+     '<tr><td>Niedrigster und höchster Portal-Break-even (Termine je Jahr)</td>'+
+     '<td class="num">'+(r.F<=0?'0 / 0':f0(Math.min.apply(null,bs))+' / '+f0(Math.max.apply(null,bs)))+'</td></tr>'+
+     '</tbody></table></div>';
+  }
+  document.getElementById("szen-aus").innerHTML=h;
+}
+
+/* ============ Abschnitt 5: Krankenhausbereiche ============ */
+function baueBereicheUI(){
+  var h='<div class="tw"><table id="ber-tab"><thead><tr><th>Krankenhausbereich</th>'+
+   '<th class="num">Jährliches Volumen</th><th>Art der Mengenangabe</th><th></th></tr></thead><tbody>';
+  BEREICHE.forEach(function(b,i){
+    h+='<tr><td><input type="text" data-ber="name" data-i="'+i+'" value="'+esc(b.name).replace(/"/g,"&quot;")+'" aria-label="Krankenhausbereich"></td>'+
+     '<td class="num"><input type="number" step="100" min="0" data-ber="vol" data-i="'+i+'" value="'+(b.vol||0)+'" aria-label="Jährliches Volumen"></td>'+
+     '<td><select data-ber="art" data-i="'+i+'" aria-label="Art der Mengenangabe">'+
+     '<option value="termine"'+(b.art==="faelle"?"":" selected")+'>Termine</option>'+
+     '<option value="faelle"'+(b.art==="faelle"?" selected":"")+'>ambulante Fälle</option></select></td>'+
+     '<td><button class="dl" type="button" data-ber-del="'+i+'">Entfernen</button></td></tr>';
+  });
+  h+='</tbody></table></div>'+
+   '<div style="margin:0 0 12px"><button class="dl" type="button" id="ber-plus">Krankenhausbereich hinzufügen</button></div>';
+  var mitFaellen=false;
+  BEREICHE.forEach(function(b){ if(b.art==="faelle") mitFaellen=true; });
+  if(mitFaellen)
+    h+='<div class="note">Ambulante Fallzahlen sind nicht mit der Zahl vereinbarter Termine gleichzusetzen. '+
+       'Sie dienen allein der Größeneinordnung und gehen in keine Berechnung ein.</div>';
+  document.getElementById("ber-ui").innerHTML=h;
+}
+/* Illustrative LMU-Einordnung. Fuer die Charite liegen keine
+   Terminvolumina einzelner Krankenhausbereiche vor; die veroeffentlichten
+   ambulanten Fallzahlen des LMU Klinikums dienen deshalb als illustrative
+   Ersatzgroessen und werden den Schwellen des Charite-Modells
+   gegenuebergestellt. Das Diagramm traegt Namen, Werte und Einordnung;
+   die Balkenfarben folgen der niedrigsten und hoechsten Terminschwelle
+   der tatsaechlich angezeigten Szenarien. In die Rechnung geht nichts ein. */
+function lmuZone(vol,mHoch,mNiedrig){
+  /* mHoch ist die hoechste, mNiedrig die niedrigste Terminschwelle der
+     Szenarien. Erreicht die Fallzahl auch die hoechste Schwelle, waeren
+     die Anbindungskosten in jedem Szenario gedeckt; verfehlt sie selbst
+     die niedrigste, in keinem; dazwischen entscheidet das Szenario. */
+  if(vol>=mHoch) return "oben";
+  if(vol>=mNiedrig) return "mitte";
+  return "unten";
+}
+function lmuTexte(anzahl){
+  var w=szenAnzahlWort(anzahl);
+  return {oben:"Anbindungskosten in allen "+w+" Szenarien gedeckt",
+          mitte:"Deckung abhängig vom Szenario",
+          unten:"Anbindungskosten in keinem der "+w+" Szenarien gedeckt"};
+}
+function lmuVergleich(r){
+  var g=szenGrenzen(r);
+  /* lo hat den kleinsten Barwert und damit die hoechste Schwelle. */
+  var mHoch=g.lo?g.lo.m:Infinity, mNiedrig=g.hi?g.hi.m:Infinity;
+  var TXT=lmuTexte(g.anzahl), z={oben:0,mitte:0,unten:0};
+  var zeilen=LMU.map(function(x){
+    var zone=lmuZone(x[1],mHoch,mNiedrig); z[zone]++;
+    return {name:x[0],vol:x[1],txt:TXT[zone]};
+  });
+  return {zeilen:zeilen,oben:z.oben,mitte:z.mitte,unten:z.unten,
+          anzahl:g.anzahl,mHoch:mHoch,mNiedrig:mNiedrig,
+          BHoch:g.lo?g.lo.B:Infinity,BNiedrig:g.hi?g.hi.B:Infinity};
+}
+/* Sichtbare Statustexte der Deckungseinordnung. Die Zahl der Szenarien
+   wird dynamisch formuliert; bewusst ohne "lohnt sich", "wirtschaftlich"
+   oder "rentabel": Das Modell weist die Deckung der beruecksichtigten
+   Kosten aus, keine umfassende Vorteilhaftigkeit. */
+function bereichTexte(anzahl){
+  var w=szenAnzahlWort(anzahl);
+  return {oben:"Anbindungskosten in allen "+w+" Szenarien gedeckt",
+          mitte:"Deckung der Anbindungskosten abhängig vom Szenario",
+          unten:"Anbindungskosten in keinem der "+w+" Szenarien gedeckt"};
+}
+function nettoTexte(anzahl){
+  var w=szenAnzahlWort(anzahl);
+  return {oben:"Portalweite Nettokosten in allen "+w+" Szenarien gedeckt",
+          mitte:"Deckung der portalweiten Nettokosten abhängig vom Szenario",
+          unten:"Portalweite Nettokosten in keinem der "+w+" Szenarien gedeckt"};
+}
+function statusZelle(zone,txt){
+  var kl={oben:"st-gruen",mitte:"st-orange",unten:"st-rot"}[zone]||"st-orange";
+  return '<span class="st '+kl+'">'+esc(txt)+'</span>';
+}
+/* Aggregierte Einordnung: Die Summe der Fallzahlen wird als illustrative
+   Ersatzgroesse mit dem Portal-Break-even der Szenarien verglichen. */
+function lmuTabelle(r){
+  if(!LMU_AN) return '';
+  var v=lmuVergleich(r), w=szenAnzahlWort(v.anzahl);
+  var h='<h4>Illustrative Einordnung anhand der LMU-Fallzahlen</h4>'+
+   '<p class="src">Die Darstellung vergleicht die ambulanten Fallzahlen der '+
+   'Fachgebiete mit der Terminschwelle einer weiteren Anbindung. '+
+   'Da ambulante Fälle keine dokumentierten Termine sind, dient die '+
+   'Gegenüberstellung ausschließlich der illustrativen Einordnung. Quelle der '+
+   'Fallzahlen ist der Jahresbericht 2024 des LMU Klinikums.</p>'+
+   '<p class="src">Die Balkenfarben zeigen, ob das jeweilige Fallvolumen die '+
+   'Terminschwelle einer weiteren Anbindung in den vier Szenarien erreicht. '+
+   'Die waagerechte Linie ordnet ergänzend ein, an welcher Stelle der nach '+
+   'Fallvolumen sortierten Krankenhausbereiche der Portal-Break-even des '+
+   'Basisfalls liegt.</p>'+
+   '<div class="card"><figure>'+abbLmu(r)+'</figure></div>';
+  h+='<p class="src">Mit den Terminschwellen der '+w+' Szenarien ('+f0(v.mNiedrig)+' bis '+
+   f0(v.mHoch)+' Termine) wären die Anbindungskosten bei '+f0(v.oben)+' der '+
+   f0(v.zeilen.length)+' Fachgebiete in allen Szenarien gedeckt. Bei '+f0(v.mitte)+
+   ' Fachgebieten hängt die Deckung vom Szenario ab, und '+f0(v.unten)+
+   ' Fachgebiete liegen unter der niedrigsten Terminschwelle.</p>';
+  return h;
+}
+
+function baueBereicheAus(r){
+  var el=document.getElementById("ber-aus");
+  var erfasst=BEREICHE.filter(function(b){return (b.name&&b.name.trim())||(b.vol||0)>0;});
+  if(!erfasst.length){
+    el.innerHTML='<p class="src">Noch keine Krankenhausbereiche erfasst. Tragen Sie oben einen '+
+      'Bereich mit seinem jährlichen Terminvolumen ein.</p>'+lmuTabelle(r);
+    return;
+  }
+  var g=szenGrenzen(r), m=r.sz[1].m;
+  var mHoch=g.lo?g.lo.m:Infinity, mNiedrig=g.hi?g.hi.m:Infinity;
+  var TXT=bereichTexte(g.anzahl);
+  var agg=0, ueber=0, unter=0, mitFaellen=false;
+  var h='<div class="tw"><table><thead><tr><th>Krankenhausbereich</th><th>Art der Mengenangabe</th>'+
+   '<th class="num">Jährliches Volumen</th><th class="num">Terminschwelle im Basisfall</th>'+
+   '<th class="num">Differenz zum Basisfall</th><th>Einordnung</th></tr></thead><tbody>';
+  erfasst.forEach(function(b,i){
+    /* Nur Termine werden mit den Terminschwellen verrechnet. Ambulante
+       Faelle sind eine Groesseneinordnung und gehen in kein Aggregat,
+       keine Zaehlung und keinen Abstand ein. Eingeordnet wird gegen die
+       niedrigste und hoechste Terminschwelle der angezeigten Szenarien;
+       ein Wert genau auf einer Schwelle gilt als gedeckt. */
+    var vol=b.vol||0, termine=(b.art!=="faelle"), diff=vol-m;
+    if(termine){ agg+=vol; if(isFinite(m)&&vol>=m) ueber++; else unter++; }
+    else mitFaellen=true;
+    var zone=termine?lmuZone(vol,mHoch,mNiedrig):null;
+    h+='<tr><td>'+esc(b.name||("Bereich "+(i+1)))+'</td>'+
+     '<td>'+(termine?"Termine":"ambulante Fälle")+'</td>'+
+     '<td class="num">'+f0(vol)+'</td>'+
+     '<td class="num">'+(termine?f0(m):"—")+'</td>'+
+     '<td class="num">'+(termine?((diff>=0?"+":"−")+f0(Math.abs(diff))):"—")+'</td>'+
+     '<td>'+(termine? statusZelle(zone,TXT[zone])
+                    : "Nur illustrative Größeneinordnung")+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  /* Aggregat gegen den Portal-Break-even, ebenfalls nach Szenarienlogik. */
+  var B=r.F<=0?0:r.sz[1].B, dB=agg-B;
+  var BHoch=g.lo?g.lo.B:Infinity, BNiedrig=g.hi?g.hi.B:Infinity;
+  var NT=nettoTexte(g.anzahl);
+  var aggStatus=r.F<=0?
+    statusZelle("oben","Die berücksichtigten portalweiten Nettokosten sind bereits gedeckt"):
+    (function(){ var z=lmuZone(agg,BHoch,BNiedrig); return statusZelle(z,NT[z]); })();
+  h+='<div class="tw" style="max-width:640px"><table><tbody>'+
+   '<tr><td>Aggregiertes Terminvolumen</td>'+
+   '<td class="num">'+f0(agg)+'</td></tr>'+
+   '<tr><td>Bereiche oberhalb der Terminschwelle im Basisfall</td><td class="num">'+ueber+'</td></tr>'+
+   '<tr><td>Bereiche unterhalb der Terminschwelle im Basisfall</td><td class="num">'+unter+'</td></tr>'+
+   '<tr><td>Portal-Break-even im Basisfall</td><td class="num">'+(r.F<=0?'0':f0(B))+'</td></tr>'+
+   '<tr><td>Szenariospanne des Portal-Break-even</td><td class="num">'+
+     ((r.F<=0||!isFinite(BHoch))?'—':f0(BNiedrig)+' bis '+f0(BHoch))+'</td></tr>'+
+   '<tr><td>Abstand zum Portal-Break-even des Basisfalls</td>'+
+   '<td class="num">'+(r.F<=0?'Nettokosten bereits gedeckt':(dB>=0?"+":"−")+f0(Math.abs(dB)))+'</td></tr>'+
+   '<tr><td>Einordnung des aggregierten Terminvolumens</td><td>'+aggStatus+'</td></tr>'+
+   '</tbody></table></div>';
+  if(mitFaellen)
+    h+='<div class="note">Eingetragene ambulante Fälle dienen allein der Größeneinordnung. '+
+       'Sie zählen nicht zum aggregierten Terminvolumen und werden nicht mit der '+
+       'Terminschwelle verrechnet.</div>';
+  h+='<div class="card"><div class="fig-h"><h4>Vergleich der Krankenhausbereiche</h4></div>'+
+   '<figure>'+abbBereiche(r)+'</figure></div>';
+  el.innerHTML=h+lmuTabelle(r);
+}
+
+/* ---- Abbildung 4: Balkengrafik der Bereiche ---- */
+/* Balkenfarbe nach der Deckungseinordnung anhand aller angezeigten
+   Szenarien; die graue Flaeche zeigt die Spanne der Terminschwellen,
+   die schwarze Linie den Basisfall. Ambulante Faelle bleiben schraffiert
+   als illustrative Vergleichswerte. */
+function abbBereiche(r){
+  var g=szenGrenzen(r), m=r.sz[1].m;
+  var mHoch=g.lo?g.lo.m:Infinity, mNiedrig=g.hi?g.hi.m:Infinity;
+  var TXT=bereichTexte(g.anzahl);
+  var rows=BEREICHE.filter(function(b){return (b.name&&b.name.trim())||(b.vol||0)>0;}).slice(0,40);
+  var hatF=false;
+  rows.forEach(function(b){ if(b.art==="faelle") hatF=true; });
+  var ein=[
+   {art:"flaeche",c:FGRUEN,deck:1,t:TXT.oben},
+   {art:"flaeche",c:FORANGE,deck:1,t:TXT.mitte},
+   {art:"flaeche",c:FROT,deck:1,hatch:true,t:TXT.unten},
+   {c:"#000000",stil:"dash",t:"Terminschwelle im Basisfall",w:isFinite(m)?f0(m)+" Termine":""},
+   {art:"flaeche",c:"#8c8c8c",deck:0.18,t:"Spanne der Terminschwelle in den Szenarien",
+    w:(isFinite(mNiedrig)&&isFinite(mHoch))?f0(mNiedrig)+" bis "+f0(mHoch)+" Termine":""}
+  ];
+  if(hatF) ein.push({art:"schraffur",t:"Ambulante Fälle, nur illustrative Vergleichswerte"});
+  var W=760,T=30,L=214,R=92,rh=26,axh=54,lgh=ein.length*16+18;
+  var Hh=T+Math.max(rows.length,1)*rh+axh+lgh;
+  var maxVol=1;
+  rows.forEach(function(b){ if((b.vol||0)>maxVol) maxVol=b.vol||0; });
+  var vmax=Math.max(maxVol*1.12, isFinite(m)?m*1.15:1, isFinite(mHoch)?mHoch*1.12:1);
+  var iw=W-L-R;
+  var fx=function(v){return L+Math.min(v,vmax)/vmax*iw;};
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Einordnung der eingegebenen Krankenhausbereiche nach der Deckung ihrer Anbindungskosten in den angezeigten Szenarien">'+grund(W,Hh),k;
+  for(k=0;k<=4;k++){
+    var xv=vmax*k/4,x=fx(xv);
+    s+='<line x1="'+x+'" y1="'+T+'" x2="'+x+'" y2="'+(T+rows.length*rh)+'" stroke="#c9c9c9" stroke-width="0.8"/>'+
+       '<text x="'+x+'" y="'+(T+rows.length*rh+15)+'" text-anchor="middle" font-size="10.5" fill="#555555">'+f0(xv)+'</text>';
+  }
+  if(isFinite(mNiedrig)&&isFinite(mHoch)&&rows.length)
+    s+='<rect x="'+fx(mNiedrig)+'" y="'+T+'" width="'+Math.max(1,fx(mHoch)-fx(mNiedrig))+
+       '" height="'+(rows.length*rh)+'" fill="#8c8c8c" opacity="0.18"/>';
+  rows.forEach(function(b,i){
+    var y=T+i*rh, vol=b.vol||0, w=Math.max(1.5,fx(vol)-L);
+    var name=String(b.name||("Bereich "+(i+1)));
+    if(name.length>28) name=name.slice(0,27)+"…";
+    s+='<text x="'+(L-8)+'" y="'+(y+rh/2+3.5)+'" text-anchor="end" font-size="10.5" fill="#000000">'+esc(name)+'</text>';
+    if(b.art==="faelle")
+      s+='<rect x="'+L+'" y="'+(y+5)+'" width="'+w+'" height="'+(rh-10)+'" fill="url(#schraffur)" stroke="#000000" stroke-width="1"/>';
+    else
+      s+=statusBalken(L,y+5,w,rh-10,lmuZone(vol,mHoch,mNiedrig));
+    s+='<text x="'+(fx(vol)+6)+'" y="'+(y+rh/2+3.5)+'" font-size="10" fill="#555555">'+f0(vol)+'</text>';
+  });
+  s+=achse(L,T,L,T+rows.length*rh)+achse(L,T+rows.length*rh,W-R,T+rows.length*rh);
+  if(isFinite(m)&&m<=vmax){
+    var xm=fx(m);
+    s+='<line x1="'+xm+'" y1="'+(T-6)+'" x2="'+xm+'" y2="'+(T+rows.length*rh)+'" stroke="#000000" stroke-width="1.6" stroke-dasharray="5 4"/>'+
+       '<text x="'+xm+'" y="'+(T-11)+'" text-anchor="middle" font-size="10.5" fill="#000000">Terminschwelle im Basisfall '+f0(m)+'</text>';
+  }
+  s+='<text x="'+(L+iw/2)+'" y="'+(T+rows.length*rh+34)+'" text-anchor="middle" font-size="11" fill="#000000">Jährliches Volumen in Terminen beziehungsweise ambulanten Fällen</text>';
+  s+=legendeBand(ein,L,T+rows.length*rh+axh,iw);
+  return s+'</svg>';
+}
+
+/* ---- LMU-Fachgebiete: Balkengrafik nach dem Vorbild der Arbeit ---- */
+/* Vollstaendige Namen (bei Bedarf auf zwei Zeilen umbrochen), runde
+   Achsenwerte nach der 1-2-5-Teilung, drei einfarbige Statusfarben und
+   eine waagerechte Trennlinie am Portal-Break-even des Basisfalls. Die
+   Terminschwellen der Szenarien bestimmen weiterhin die Farben, werden
+   aber nicht mehr als Linie oder Flaeche gezeichnet. */
+function lmuTrennIndex(zeilen,basisB){
+  /* Index der letzten Zeile, deren Volumen den Portal-Break-even des
+     Basisfalls erreicht; -1, wenn keine Zeile ihn erreicht. Die Zeilen
+     sind absteigend nach Volumen sortiert. */
+  var idx=-1;
+  zeilen.forEach(function(z,i){ if(z.vol>=basisB) idx=i; });
+  return idx;
+}
+function abbLmu(r){
+  var v=lmuVergleich(r), basisB=r.F<=0?0:r.sz[1].B;
+  var TXT=bereichTexte(v.anzahl);
+  var W=760,T=30,L=250,R=60,axh=50,lgh=3*16+18;
+  var iw=W-L-R, proZeichen=9*0.52, labelBreite=L-16;
+  /* Absteigend nach Volumen; lange Namen auf hoechstens zwei Zeilen. */
+  var zeilen=v.zeilen.map(function(x){
+    var teile=[x.name];
+    if(x.name.length*proZeichen>labelBreite){
+      var mitte=Math.floor(x.name.length/2), p=x.name.lastIndexOf(" ",mitte);
+      if(p<8) p=x.name.indexOf(" ",mitte);
+      if(p>0) teile=[x.name.slice(0,p),x.name.slice(p+1)];
+    }
+    return {name:x.name,teile:teile,vol:x.vol,rh:teile.length>1?27:17};
+  }).sort(function(a,b){return b.vol-a.vol;});
+  var gesH=0,maxVol=1;
+  zeilen.forEach(function(z){ gesH+=z.rh; if(z.vol>maxVol) maxVol=z.vol; });
+  var at=achsenTeilung(maxVol), vmax=at.ende, nT=Math.round(vmax/at.schritt);
+  var Hh=T+gesH+axh+lgh;
+  var fx=function(x){return L+Math.min(x,vmax)/vmax*iw;};
+  var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Illustrative Einordnung der ambulanten Fallzahlen der LMU-Fachgebiete anhand der Terminschwellen der Szenarien, mit waagerechter Trennlinie am Portal-Break-even des Basisfalls">'+grund(W,Hh),k;
+  for(k=0;k<=nT;k++){
+    var xv=k*at.schritt,x=fx(xv);
+    s+='<line x1="'+x+'" y1="'+T+'" x2="'+x+'" y2="'+(T+gesH)+'" stroke="#c9c9c9" stroke-width="0.8"/>'+
+       '<text x="'+x+'" y="'+(T+gesH+15)+'" text-anchor="middle" font-size="10" fill="#555555">'+f0(xv)+'</text>';
+  }
+  var trennIdx=r.F>0?lmuTrennIndex(zeilen,basisB):-2, trennY=null, y=T;
+  if(trennIdx===-1) trennY=T;
+  zeilen.forEach(function(z,i){
+    var b=Math.max(1.5,fx(z.vol)-L), ym=y+z.rh/2;
+    z.teile.forEach(function(teil,ti){
+      var ty=z.teile.length>1? y+z.rh/2-4+ti*10 : ym+3;
+      s+='<text x="'+(L-8)+'" y="'+ty+'" text-anchor="end" font-size="9" fill="#000000">'+esc(teil)+'</text>';
+    });
+    s+='<rect x="'+L+'" y="'+(y+3)+'" width="'+b+'" height="'+(z.rh-6)+'" fill="'+
+       zonenFarbe(lmuZone(z.vol,v.mHoch,v.mNiedrig))+'"/>';
+    s+='<text x="'+(fx(z.vol)+5)+'" y="'+(ym+3)+'" font-size="9" fill="#555555">'+f0(z.vol)+'</text>';
+    y+=z.rh;
+    if(i===trennIdx) trennY=y;
+  });
+  /* Waagerechte Orientierung: Alles oberhalb der Linie erreicht den
+     Portal-Break-even des Basisfalls, alles darunter nicht. Sie ist eine
+     illustrative Orientierung und veraendert weder Farben noch Rechnung. */
+  if(trennY!==null){
+    s+='<line x1="'+L+'" y1="'+trennY+'" x2="'+(W-R)+'" y2="'+trennY+'" stroke="#000000" stroke-width="1.6"/>';
+    var oben=(trennIdx===-1)||(trennIdx===zeilen.length-1);
+    s+='<text x="'+(W-R)+'" y="'+(oben?trennY-5:trennY+12)+'" text-anchor="end" font-size="9.5" fill="#000000">'+
+       'Portal-Break-even im Basisfall: '+f0(basisB)+' Termine je Jahr</text>';
+  }
+  s+=achse(L,T,L,T+gesH)+achse(L,T+gesH,W-R,T+gesH);
+  s+='<text x="'+(L+iw/2)+'" y="'+(T+gesH+32)+'" text-anchor="middle" font-size="11" fill="#000000">Ambulante Fälle je Jahr</text>';
+  s+=legendeBand([
+   {art:"flaeche",c:FGRUEN,deck:1,t:TXT.oben},
+   {art:"flaeche",c:FORANGE,deck:1,t:TXT.mitte},
+   {art:"flaeche",c:FROT,deck:1,t:TXT.unten}
+  ],L,T+gesH+axh,iw);
+  return s+'</svg>';
+}
+/* ============ Abschnitt 6: Sensitivitaet ============ */
+function sensiTabelleHtml(r){
+  var h='<div class="tw"><table><thead><tr><th>Rechengröße</th><th>Geprüfte Spanne</th>'+
+   '<th class="num">niedriger Wert</th><th class="num">hoher Wert</th><th class="num">Spanne</th></tr></thead><tbody>';
+  tornadoZeilen(r).forEach(function(x){
+    h+='<tr><td>'+esc(x.n)+'</td><td>'+esc(x.v||'')+'</td><td class="num">'+f0(Math.min(x.a,x.b))+
+      '</td><td class="num">'+f0(Math.max(x.a,x.b))+'</td><td class="num">'+f0(Math.abs(x.a-x.b))+'</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+function baueSensi(r){
+  var h='<div class="card"><div class="fig-h"><h4>Sensitivität der Terminschwelle</h4></div>'+
+   '<figure>'+abbTornado(tornadoWirksam(tornadoZeilen(r)),r.sz[1].m)+'</figure></div>'+
+   sensiTabelleHtml(r)+
+   '<p class="src">Angaben als Terminschwelle für eine weitere Anbindung, in Terminen je Jahr.</p>';
+  document.getElementById("sensi").innerHTML=h;
+}
+
+/* ============ Abschnitt 7: Rechenweg ============ */
+function baueRechenweg(r){
+  var p=r.p,basis=r.sz[1],h='';
+  h+='<h3>Schritt 1: Vorteil je digital gebuchtem Termin</h3>'+
+   '<p class="src">Der Vorteil je digital gebuchtem Termin setzt sich aus dem bewerteten Beitrag vermiedener Terminausfälle und der bewerteten Zeitersparnis zusammen. Variable Kosten je digitaler Buchung werden abgezogen.</p>'+
+   glz(['n = Δr/100 · b + t/60 · c − k',
+        'n = '+f1(p.dr||0)+'/100 · '+f2(p.b)+' + '+f1(p.tmin)+'/60 · '+f2(p.c)+' − '+f2(p.entgelt||0),
+        'n = '+f2(r.n)+' Euro je digital gebuchtem Termin']);
+  h+='<h3>Schritt 2: Nutzung und Betrachtungszeitraum</h3>'+
+   '<p class="src">Der Vorteil je Termin wird für jedes Jahr mit dem digitalen Buchungsanteil gewichtet und auf den Beginn des Betrachtungszeitraums abgezinst. Die Summe ergibt den Barwert des Vorteils je Termin.</p>'+
+   '<div class="tw"><table><thead><tr><th class="num">Jahr</th><th class="num">Digitaler Buchungsanteil</th>'+
+   '<th class="num">Vorteil je Termin (Euro)</th><th class="num">Abzinsungsfaktor</th>'+
+   '<th class="num">Barwertbeitrag (Euro)</th></tr></thead><tbody>';
+  r.jahre.forEach(function(y,k){
+    var d=basis.path[k];
+    h+='<tr><td class="num">'+y.jahr+'</td><td class="num">'+f1(d*100)+' %</td>'+
+     '<td class="num">'+f2(r.n)+'</td><td class="num">'+f4(1/y.disk)+'</td>'+
+     '<td class="num">'+f4(r.n*d/y.disk)+'</td></tr>';
+  });
+  h+='<tr class="total"><td colspan="4">Barwert des Vorteils je Termin N</td>'+
+   '<td class="num">'+f4(basis.N)+'</td></tr></tbody></table></div>';
+  h+='<h3>Schritt 3: Portalweite Nettokosten</h3>'+
+   '<p class="src">Die portalweiten Nettokosten ergeben sich aus der Investitionssumme und den abgezinsten laufenden Kosten abzüglich des vermiedenen Digitalisierungsabschlags.</p>'+
+   '<div class="tw"><table><thead><tr><th class="num">Jahr</th><th class="num">Laufende Kosten (Euro)</th>'+
+   '<th class="num">Vermiedener Digitalisierungsabschlag (Euro)</th><th class="num">Abzinsungsfaktor</th>'+
+   '<th class="num">Barwert (Euro)</th></tr></thead><tbody>';
+  r.jahre.forEach(function(y){
+    h+='<tr><td class="num">'+y.jahr+'</td><td class="num">'+f0(y.K)+'</td><td class="num">'+f0(y.A)+'</td>'+
+     '<td class="num">'+f4(1/y.disk)+'</td><td class="num">'+f2(y.KBW-y.ABW)+'</td></tr>';
+  });
+  h+='</tbody></table></div>'+
+   '<div class="tw" style="max-width:640px"><table><tbody>'+
+   '<tr><td>Investitionssumme I₀ (Euro)</td><td class="num">'+f0(p.I0)+'</td></tr>'+
+   '<tr class="total"><td>Portalweite Nettokosten F (Euro, Barwert)</td><td class="num">'+f2(r.F)+'</td></tr>'+
+   '</tbody></table></div>';
+  h+='<h3>Schritt 4: Wirtschaftliche Schwellen</h3>'+
+   '<p class="src">Für die Terminschwelle werden die Anbindungskosten eines weiteren Krankenhausbereichs dem Barwert des Vorteils je Termin gegenübergestellt. Das Ergebnis bezeichnet das erforderliche jährliche Terminvolumen dieses Krankenhausbereichs.</p>'+
+   glz(['m = a / N',
+        'm = '+f2(r.ANB)+' / '+f4(basis.N),
+        'm = '+f0(basis.m)+' Termine je Jahr'])+
+   '<p class="src">Für den Portal-Break-even werden die portalweiten Nettokosten dem Barwert des Vorteils je Termin gegenübergestellt. Das Ergebnis B bezeichnet das erforderliche aggregierte jährliche Terminvolumen aller angebundenen Krankenhausbereiche.</p>'+
+   glz(['B = F / N',
+        'B = '+f2(r.F)+' / '+f4(basis.N),
+        'B = '+(r.F<=0?'0 Termine je Jahr, die Nettokosten sind bereits gedeckt':f0(basis.B)+' Termine je Jahr')]);
+  document.getElementById("rechenwegik").innerHTML=h;
+}
+
+/* ============ Abschnitt 9: Quellen und Kontext ============ */
+var QKONTEXT=[
+ ["Nutzung","Fraccaro, P., Vigo, M., Balatsoukas, P., Buchan, I. E., Peek, N., & van der Veer, S. N. (2017). Patient portal adoption rates: A systematic literature review and meta-analysis. <i>Studies in Health Technology and Informatics, 245</i>, 79–83. — obere Ausprägung des digitalen Buchungsanteils."],
+ ["Nutzung","Fürstenau, D., et al. (2026). <i>Produktivitäts- und Einsparpotenziale digitaler Technologien im Krankenhaus</i>. Institute of Medical Informatics. — Ausgangs- und Zielwert des hinterlegten Falls."],
+ ["Prozessentlastung","North, F., Jensen, T. B., Stroebel, R. J., Nelson, E. M., Johnson, B. J., Thompson, M. C., Pecina, J. L., & Crum, B. A. (2023). Self-triage use, subsequent healthcare utilization, and diagnoses. <i>Health Services Research and Managerial Epidemiology, 10</i>, 1–11. — mittelbarer Größenordnungsanker der Zeitersparnis."],
+ ["Terminausfälle","Kheirkhah, P., Feng, Q., Travis, L. M., Tavakoli-Tabasi, S., & Sharafkhaneh, A. (2016). Prevalence, predictors and economic consequences of no-shows. <i>BMC Health Services Research, 16</i>, 13. — Größenordnungsanker des Deckungsbeitrags je ausgefallenem Termin."],
+ ["Terminausfälle","Fürstenau, D., et al. (2026), siehe oben. — fallbezogen gestützte Annahme der No-Show-Differenz von fünf Prozentpunkten, abgeleitet aus der vom Klinikpersonal geschätzten Verringerung des Medians von 15 auf 10 Prozent."],
+ ["Kosten","Bundesministerium der Finanzen. (2026). <i>Personal- und Sachkosten in der Bundesverwaltung für Wirtschaftlichkeitsuntersuchungen und Kostenberechnungen; Kalkulationszinssätze</i> (Rundschreiben vom 8. Juni 2026). — Personalkostensatz."],
+ ["Kosten","Fürstenau, D., et al. (2026), siehe oben. — Investition, laufende Kosten und Anbindungskosten des hinterlegten Falls."],
+ ["Digitalisierungsabschlag","Deutsche Krankenhausgesellschaft & GKV-Spitzenverband. (2023). <i>Anhang 1 zur Digitalisierungsabschlagsvereinbarung: Tabelle zur Erfassung und Berechnung</i>. — die 19 Verfügbarkeitsanforderungen des Fördertatbestands 2."],
+ ["Digitalisierungsabschlag","Deutsche Krankenhausgesellschaft & GKV-Spitzenverband. (2024). <i>Anlage 3 zur Vereinbarung nach § 5 Abs. 3h KHEntgG über Abschläge bei Nichterfüllung verpflichtender digitaler Dienste</i>. — Jahresgewichte und gleichteilige Bewertung."],
+ ["Digitalisierungsabschlag","Charité – Universitätsmedizin Berlin. (2026). <i>Jahresbericht 2025</i>. — stationäre Erlöse als Bemessungsgrundlage des hinterlegten Falls."],
+ ["Bewertungsmethodik","Senatsverwaltung für Finanzen Berlin. (2024). <i>Berliner Haushaltsrecht: Landeshaushaltsordnung und Ausführungsvorschriften</i> (Stand 2. Dezember 2024). — Vorgabe der Kapitalwertmethode."],
+ ["Bewertungsmethodik","Bundesministerium der Finanzen. (2026), siehe oben. — Kalkulationszinssatz."]
+];
+function baueQuellenListe(){
+  var h='<div class="tw"><table><thead><tr><th>Bereich</th><th>Quelle und Verwendung</th></tr></thead><tbody>';
+  QKONTEXT.forEach(function(x){
+    h+='<tr><td style="white-space:nowrap">'+esc(x[0])+'</td><td>'+x[1]+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  document.getElementById("quellenliste").innerHTML=h;
+}
+
+/* ============ Abschnitt 10: Fusszeile ============ */
+function fussAktualisieren(){
+  st("fuss-version",FASSUNG);
+  st("fuss-datum",new Date().toLocaleDateString("de-DE"));
+  st("fuss-quelle",(QUELLE==="charite"&&GELADEN)?GELADEN.name:"Musterkrankenhaus");
+}
+
+/* ============ Rendern ============ */
+function baueWarnung(r){
+  var el=document.getElementById("warnung"),w=[];
+  if(!(r.p.dZiel>r.p.dIst)) w.push("Der Buchungsanteil am Ende des Betrachtungszeitraums liegt nicht über dem heutigen digitalen Buchungsanteil.");
+  if(r.n<=0) w.push("Der Vorteil je Termin ist null oder negativ. Terminschwelle und Portal-Break-even sind dann nicht definiert.");
+  el.innerHTML=w.length?'<div class="note warn" style="margin:12px 0 0"><b>Prüfhinweis.</b> '+esc(w.join(" "))+'</div>':"";
+}
+function render(){
+  var r=calc();
+  if(!SZEN_EIGEN){
+    var a=document.activeElement;
+    if(!(a&&a.getAttribute&&(a.getAttribute("data-szen")!==null||a.getAttribute("data-basis")!==null))) baueSzenarienUI();
+  }
+  baueErgebnis(r);baueSzenarienAus(r);baueBereicheAus(r);baueSensi(r);
+  baueRechenweg(r);baueWarnung(r);fussAktualisieren();druckkopf();
+}
+function eingabeEreignis(e){
+  var z=e.target;
+  if(!(z&&z.getAttribute)) return;
+  var basis=z.getAttribute("data-basis");
+  if(basis){
+    /* Dieselbe Groesse wie links: Wert uebernehmen, Regler nachziehen,
+       danach alles neu rechnen. */
+    var v=parseFloat(String(z.value).replace(",","."));
+    if(isFinite(v)){
+      var spec=STEUER[basis]?STEUER[basis].spec:null;
+      if(spec) v=Math.min(Math.max(v,+spec.min),+spec.max);
+      M[basis]=v;
+      if(STEUER[basis]){ STEUER[basis].num.value=v; setzeSchieber(basis,v); }
+      var rr=calc();
+      baueErgebnis(rr);baueSzenarienAus(rr);baueBereicheAus(rr);baueSensi(rr);
+      baueRechenweg(rr);baueWarnung(rr);druckkopf();
+    }
+    return;
+  }
+  if(z.getAttribute("data-szen")!==null){
+    /* Abbildungen und LMU-Einordnung haengen an den Szenarien und werden
+       deshalb sofort mitgezogen; die Szenariotabelle selbst bleibt stehen,
+       damit das bearbeitete Feld den Fokus behaelt. */
+    szenLesen();
+    var rz=calc();
+    baueErgebnis(rz); baueSzenarienAus(rz); baueBereicheAus(rz);
+    return; }
+  if(z.getAttribute("data-ber")!==null){
+    berLesen();
+    /* Ein Wechsel der Mengenart blendet den Hinweis zu ambulanten
+       Faellen ein oder aus, dafuer wird die Eingabetabelle neu gebaut. */
+    if(String(z.tagName||"").toLowerCase()==="select") baueBereicheUI();
+    baueBereicheAus(calc()); return; }
+}
+document.addEventListener("input",eingabeEreignis);
+document.addEventListener("change",eingabeEreignis);
+document.addEventListener("click",function(e){
+  var z=e.target;
+  if(z&&z.id==="szen-plus"){
+    var r=calc(); szenLesen();
+    if(!SZEN_EIGEN) SZEN_EIGEN=szenarienListe(r);
+    SZEN_EIGEN.push({name:"Eigenes Szenario",D:r.p.dZiel,t:r.p.tmin});
+    baueSzenarienUI(); render(); return; }
+  if(z&&z.id==="szen-reset"){ SZEN_EIGEN=null; baueSzenarienUI(); render(); return; }
+  var sd=z&&z.closest?z.closest("button[data-szen-del]"):null;
+  if(sd){ szenLesen();
+    if(SZEN_EIGEN){ SZEN_EIGEN.splice(+sd.getAttribute("data-szen-del"),1); }
+    baueSzenarienUI(); render(); return; }
+  if(z&&z.id==="ber-plus"){ berLesen();
+    BEREICHE.push({name:"",vol:0,art:"termine"});
+    baueBereicheUI(); render(); return; }
+  var bd=z&&z.closest?z.closest("button[data-ber-del]"):null;
+  if(bd){ berLesen(); BEREICHE.splice(+bd.getAttribute("data-ber-del"),1);
+    baueBereicheUI(); render(); return; }
+});
+document.getElementById("dl-excel").addEventListener("click",speichereExcel);
+baueQuellenListe();ausfuellen();mussAnbinden();baueSzenarienUI();baueBereicheUI();render();
+document.getElementById("theme").addEventListener("click",function(){
+  var el=document.documentElement,jetzt=el.getAttribute("data-theme");
+  if(!jetzt) jetzt=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
+  var neu=jetzt==="dark"?"light":"dark";
+  el.setAttribute("data-theme",neu);
+  this.textContent = neu==="dark" ? "Light Mode" : "Dark Mode";
+  render();
+});
+/* Beschriftung des Schalters folgt dem tatsaechlichen Startmodus. */
+(function(){
+  var jetzt=document.documentElement.getAttribute("data-theme")||
+    (window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  document.getElementById("theme").textContent = jetzt==="dark" ? "Light Mode" : "Dark Mode";
+})();
+</script>
+
+</body>
+</html>
